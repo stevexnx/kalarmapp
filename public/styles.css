@@ -1,59 +1,67 @@
 /* ==========================================================================
-   Material Design 3 (M3) Design System & Styles - SubTracker Pro
-   Tokens de color tonal, superficies elevadas, formas M3 y componentes
+   Google Material Design 3 (M3 / Material You) - SubTracker Pro
+   Tokens oficiales de Google M3, Navigation Rail, Formas M3 y Google Sans
    ========================================================================== */
 
 :root {
-  /* M3 Dark Theme Tonal Color Palette */
-  --md-sys-color-background: #0f131a;
-  --md-sys-color-surface: #131720;
-  --md-sys-color-surface-dim: #0b0e14;
-  --md-sys-color-surface-container-lowest: #090c12;
-  --md-sys-color-surface-container-low: #171c26;
-  --md-sys-color-surface-container: #1b212d;
-  --md-sys-color-surface-container-high: #212837;
-  --md-sys-color-surface-container-highest: #283042;
+  /* Google M3 Dark Theme Tonal Palette (como en material.io y Google apps) */
+  --md-sys-color-background: #141218;
+  --md-sys-color-surface: #141218;
+  --md-sys-color-surface-dim: #110f14;
+  --md-sys-color-surface-bright: #3b383e;
+  
+  --md-sys-color-surface-container-lowest: #0f0d13;
+  --md-sys-color-surface-container-low: #1d1b20;
+  --md-sys-color-surface-container: #211f26;
+  --md-sys-color-surface-container-high: #2b2930;
+  --md-sys-color-surface-container-highest: #36343b;
 
-  --md-sys-color-on-surface: #e2e6f0;
-  --md-sys-color-on-surface-variant: #9aa2b6;
-  --md-sys-color-outline: #424a5e;
-  --md-sys-color-outline-variant: #2d3445;
+  --md-sys-color-on-surface: #e6e0e9;
+  --md-sys-color-on-surface-variant: #cac4d0;
+  --md-sys-color-outline: #938f99;
+  --md-sys-color-outline-variant: #49454f;
 
-  /* Primary Tonal Palette (Indigo / Deep Violet M3) */
-  --md-sys-color-primary: #a8b4fc;
-  --md-sys-color-on-primary: #192166;
-  --md-sys-color-primary-container: #333d8a;
-  --md-sys-color-on-primary-container: #dbe1ff;
+  /* Google M3 Primary (Púrpura/Lavanda característico de material.io) */
+  --md-sys-color-primary: #d0bcff;
+  --md-sys-color-on-primary: #381e72;
+  --md-sys-color-primary-container: #4f378b;
+  --md-sys-color-on-primary-container: #eaddff;
 
   /* Secondary Tonal Palette */
-  --md-sys-color-secondary: #bfc4dc;
-  --md-sys-color-secondary-container: #353b50;
-  --md-sys-color-on-secondary-container: #dbe0fb;
+  --md-sys-color-secondary: #ccc2dc;
+  --md-sys-color-secondary-container: #4a4458;
+  --md-sys-color-on-secondary-container: #e8def8;
 
-  /* Tertiary Tonal Palette (Teal / Cyan M3) */
-  --md-sys-color-tertiary: #6ee7d8;
-  --md-sys-color-tertiary-container: #0d4a45;
-  --md-sys-color-on-tertiary-container: #8bf4e7;
+  /* Tertiary Tonal Palette */
+  --md-sys-color-tertiary: #efb8c8;
+  --md-sys-color-tertiary-container: #633b48;
+  --md-sys-color-on-tertiary-container: #ffd8e4;
 
   /* Error Tonal */
-  --md-sys-color-error: #ffb4ab;
-  --md-sys-color-error-container: #93000a;
-  --md-sys-color-on-error-container: #ffdad6;
+  --md-sys-color-error: #f2b8b5;
+  --md-sys-color-error-container: #8c1d18;
+  --md-sys-color-on-error-container: #f9dedc;
 
-  /* Corner Radius M3 */
+  /* Google M3 Shapes & Corner Radii */
   --md-shape-xs: 4px;
   --md-shape-sm: 8px;
   --md-shape-md: 12px;
   --md-shape-lg: 16px;
-  --md-shape-xl: 24px;
-  --md-shape-2xl: 28px;
+  --md-shape-xl: 28px;
+  --md-shape-2xl: 32px;
   --md-shape-full: 9999px;
 }
 
 body {
-  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, Roboto, sans-serif;
+  font-family: 'Google Sans Text', 'Google Sans', 'Roboto Flex', Roboto, -apple-system, sans-serif;
   background-color: var(--md-sys-color-background);
   color: var(--md-sys-color-on-surface);
+  letter-spacing: -0.01em;
+}
+
+h1, h2, h3, h4, .font-google-sans {
+  font-family: 'Google Sans', 'Google Sans Text', 'Roboto Flex', sans-serif;
+  letter-spacing: -0.02em;
 }
 
 /* Scrollbar refinado M3 */
@@ -62,7 +70,7 @@ body {
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: var(--md-sys-color-surface-container-lowest);
+  background: transparent;
 }
 ::-webkit-scrollbar-thumb {
   background: var(--md-sys-color-outline-variant);
@@ -72,18 +80,166 @@ body {
   background: var(--md-sys-color-outline);
 }
 
-/* Elevaciones M3 */
-.m3-elevation-1 {
-  box-shadow: 0px 1px 3px 1px rgba(0, 0, 0, 0.35), 0px 1px 2px 0px rgba(0, 0, 0, 0.45);
-}
-.m3-elevation-2 {
-  box-shadow: 0px 2px 6px 2px rgba(0, 0, 0, 0.35), 0px 1px 2px 0px rgba(0, 0, 0, 0.5);
-}
-.m3-elevation-3 {
-  box-shadow: 0px 4px 8px 3px rgba(0, 0, 0, 0.4), 0px 1px 3px 0px rgba(0, 0, 0, 0.55);
+/* ================= GOOGLE M3 NAVIGATION RAIL ================= */
+.m3-nav-rail {
+  width: 80px;
+  background-color: var(--md-sys-color-surface);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px 0;
+  gap: 12px;
+  flex-shrink: 0;
+  z-index: 40;
 }
 
-/* Tarjetas M3 */
+.m3-rail-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 100%;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 4px 0;
+  color: var(--md-sys-color-on-surface-variant);
+  transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+  text-decoration: none;
+}
+
+.m3-rail-item:hover {
+  color: var(--md-sys-color-on-surface);
+}
+
+.m3-rail-pill {
+  width: 56px;
+  height: 32px;
+  border-radius: var(--md-shape-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.22s cubic-bezier(0.2, 0, 0, 1);
+  color: inherit;
+}
+
+.m3-rail-item:hover .m3-rail-pill {
+  background-color: rgba(230, 224, 233, 0.08);
+}
+
+.m3-rail-item.active {
+  color: var(--md-sys-color-on-surface);
+}
+
+.m3-rail-item.active .m3-rail-pill {
+  background-color: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-on-secondary-container);
+}
+
+.m3-rail-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  text-align: center;
+  line-height: 1.2;
+}
+
+/* Floating Action Button (FAB) M3 estilo Google Material */
+.m3-fab-google {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background-color: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-on-primary-container);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 3px 8px 1px rgba(0, 0, 0, 0.4);
+  transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+  cursor: pointer;
+  border: none;
+}
+.m3-fab-google:hover {
+  background-color: var(--md-sys-color-primary);
+  color: var(--md-sys-color-on-primary);
+  transform: scale(1.04);
+  box-shadow: 0 6px 14px 2px rgba(0, 0, 0, 0.45);
+}
+.m3-fab-google:active {
+  transform: scale(0.96);
+}
+
+/* Botón primario relleno Google M3 (Como el botón "Get started" de material.io) */
+.m3-btn-filled {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background-color: var(--md-sys-color-primary);
+  color: var(--md-sys-color-on-primary);
+  font-family: 'Google Sans', 'Google Sans Text', sans-serif;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  padding: 12px 28px;
+  border-radius: var(--md-shape-full);
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+}
+.m3-btn-filled:hover {
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+  filter: brightness(1.05);
+  transform: translateY(-1px);
+}
+.m3-btn-filled:active {
+  transform: translateY(1px);
+}
+
+/* Botón tonal / tonal button */
+.m3-btn-tonal {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background-color: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-on-secondary-container);
+  font-weight: 600;
+  font-size: 0.8125rem;
+  padding: 8px 16px;
+  border-radius: var(--md-shape-full);
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+}
+.m3-btn-tonal:hover {
+  background-color: rgba(204, 194, 220, 0.25);
+  color: #fff;
+}
+
+/* Botón outline Google M3 */
+.m3-btn-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background-color: transparent;
+  color: var(--md-sys-color-on-surface);
+  border: 1px solid var(--md-sys-color-outline);
+  font-weight: 600;
+  font-size: 0.8125rem;
+  padding: 7px 16px;
+  border-radius: var(--md-shape-full);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+}
+.m3-btn-outline:hover {
+  background-color: rgba(230, 224, 233, 0.08);
+  border-color: var(--md-sys-color-primary);
+}
+
+/* Tarjetas M3 Google (Grandes radios de curvatura como en material.io 28-32px) */
 .m3-card {
   background-color: var(--md-sys-color-surface-container-low);
   border: 1px solid var(--md-sys-color-outline-variant);
@@ -91,69 +247,82 @@ body {
   transition: all 0.22s cubic-bezier(0.2, 0, 0, 1);
 }
 .m3-card:hover {
-  transform: translateY(-2px);
   background-color: var(--md-sys-color-surface-container);
-  border-color: rgba(168, 180, 252, 0.3);
-  box-shadow: 0px 8px 20px -4px rgba(0, 0, 0, 0.5);
+  border-color: rgba(208, 188, 255, 0.4);
+  box-shadow: 0px 8px 24px -4px rgba(0, 0, 0, 0.6);
+  transform: translateY(-2px);
 }
 
-/* Navigation Bar M3 con Pill Indicators */
+/* Barra superior Google Header */
+.m3-top-app-bar {
+  background-color: var(--md-sys-color-surface);
+  border-bottom: 1px solid var(--md-sys-color-outline-variant);
+}
+
+/* Bottom Navigation Bar M3 para móviles */
+.m3-bottom-nav {
+  background-color: var(--md-sys-color-surface-container);
+  border-top: 1px solid var(--md-sys-color-outline-variant);
+}
+
+/* Nav Pill horizontal para pestañas secundarias o móviles */
 .m3-nav-pill {
-  position: relative;
-  border-radius: var(--md-shape-full);
-  padding: 8px 18px;
-  font-weight: 600;
-  font-size: 0.8125rem;
-  color: var(--md-sys-color-on-surface-variant);
-  transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  padding: 8px 18px;
+  border-radius: var(--md-shape-full);
+  background-color: transparent;
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  border: 1px solid transparent;
+  transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
 }
 .m3-nav-pill:hover {
+  background-color: rgba(230, 224, 233, 0.08);
   color: var(--md-sys-color-on-surface);
-  background-color: rgba(255, 255, 255, 0.04);
 }
 .m3-nav-pill.active {
-  color: var(--md-sys-color-on-primary-container);
-  background-color: var(--md-sys-color-primary-container);
+  background-color: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-on-secondary-container);
+  font-weight: 600;
 }
 
-/* M3 Floating Action Button (FAB / Extended FAB) */
-.m3-fab-extended {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  background: linear-gradient(135deg, #a8b4fc, #818cf8);
-  color: #0f1322;
-  font-weight: 700;
-  font-size: 0.875rem;
-  padding: 10px 20px;
+/* Modales / Diálogos con esquinas M3 amplias (28px) */
+.m3-dialog {
+  background-color: var(--md-sys-color-surface-container-high);
+  border: 1px solid var(--md-sys-color-outline-variant);
   border-radius: var(--md-shape-xl);
-  box-shadow: 0px 4px 12px 0px rgba(129, 140, 248, 0.35);
-  transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
-}
-.m3-fab-extended:hover {
-  transform: translateY(-1px) scale(1.02);
-  box-shadow: 0px 6px 16px 2px rgba(129, 140, 248, 0.45);
-}
-.m3-fab-extended:active {
-  transform: translateY(1px) scale(0.98);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6);
 }
 
-/* M3 Chips */
+/* Barra de búsqueda estilo Google Material Search Pill */
+.m3-search-bar {
+  background-color: var(--md-sys-color-surface-container-high);
+  border: 1px solid transparent;
+  border-radius: var(--md-shape-full);
+  color: var(--md-sys-color-on-surface);
+  transition: all 0.2s ease;
+}
+.m3-search-bar:focus-within {
+  border-color: var(--md-sys-color-primary);
+  background-color: var(--md-sys-color-surface-container-highest);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Chips Google M3 */
 .m3-chip {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 14px;
+  padding: 6px 16px;
   border-radius: var(--md-shape-sm);
   background-color: var(--md-sys-color-surface-container);
   border: 1px solid var(--md-sys-color-outline-variant);
   color: var(--md-sys-color-on-surface-variant);
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-size: 0.8125rem;
+  font-weight: 500;
   cursor: pointer;
   transition: all 0.18s cubic-bezier(0.2, 0, 0, 1);
 }
@@ -166,51 +335,53 @@ body {
   background-color: var(--md-sys-color-secondary-container);
   color: var(--md-sys-color-on-secondary-container);
   border-color: transparent;
+  font-weight: 600;
 }
 
-/* M3 Preset Item Card en el catálogo */
+/* Tarjeta Preset Item en el catálogo */
 .m3-preset-card {
   background-color: var(--md-sys-color-surface-container);
   border: 1px solid var(--md-sys-color-outline-variant);
   border-radius: var(--md-shape-lg);
-  padding: 10px;
+  padding: 12px;
   cursor: pointer;
   transition: all 0.18s cubic-bezier(0.2, 0, 0, 1);
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
 .m3-preset-card:hover {
   background-color: var(--md-sys-color-surface-container-high);
   border-color: var(--md-sys-color-primary);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.45);
 }
 
+/* Contenedor de iconos oficiales */
 .m3-brand-icon-box {
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   border-radius: var(--md-shape-md);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
   overflow: hidden;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
   background-color: rgba(255, 255, 255, 0.05);
 }
 .m3-brand-icon-box svg {
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
 }
 
-/* M3 Input Styles */
+/* Inputs Google M3 */
 .m3-text-field {
   width: 100%;
   background-color: var(--md-sys-color-surface-container-low);
   border: 1px solid var(--md-sys-color-outline-variant);
   border-radius: var(--md-shape-md);
-  padding: 10px 14px;
+  padding: 11px 16px;
   color: var(--md-sys-color-on-surface);
   font-size: 0.875rem;
   transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
@@ -218,36 +389,21 @@ body {
 .m3-text-field:focus {
   outline: none;
   border-color: var(--md-sys-color-primary);
-  box-shadow: 0 0 0 2px rgba(168, 180, 252, 0.25);
+  box-shadow: 0 0 0 2px rgba(208, 188, 255, 0.25);
   background-color: var(--md-sys-color-surface-container);
 }
 
-/* Badges M3 */
-.urgency-urgent {
-  background-color: rgba(255, 180, 171, 0.12);
-  border: 1px solid rgba(255, 180, 171, 0.4);
-  color: #ffb4ab;
-}
-.urgency-soon {
-  background-color: rgba(253, 224, 71, 0.12);
-  border: 1px solid rgba(253, 224, 71, 0.35);
-  color: #fde047;
-}
-.urgency-normal {
-  background-color: rgba(168, 180, 252, 0.12);
-  border: 1px solid rgba(168, 180, 252, 0.35);
-  color: #a8b4fc;
-}
-
-/* Estilos de Celdas del Calendario */
+/* Celdas del calendario M3 */
 .calendar-day-cell {
-  min-height: 84px;
+  min-height: 88px;
   transition: all 0.15s ease-in-out;
   border-radius: var(--md-shape-lg);
+  background-color: var(--md-sys-color-surface-container-low);
+  border: 1px solid var(--md-sys-color-outline-variant);
 }
 @media (min-width: 640px) {
   .calendar-day-cell {
-    min-height: 104px;
+    min-height: 108px;
   }
 }
 .calendar-day-cell:hover {
@@ -255,26 +411,18 @@ body {
 }
 .calendar-day-cell.is-selected {
   border-color: var(--md-sys-color-primary);
-  background-color: rgba(168, 180, 252, 0.12);
+  background-color: rgba(208, 188, 255, 0.12);
   box-shadow: 0 0 0 1px var(--md-sys-color-primary);
 }
 .calendar-day-cell.is-today {
   border-color: #f59e0b;
 }
 
-.calendar-badge-chip {
-  transition: transform 0.1s ease;
-  border-radius: 6px;
-}
-.calendar-badge-chip:hover {
-  transform: scale(1.02);
-}
-
-/* Animaciones */
+/* Animaciones suaves Google Material */
 @keyframes m3FadeScale {
   from {
     opacity: 0;
-    transform: scale(0.95);
+    transform: scale(0.96);
   }
   to {
     opacity: 1;
@@ -282,5 +430,5 @@ body {
   }
 }
 .animate-scale-up {
-  animation: m3FadeScale 0.2s cubic-bezier(0.2, 0, 0, 1) forwards;
+  animation: m3FadeScale 0.22s cubic-bezier(0.2, 0, 0, 1) forwards;
 }

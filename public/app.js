@@ -743,11 +743,18 @@ async function handleLogout() {
 
 // ================= EVENT LISTENERS =================
 function initEventListeners() {
-  // Tabs principales
+  // Tabs principales (móvil y Navigation Rail escritorio)
   document.getElementById('tabBtnDashboard')?.addEventListener('click', () => switchTab('dashboard'));
   document.getElementById('tabBtnCalendar')?.addEventListener('click', () => switchTab('calendar'));
   document.getElementById('tabBtnPayments')?.addEventListener('click', () => switchTab('payments'));
   document.getElementById('tabBtnFriends')?.addEventListener('click', () => switchTab('friends'));
+
+  document.getElementById('railBtnDashboard')?.addEventListener('click', () => switchTab('dashboard'));
+  document.getElementById('railBtnCalendar')?.addEventListener('click', () => switchTab('calendar'));
+  document.getElementById('railBtnPayments')?.addEventListener('click', () => switchTab('payments'));
+  document.getElementById('railBtnFriends')?.addEventListener('click', () => switchTab('friends'));
+  document.getElementById('railBtnSettings')?.addEventListener('click', openSettingsModal);
+  document.getElementById('railBtnBackup')?.addEventListener('click', openBackupModal);
 
   // Navegación de Calendario
   document.getElementById('btnPrevMonth')?.addEventListener('click', () => changeCalendarMonth(-1));
@@ -974,6 +981,8 @@ async function loadFriends() {
       renderFriendsList();
       const badge = document.getElementById('friendsBadgeCount');
       if (badge) badge.textContent = state.friends.length;
+      const railFriendsBadge = document.getElementById('railFriendsBadge');
+      if (railFriendsBadge) railFriendsBadge.textContent = state.friends.length;
     }
     if (balancesData.success) {
       state.friendBalances = balancesData.data;
@@ -1232,25 +1241,34 @@ function switchTab(tab) {
   const tabPay = document.getElementById('tabBtnPayments');
   const tabFriends = document.getElementById('tabBtnFriends');
 
+  const railDash = document.getElementById('railBtnDashboard');
+  const railCal = document.getElementById('railBtnCalendar');
+  const railPay = document.getElementById('railBtnPayments');
+  const railFriends = document.getElementById('railBtnFriends');
+
   [viewDash, viewCal, viewPay, viewFriends].forEach(v => v?.classList.add('hidden'));
-  [tabDash, tabCal, tabPay, tabFriends].forEach(t => {
+  [tabDash, tabCal, tabPay, tabFriends, railDash, railCal, railPay, railFriends].forEach(t => {
     t?.classList.remove('active');
   });
 
   if (tab === 'dashboard') {
     viewDash?.classList.remove('hidden');
     tabDash?.classList.add('active');
+    railDash?.classList.add('active');
   } else if (tab === 'calendar') {
     viewCal?.classList.remove('hidden');
     tabCal?.classList.add('active');
+    railCal?.classList.add('active');
     renderCalendar();
   } else if (tab === 'payments') {
     viewPay?.classList.remove('hidden');
     tabPay?.classList.add('active');
+    railPay?.classList.add('active');
     loadPayments();
   } else if (tab === 'friends') {
     viewFriends?.classList.remove('hidden');
     tabFriends?.classList.add('active');
+    railFriends?.classList.add('active');
     loadFriends();
   }
   initIcons();
@@ -1972,6 +1990,8 @@ function updateCalendarBadge() {
   });
 
   badge.textContent = cutsCount;
+  const railBadge = document.getElementById('railCalendarBadge');
+  if (railBadge) railBadge.textContent = cutsCount;
 }
 
 function renderCalendar() {
