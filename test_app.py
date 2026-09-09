@@ -360,5 +360,16 @@ class TestServerAPI(unittest.TestCase):
         with urllib.request.urlopen(pay_conf_req) as resp:
             self.assertEqual(resp.status, 200)
 
+        # 9. Verificar consulta de suscripciones mutuas (/api/friends/shared-subs)
+        pedro_friend_entry = next(f for f in friends_admin if f.get('linked_user_id') == pedro_id)
+        shared_subs_req = urllib.request.Request(f"{self.base_url}/api/friends/shared-subs?friend_id={pedro_friend_entry['id']}", headers={"Authorization": f"Bearer {admin_token}"})
+        with urllib.request.urlopen(shared_subs_req) as resp:
+            self.assertEqual(resp.status, 200)
+            sh_res = json.loads(resp.read().decode('utf-8'))
+            self.assertTrue(sh_res['success'])
+            self.assertTrue(sh_res['data']['is_linked'])
+            self.assertIn('my_subscriptions', sh_res['data'])
+            self.assertIn('friend_subscriptions', sh_res['data'])
+
 if __name__ == '__main__':
     unittest.main()

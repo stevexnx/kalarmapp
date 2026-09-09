@@ -962,23 +962,23 @@
     </div>
   </div>
 
-  <!-- ================= MODAL: SUSCRIPCIONES EN COMÚN ================= -->
-  <div id="sharedSubsModal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-black/70 backdrop-blur-sm p-4 flex items-center justify-center">
-    <div class="relative w-full max-w-lg m3-dialog p-6 space-y-4 animate-scale-up">
+  <!-- ================= MODAL: SUSCRIPCIONES Y DIVIDIR PAGO CON AMIGO ================= -->
+  <div id="sharedSubsModal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-black/80 p-4 flex items-center justify-center">
+    <div class="relative w-full max-w-xl m3-dialog p-6 space-y-4 animate-scale-up">
       <div class="flex items-center justify-between border-b border-[#49454f]/40 pb-3">
         <div>
           <h3 id="sharedSubsModalTitle" class="text-base font-bold text-white flex items-center gap-2 font-google-sans">
-            <i data-lucide="layers" class="w-5 h-5 text-[#a8d5b5]"></i>
-            Suscripciones en Común
+            <i data-lucide="layers" class="w-5 h-5 text-[#d0bcff]"></i>
+            Suscripciones
           </h3>
-          <p id="sharedSubsModalSubtitle" class="text-xs text-[#cac4d0] mt-0.5">Suscripciones compartidas con este amigo</p>
+          <p id="sharedSubsModalSubtitle" class="text-xs text-[#cac4d0] mt-0.5">Suscripciones individuales y solicitud de pago en conjunto</p>
         </div>
         <button id="btnCloseSharedSubsModal" class="text-[#cac4d0] hover:text-white p-1 rounded-full hover:bg-[#2b2930]">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
 
-      <div id="sharedSubsModalContent" class="space-y-3 max-h-80 overflow-y-auto pr-1">
+      <div id="sharedSubsModalContent" class="space-y-4 max-h-[70vh] overflow-y-auto pr-1">
         <!-- Renderizado dinámicamente -->
       </div>
 

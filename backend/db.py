@@ -1115,20 +1115,44 @@ def respond_split_pay_request(request_id: int, user_id: int, action: str, db_pat
     return {'id': request_id, 'status': new_status}
 
 def get_shared_subscriptions_with_friend(user_id: int, friend_id: int, db_path=None):
-    """Devuelve las suscripciones compartidas y en común entre el usuario y un amigo."""
+    """Devuelve las suscripciones individuales de ambos y compartidas entre el usuario y su amigo."""
     friend = get_friend_by_id(friend_id, user_id=user_id, db_path=db_path)
     if not friend:
-        return []
+        return {
+            'friend': None,
+            'is_linked': False,
+            'my_subscriptions': [],
+            'friend_subscriptions': [],
+            'common_subs': []
+        }
 
-    subs = get_all_subscriptions(user_id=user_id, db_path=db_path)
+    # 1. Suscripciones del usuario actual
+    my_all_subs = get_all_subscriptions(user_id=user_id, db_path=db_path)
+    my_active_subs = [s for s in my_all_subs if s.get('status') == 'active']
+
+    # Suscripciones ya marcadas como compartidas con este amigo
     common_subs = []
-    for s in subs:
-        if not s.get('is_shared') or s.get('status') != 'active':
-            continue
-        ids = [int(x) for x in str(s.get('shared_friend_ids') or '').split(',') if x.strip().isdigit()]
-        if friend_id in ids:
-            common_subs.append(s)
-    return common_subs
+    for s in my_active_subs:
+        if s.get('is_shared'):
+            ids = [int(x) for x in str(s.get('shared_friend_ids') or '').split(',') if x.strip().isdigit()]
+            if friend_id in ids:
+                common_subs.append(s)
+
+    # 2. Suscripciones del amigo (si es usuario registrado en SubTracker)
+    friend_subs = []
+    is_linked = bool(friend.get('linked_user_id'))
+    if is_linked:
+        f_user_id = friend['linked_user_id']
+        f_all_subs = get_all_subscriptions(user_id=f_user_id, db_path=db_path)
+        friend_subs = [s for s in f_all_subs if s.get('status') == 'active']
+
+    return {
+        'friend': friend,
+        'is_linked': is_linked,
+        'my_subscriptions': my_active_subs,
+        'friend_subscriptions': friend_subs,
+        'common_subs': common_subs
+    }
 
 # ================= CRUD DE SUSCRIPCIONES =================
 def dict_from_row(row):
