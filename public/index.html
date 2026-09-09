@@ -579,37 +579,25 @@
         </div>
       </div>
 
-      <!-- Panel: Cobros Pendientes por Amigo -->
+      <!-- Sección Unificada: Contactos, Amigos y Cobros Compartidos -->
       <div class="m3-card p-5 sm:p-6 space-y-4">
-        <div>
-          <h3 class="text-sm font-bold text-white flex items-center gap-2 font-google-sans">
-            <i data-lucide="badge-dollar-sign" class="w-4 h-4 text-[#a8d5b5]"></i>
-            Estado de Cobros por Amigo (Cuentas Compartidas)
-          </h3>
-          <p class="text-xs text-[#cac4d0] mt-0.5">Controla quién te ha transferido su parte de las suscripciones este mes.</p>
-        </div>
-
-        <div id="friendsBalancesContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <!-- Generado dinámicamente por app.js -->
-        </div>
-      </div>
-
-      <!-- Directorio Completo de Amigos -->
-      <div class="m3-card p-5 sm:p-6 space-y-4">
-        <div class="flex items-center justify-between">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <h3 class="text-sm font-bold text-white flex items-center gap-2 font-google-sans">
-              <i data-lucide="contact" class="w-4 h-4 text-[#d0bcff]"></i>
-              Todos tus Contactos y Amigos
+              <i data-lucide="users" class="w-4 h-4 text-[#d0bcff]"></i>
+              Tus Amigos y Cobros Compartidos
+              <span id="friendsCountBadgeHeader" class="text-[10px] px-2 py-0.5 rounded-full bg-[#381e72] text-[#d0bcff] font-bold">0</span>
             </h3>
-            <p class="text-xs text-[#cac4d0] mt-0.5">Administra tus amigos para dividir gastos.</p>
+            <p class="text-xs text-[#cac4d0] mt-0.5">Controla cuotas mensuales a cobrar, suscripciones compartidas y administra tus contactos.</p>
           </div>
-          <button id="btnOpenAddFriendModal2" class="m3-btn-tonal">
-            <i data-lucide="plus" class="w-3.5 h-3.5"></i> Nuevo Amigo
-          </button>
+          <div class="flex items-center gap-2">
+            <button id="btnOpenAddFriendModal2" class="m3-btn-filled py-1.5 px-3 text-xs flex items-center gap-1.5">
+              <i data-lucide="user-plus" class="w-3.5 h-3.5"></i> Nuevo Amigo
+            </button>
+          </div>
         </div>
 
-        <div id="friendsListGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+        <div id="friendsListGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
           <!-- Generado dinámicamente -->
         </div>
       </div>

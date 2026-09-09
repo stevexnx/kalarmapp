@@ -1060,52 +1060,129 @@ async function loadFriends() {
   }
 }
 
-// ================= GESTIÓN Y RENDERIZADO DE AMIGOS =================
+// ================= GESTIÓN Y RENDERIZADO DE AMIGOS Y COBROS =================
 function renderFriendsList() {
   const grid = document.getElementById('friendsListGrid');
+  const countBadgeHeader = document.getElementById('friendsCountBadgeHeader');
+  const totalElem = document.getElementById('friendsTotalOwed');
   if (!grid) return;
 
-  if (state.friends.length === 0) {
+  const friends = state.friends || [];
+  const balances = state.friendBalances || [];
+  
+  if (countBadgeHeader) {
+    countBadgeHeader.textContent = friends.length;
+  }
+
+  // Mapa de balances por ID de amigo
+  const balanceMap = {};
+  let grandTotalOwed = 0;
+  balances.forEach(b => {
+    if (b.friend && b.friend.id) {
+      balanceMap[b.friend.id] = b;
+      grandTotalOwed += (b.monthly_total_owed || 0);
+    }
+  });
+
+  if (totalElem) {
+    totalElem.textContent = `${state.currency}${formatNumber(grandTotalOwed)}`;
+  }
+
+  if (friends.length === 0) {
     grid.innerHTML = `
-      <div class="col-span-full py-8 text-center text-slate-500 text-xs">
-        No tienes amigos agregados aún. Busca usuarios registrados o agrega amigos manualmente para dividir suscripciones.
+      <div class="col-span-full py-10 text-center text-[#cac4d0] text-xs">
+        No tienes amigos agregados aún. Busca usuarios registrados o agrega amigos manualmente para dividir gastos y suscripciones.
       </div>
     `;
     return;
   }
 
-  grid.innerHTML = state.friends.map(f => {
+  grid.innerHTML = friends.map(f => {
     const isRegistered = Boolean(f.linked_user_id);
+    const balanceInfo = balanceMap[f.id];
+    const monthlyOwed = balanceInfo ? balanceInfo.monthly_total_owed : 0;
+    const subsList = balanceInfo ? (balanceInfo.shared_subscriptions || []) : [];
+    const hasActiveDebt = monthlyOwed > 0;
+
+    // Mensaje preconfigurado para WhatsApp si debe algo
+    const subNames = subsList.map(s => s.name).join(', ');
+    const waText = encodeURIComponent(`Hola ${f.name}, te escribo para recordarte tu parte de ${subNames || 'las suscripciones'} de este mes por ${state.currency}${formatNumber(monthlyOwed)}. ¡Gracias!`);
+    const waUrl = f.phone ? `https://wa.me/${f.phone.replace(/[^0-9]/g, '')}?text=${waText}` : `https://wa.me/?text=${waText}`;
+
+    // Badges resumidos de suscripciones compartidas (hasta 2)
+    let subsBadgesHtml = '';
+    if (subsList.length > 0) {
+      subsBadgesHtml = subsList.slice(0, 2).map(s => {
+        const isDiff = s.currency && s.currency !== state.baseCurrencyCode;
+        const shareConv = s.friend_share_converted !== undefined ? s.friend_share_converted : convertCurrency(s.friend_share, s.currency, state.baseCurrencyCode);
+        return `
+          <div class="flex items-center justify-between text-[11px] bg-[#141218] px-2.5 py-1 rounded-lg border border-[#49454f]/30">
+            <span class="text-[#e6e0e9] font-medium truncate pr-2">${escapeHtml(s.name)}</span>
+            <span class="font-mono font-bold text-[#a8d5b5] shrink-0 text-[10px]">${state.currency}${formatNumber(shareConv)}</span>
+          </div>
+        `;
+      }).join('');
+      if (subsList.length > 2) {
+        subsBadgesHtml += `<div class="text-[10px] text-[#cac4d0] text-right">+${subsList.length - 2} más</div>`;
+      }
+    }
+
     return `
-    <div onclick="viewSharedSubsWithFriend(${f.id}, '${escapeHtml(f.name)}', ${f.linked_user_id || 'null'})" class="p-3.5 bg-[#211f26] border border-[#49454f]/40 rounded-2xl flex flex-col justify-between hover:border-[#d0bcff]/70 hover:bg-[#28262f] cursor-pointer transition space-y-2.5 group shadow-sm">
-      <div class="flex items-start justify-between">
-        <div class="flex items-center gap-2.5 min-w-0">
-          <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs shadow shrink-0 group-hover:scale-105 transition" style="background-color: ${f.avatar_color || '#a8d5b5'}; color: #133821">
-            ${escapeHtml(f.name.charAt(0).toUpperCase())}
-          </div>
-          <div class="min-w-0">
-            <div class="flex items-center gap-1.5 flex-wrap">
-              <h4 class="text-xs font-bold text-white font-google-sans truncate group-hover:text-[#d0bcff] transition">${escapeHtml(f.name)}</h4>
-              ${isRegistered ? `<span class="text-[9px] px-1.5 py-0.2 rounded-full bg-[#381e72] text-[#d0bcff] font-semibold border border-[#d0bcff]/30">Conectado</span>` : ''}
+    <div onclick="viewSharedSubsWithFriend(${f.id}, '${escapeHtml(f.name)}', ${f.linked_user_id || 'null'})" class="p-4 bg-[#211f26] border border-[#49454f]/40 rounded-2xl flex flex-col justify-between hover:border-[#d0bcff]/70 hover:bg-[#28262f] cursor-pointer transition space-y-3 group shadow-sm">
+      <!-- Encabezado de la Tarjeta del Amigo -->
+      <div>
+        <div class="flex items-start justify-between">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs shadow shrink-0 group-hover:scale-105 transition" style="background-color: ${f.avatar_color || '#a8d5b5'}; color: #133821">
+              ${escapeHtml(f.name.charAt(0).toUpperCase())}
             </div>
-            <div class="text-[11px] text-[#cac4d0] truncate">${escapeHtml(f.phone || f.email || 'Sin contacto')}</div>
-            ${f.notes ? `<div class="text-[10px] text-[#938f99] italic mt-0.5 truncate">${escapeHtml(f.notes)}</div>` : ''}
+            <div class="min-w-0">
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <h4 class="text-xs font-bold text-white font-google-sans truncate group-hover:text-[#d0bcff] transition">${escapeHtml(f.name)}</h4>
+                ${isRegistered ? `<span class="text-[9px] px-1.5 py-0.2 rounded-full bg-[#381e72] text-[#d0bcff] font-semibold border border-[#d0bcff]/30">Conectado</span>` : ''}
+              </div>
+              <div class="text-[11px] text-[#cac4d0] truncate">${escapeHtml(f.phone || f.email || 'Sin contacto')}</div>
+            </div>
+          </div>
+          <div class="flex items-center gap-0.5 text-[#cac4d0]" onclick="event.stopPropagation()">
+            <button onclick="editFriend(${f.id})" title="Editar" class="p-1 hover:text-white hover:bg-[#36343b] rounded-full transition"><i data-lucide="edit-2" class="w-3.5 h-3.5"></i></button>
+            <button onclick="deleteFriend(${f.id}, '${escapeHtml(f.name)}')" title="Eliminar" class="p-1 hover:text-[#f2b8b5] hover:bg-[#36343b] rounded-full transition"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
           </div>
         </div>
-        <div class="flex items-center gap-0.5 text-[#cac4d0]" onclick="event.stopPropagation()">
-          <button onclick="editFriend(${f.id})" title="Editar" class="p-1 hover:text-white hover:bg-[#36343b] rounded-full transition"><i data-lucide="edit-2" class="w-3.5 h-3.5"></i></button>
-          <button onclick="deleteFriend(${f.id}, '${escapeHtml(f.name)}')" title="Eliminar" class="p-1 hover:text-[#f2b8b5] hover:bg-[#36343b] rounded-full transition"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+
+        <!-- Estado de Cuota / Cobro Integrado -->
+        <div class="mt-3 pt-2.5 border-t border-[#49454f]/30 flex items-center justify-between">
+          <div class="text-[10px] uppercase font-bold text-[#cac4d0]">
+            ${subsList.length > 0 ? `${subsList.length} ${subsList.length === 1 ? 'plan compartido' : 'planes compartidos'}` : 'Sin planes compartidos'}
+          </div>
+          <div class="text-right">
+            <span class="text-[9px] uppercase text-[#cac4d0] block">Cuota mensual</span>
+            <span class="text-xs font-bold font-mono ${hasActiveDebt ? 'text-[#a8d5b5]' : 'text-[#938f99]'}">${state.currency}${formatNumber(monthlyOwed)}</span>
+          </div>
         </div>
+
+        <!-- Lista de suscripciones resumidas si existen -->
+        ${subsBadgesHtml ? `<div class="mt-2 space-y-1">${subsBadgesHtml}</div>` : ''}
       </div>
 
-      <!-- Acciones de Amigo -->
-      <div class="pt-2 border-t border-[#49454f]/30 flex items-center justify-between text-[11px] text-[#d0bcff] font-medium" onclick="event.stopPropagation()">
-        <button onclick="viewSharedSubsWithFriend(${f.id}, '${escapeHtml(f.name)}', ${f.linked_user_id || 'null'})" class="flex-1 m3-btn-tonal text-[10px] py-1 px-2 flex items-center justify-center gap-1" title="Ver suscripciones y dividir gastos">
+      <!-- Acciones Unificadas -->
+      <div class="pt-2 border-t border-[#49454f]/30 flex items-center gap-1.5 text-xs" onclick="event.stopPropagation()">
+        <button onclick="viewSharedSubsWithFriend(${f.id}, '${escapeHtml(f.name)}', ${f.linked_user_id || 'null'})" class="flex-1 m3-btn-tonal text-[10px] py-1 px-2 flex items-center justify-center gap-1" title="Ver suscripciones individuales y planes">
           <i data-lucide="layers" class="w-3.5 h-3.5 text-[#d0bcff]"></i> Ver Suscripciones
         </button>
-        <button onclick="openSplitPayModalForFriend(${f.id}, '${escapeHtml(f.name)}', ${f.linked_user_id || 'null'})" class="m3-btn-filled text-[10px] py-1 px-2.5 flex items-center justify-center gap-1 ml-1.5" title="Solicitar pago en conjunto">
+        <button onclick="openSplitPayModalForFriend(${f.id}, '${escapeHtml(f.name)}', ${f.linked_user_id || 'null'})" class="m3-btn-filled text-[10px] py-1 px-2.5 flex items-center justify-center gap-1" title="Solicitar pagar en conjunto">
           <i data-lucide="split" class="w-3 h-3"></i> Dividir
         </button>
+        ${hasActiveDebt ? `
+          <button onclick="recordFriendPaymentPrompt(${f.id}, '${escapeHtml(f.name)}', ${monthlyOwed})" class="m3-btn-outline text-[10px] py-1 px-2 flex items-center justify-center gap-1" title="Marcar cuota de este mes como saldada">
+            <i data-lucide="check" class="w-3 h-3 text-[#a8d5b5]"></i> Saldar
+          </button>
+          ${f.phone ? `
+            <a href="${waUrl}" target="_blank" rel="noopener" class="p-1.5 rounded-full bg-[#2b5037] hover:bg-[#2b5037]/80 text-[#a8d5b5] flex items-center justify-center transition" title="Enviar recordatorio por WhatsApp">
+              <i data-lucide="message-circle" class="w-3.5 h-3.5"></i>
+            </a>
+          ` : ''}
+        ` : ''}
       </div>
     </div>
   `;
@@ -1115,98 +1192,8 @@ function renderFriendsList() {
 }
 
 function renderFriendBalances() {
-  const container = document.getElementById('friendsBalancesContainer');
-  const totalElem = document.getElementById('friendsTotalOwed');
-  if (!container) return;
-
-  const balances = state.friendBalances || [];
-  let grandTotalOwed = 0;
-
-  if (balances.length === 0) {
-    container.innerHTML = `
-      <div class="col-span-full py-8 text-center text-[#cac4d0] text-xs">
-        Ningún amigo tiene suscripciones compartidas asignadas aún.
-      </div>
-    `;
-    if (totalElem) totalElem.textContent = `${state.currency}0.00`;
-    return;
-  }
-
-  container.innerHTML = balances.map(b => {
-    grandTotalOwed += b.monthly_total_owed;
-    const f = b.friend;
-    const subsList = b.shared_subscriptions;
-    const isRegistered = Boolean(f.linked_user_id);
-
-    let subsBadgesHtml = subsList.map(s => {
-      const isDiff = s.currency && s.currency !== state.baseCurrencyCode;
-      const shareConv = s.friend_share_converted !== undefined ? s.friend_share_converted : convertCurrency(s.friend_share, s.currency, state.baseCurrencyCode);
-      const shareText = isDiff
-        ? `${state.currency}${formatNumber(shareConv)}/m <span class="text-[10px] text-[#cac4d0] font-normal">(${CURRENCY_SYMBOLS[s.currency] || s.currency}${formatNumber(s.friend_share)})</span>`
-        : `${state.currency}${formatNumber(s.friend_share)}/mes`;
-      return `
-      <div class="flex items-center justify-between text-[11px] bg-[#141218] px-2.5 py-1.5 rounded-xl border border-[#49454f]/30">
-        <span class="text-[#e6e0e9] font-medium truncate pr-2">${escapeHtml(s.name)}</span>
-        <span class="font-mono font-bold text-[#a8d5b5] shrink-0">${shareText}</span>
-      </div>
-    `;
-    }).join('');
-
-    // Mensaje preconfigurado para WhatsApp
-    const subNames = subsList.map(s => s.name).join(', ');
-    const waText = encodeURIComponent(`Hola ${f.name}, te escribo para recordarte tu parte de ${subNames} de este mes por ${state.currency}${formatNumber(b.monthly_total_owed)}. ¡Gracias!`);
-    const waUrl = f.phone ? `https://wa.me/${f.phone.replace(/[^0-9]/g, '')}?text=${waText}` : `https://wa.me/?text=${waText}`;
-
-    return `
-      <div class="p-4 bg-[#211f26] border border-[#49454f]/40 rounded-2xl flex flex-col justify-between space-y-3">
-        <div>
-          <div class="flex items-start justify-between">
-            <div class="flex items-center gap-2.5">
-              <div class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs shadow" style="background-color: ${f.avatar_color || '#a8d5b5'}; color: #133821">
-                ${f.name.charAt(0).toUpperCase()}
-              </div>
-              <div>
-                <div class="flex items-center gap-1.5">
-                  <h4 class="text-xs font-bold text-white font-google-sans">${escapeHtml(f.name)}</h4>
-                  ${isRegistered ? `<span class="text-[9px] px-1 py-0.2 rounded bg-[#381e72] text-[#d0bcff] font-semibold">SubTracker</span>` : ''}
-                </div>
-                <span class="text-[10px] text-[#cac4d0]">${subsList.length} ${subsList.length === 1 ? 'servicio compartido' : 'servicios compartidos'}</span>
-              </div>
-            </div>
-            <div class="text-right">
-              <span class="text-[10px] uppercase font-bold tracking-wider text-[#cac4d0] block">Cuota mensual</span>
-              <span class="text-sm font-extrabold text-[#a8d5b5] font-mono">${state.currency}${formatNumber(b.monthly_total_owed)}</span>
-            </div>
-          </div>
-
-          <div class="mt-3 space-y-1.5">
-            ${subsBadgesHtml || '<span class="text-[11px] text-[#938f99]">Sin servicios activos</span>'}
-          </div>
-        </div>
-
-        <div class="pt-3 border-t border-[#49454f]/30 flex flex-wrap items-center gap-2">
-          <a href="${waUrl}" target="_blank" rel="noopener" class="flex-1 py-1.5 rounded-full bg-[#2b5037] hover:bg-[#2b5037]/80 text-[#a8d5b5] text-xs font-semibold flex items-center justify-center gap-1.5 transition">
-            <i data-lucide="message-circle" class="w-3.5 h-3.5"></i>
-            <span>WhatsApp</span>
-          </a>
-          <button onclick="openSplitPayModalForFriend(${f.id}, '${escapeHtml(f.name)}', ${f.linked_user_id || 'null'})" class="m3-btn-filled text-xs py-1.5 px-3 flex items-center gap-1" title="Solicitar pago de suscripción dividida">
-            <i data-lucide="split" class="w-3.5 h-3.5"></i>
-            <span>Dividir</span>
-          </button>
-          <button onclick="recordFriendPaymentPrompt(${f.id}, '${escapeHtml(f.name)}', ${b.monthly_total_owed})" class="m3-btn-outline text-xs py-1.5 px-3 flex items-center gap-1" title="Registrar que ya te pagó este mes">
-            <i data-lucide="check" class="w-3.5 h-3.5 text-[#a8d5b5]"></i>
-            <span>Saldado</span>
-          </button>
-        </div>
-      </div>
-    `;
-  }).join('');
-
-  if (totalElem) {
-    totalElem.textContent = `${state.currency}${formatNumber(grandTotalOwed)}`;
-  }
-
-  initIcons();
+  // Ahora integrado directamente en renderFriendsList()
+  renderFriendsList();
 }
 
 // ================= SOLICITUDES DE AMISTAD =================
