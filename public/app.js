@@ -1258,12 +1258,12 @@ async function respondFriendRequest(requestId, action) {
       headers: getAuthHeaders(),
       body: JSON.stringify({ request_id: requestId, action: action })
     });
-    const result = await res.json();
-    if (result.success) {
+    const result = await res.json().catch(() => ({}));
+    if (res.ok && result.success) {
       showToast(action === 'accept' ? '¡Solicitud aceptada! Ahora son amigos en SubTracker' : 'Solicitud rechazada', 'success');
       await loadFriends();
     } else {
-      showToast(result.error || 'Error al procesar solicitud', 'error');
+      showToast(result.error || result.message || 'Error al procesar solicitud', 'error');
     }
   } catch (err) {
     showToast('Error al conectar con el servidor', 'error');

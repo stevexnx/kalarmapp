@@ -338,6 +338,17 @@ def init_db(db_path=None):
                 PRIMARY KEY (user_id, key)
             )
         """)
+        # Migraciones idempotentes para bases PostgreSQL existentes
+        cursor.execute("ALTER TABLE friends ADD COLUMN IF NOT EXISTS linked_user_id INTEGER REFERENCES users (id) ON DELETE SET NULL")
+        cursor.execute("ALTER TABLE subscriptions ADD COLUMN IF NOT EXISTS user_id INTEGER DEFAULT 1")
+        cursor.execute("ALTER TABLE subscriptions ADD COLUMN IF NOT EXISTS is_trial INTEGER DEFAULT 0")
+        cursor.execute("ALTER TABLE subscriptions ADD COLUMN IF NOT EXISTS trial_end_date TEXT")
+        cursor.execute("ALTER TABLE subscriptions ADD COLUMN IF NOT EXISTS is_shared INTEGER DEFAULT 0")
+        cursor.execute("ALTER TABLE subscriptions ADD COLUMN IF NOT EXISTS shared_with_count INTEGER DEFAULT 1")
+        cursor.execute("ALTER TABLE subscriptions ADD COLUMN IF NOT EXISTS my_share_price DOUBLE PRECISION")
+        cursor.execute("ALTER TABLE subscriptions ADD COLUMN IF NOT EXISTS original_currency VARCHAR(10) DEFAULT 'USD'")
+        cursor.execute("ALTER TABLE subscriptions ADD COLUMN IF NOT EXISTS shared_friend_ids TEXT DEFAULT ''")
+        cursor.execute("ALTER TABLE payment_history ADD COLUMN IF NOT EXISTS user_id INTEGER DEFAULT 1")
     else:
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS users (
@@ -971,10 +982,12 @@ def respond_friend_request(request_id: int, user_id: int, action: str, db_path=N
 
         # Obtener datos de ambos usuarios
         cursor.execute("SELECT id, username, display_name, email, avatar_color FROM users WHERE id = ?", (sender_id,))
-        sender = dict(cursor.fetchone())
+        sender_row = cursor.fetchone()
+        sender = dict(sender_row) if sender_row else {'display_name': 'Amigo', 'email': '', 'avatar_color': '#10B981'}
 
         cursor.execute("SELECT id, username, display_name, email, avatar_color FROM users WHERE id = ?", (user_id,))
-        receiver = dict(cursor.fetchone())
+        receiver_row = cursor.fetchone()
+        receiver = dict(receiver_row) if receiver_row else {'display_name': 'Amigo', 'email': '', 'avatar_color': '#10B981'}
 
         # 1. Agregar sender como amigo de user_id si no existe
         cursor.execute("SELECT id FROM friends WHERE user_id = ? AND linked_user_id = ?", (user_id, sender_id))

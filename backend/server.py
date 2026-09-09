@@ -317,6 +317,8 @@ class SubscriptionAPIHandler(http.server.SimpleHTTPRequestHandler):
                 self._send_json({'success': True, 'data': req, 'message': 'Solicitud enviada con éxito'}, 201)
             except ValueError as e:
                 self._send_error(str(e), 400)
+            except Exception as e:
+                self._send_error(f"Error interno: {str(e)}", 500)
             return
 
         # 4.2 Responder Solicitud de Amistad (Aceptar / Rechazar)
@@ -334,6 +336,8 @@ class SubscriptionAPIHandler(http.server.SimpleHTTPRequestHandler):
                 self._send_json({'success': True, 'data': res, 'message': msg})
             except ValueError as e:
                 self._send_error(str(e), 400)
+            except Exception as e:
+                self._send_error(f"Error interno: {str(e)}", 500)
             return
 
         # 4.3 Solicitar Pagar en Conjunto (Split Pay Request)
@@ -345,6 +349,8 @@ class SubscriptionAPIHandler(http.server.SimpleHTTPRequestHandler):
                 self._send_json({'success': True, 'data': split_req, 'message': 'Solicitud de pago enviada a tu amigo'}, 201)
             except ValueError as e:
                 self._send_error(str(e), 400)
+            except Exception as e:
+                self._send_error(f"Error interno: {str(e)}", 500)
             return
 
         # 4.4 Responder Solicitud de Pago Conjunto (Marcar como Pagada / Rechazar)
@@ -362,6 +368,8 @@ class SubscriptionAPIHandler(http.server.SimpleHTTPRequestHandler):
                 self._send_json({'success': True, 'data': res, 'message': msg})
             except ValueError as e:
                 self._send_error(str(e), 400)
+            except Exception as e:
+                self._send_error(f"Error interno: {str(e)}", 500)
             return
 
         # 5. Registrar Reembolso de Amigo
