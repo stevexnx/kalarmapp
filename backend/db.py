@@ -7,9 +7,21 @@ import os
 import json
 import hashlib
 import secrets
+import shutil
 from datetime import datetime, date, timedelta, timezone
 
-DB_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'subscriptions.db')
+ORIG_DB_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'subscriptions.db')
+
+# En Vercel Serverless, el filesystem raíz es de solo lectura; usamos /tmp
+if os.environ.get('VERCEL') or os.environ.get('AWS_LAMBDA_FUNCTION_NAME'):
+    DB_PATH = '/tmp/subscriptions.db'
+    if not os.path.exists(DB_PATH) and os.path.exists(ORIG_DB_PATH):
+        try:
+            shutil.copyfile(ORIG_DB_PATH, DB_PATH)
+        except Exception as _e:
+            pass
+else:
+    DB_PATH = ORIG_DB_PATH
 
 DEFAULT_EXCHANGE_RATES = {
     'USD': 1.0,
