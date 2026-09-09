@@ -58,6 +58,303 @@ const CATEGORY_COLORS = {
   'Otros': '#8B5CF6'
 };
 
+// ================= CATÁLOGO DE SUSCRIPCIONES POPULARES (PRECIOS OFICIALES) =================
+const PRESET_SERVICES = [
+  // Streaming de Video
+  {
+    name: 'Netflix',
+    category: 'Streaming',
+    color: '#E50914',
+    url: 'https://www.netflix.com',
+    defaultPlan: 'Estándar',
+    plans: [
+      { name: 'Estándar con anuncios', priceUsd: 6.99, cycle: 'monthly' },
+      { name: 'Estándar (1080p)', priceUsd: 15.49, cycle: 'monthly' },
+      { name: 'Premium (4K HDR)', priceUsd: 22.99, cycle: 'monthly' }
+    ]
+  },
+  {
+    name: 'Disney+',
+    category: 'Streaming',
+    color: '#113CCF',
+    url: 'https://www.disneyplus.com',
+    defaultPlan: 'Estándar',
+    plans: [
+      { name: 'Estándar con anuncios', priceUsd: 9.99, cycle: 'monthly' },
+      { name: 'Estándar sin anuncios', priceUsd: 15.99, cycle: 'monthly' },
+      { name: 'Premium 4K', priceUsd: 19.99, cycle: 'monthly' },
+      { name: 'Premium Anual', priceUsd: 159.99, cycle: 'annual' }
+    ]
+  },
+  {
+    name: 'Amazon Prime',
+    category: 'Streaming',
+    color: '#FF9900',
+    url: 'https://www.amazon.com/prime',
+    defaultPlan: 'Mensual',
+    plans: [
+      { name: 'Mensual', priceUsd: 14.99, cycle: 'monthly' },
+      { name: 'Anual', priceUsd: 139.00, cycle: 'annual' }
+    ]
+  },
+  {
+    name: 'Max (HBO)',
+    category: 'Streaming',
+    color: '#002BE7',
+    url: 'https://www.max.com',
+    defaultPlan: 'Estándar',
+    plans: [
+      { name: 'Básico con anuncios', priceUsd: 9.99, cycle: 'monthly' },
+      { name: 'Estándar Full HD', priceUsd: 16.99, cycle: 'monthly' },
+      { name: 'Platino 4K Ultra HD', priceUsd: 20.99, cycle: 'monthly' }
+    ]
+  },
+  {
+    name: 'YouTube Premium',
+    category: 'Streaming',
+    color: '#FF0000',
+    url: 'https://www.youtube.com/premium',
+    defaultPlan: 'Individual',
+    plans: [
+      { name: 'Individual', priceUsd: 13.99, cycle: 'monthly' },
+      { name: 'Familiar (hasta 5)', priceUsd: 22.99, cycle: 'monthly' },
+      { name: 'Estudiante', priceUsd: 7.99, cycle: 'monthly' }
+    ]
+  },
+  {
+    name: 'Apple TV+',
+    category: 'Streaming',
+    color: '#1C1C1E',
+    url: 'https://tv.apple.com',
+    defaultPlan: 'Mensual',
+    plans: [
+      { name: 'Mensual', priceUsd: 9.99, cycle: 'monthly' },
+      { name: 'Anual', priceUsd: 99.00, cycle: 'annual' }
+    ]
+  },
+  {
+    name: 'Paramount+',
+    category: 'Streaming',
+    color: '#0064FF',
+    url: 'https://www.paramountplus.com',
+    defaultPlan: 'Estándar',
+    plans: [
+      { name: 'Essential', priceUsd: 7.99, cycle: 'monthly' },
+      { name: 'Con Showtime', priceUsd: 12.99, cycle: 'monthly' }
+    ]
+  },
+  {
+    name: 'Crunchyroll',
+    category: 'Streaming',
+    color: '#F47521',
+    url: 'https://www.crunchyroll.com',
+    defaultPlan: 'Fan',
+    plans: [
+      { name: 'Fan', priceUsd: 7.99, cycle: 'monthly' },
+      { name: 'Mega Fan', priceUsd: 11.99, cycle: 'monthly' },
+      { name: 'Mega Fan Anual', priceUsd: 99.99, cycle: 'annual' }
+    ]
+  },
+
+  // Música & Audio
+  {
+    name: 'Spotify',
+    category: 'Música',
+    color: '#1DB954',
+    url: 'https://www.spotify.com',
+    defaultPlan: 'Individual',
+    plans: [
+      { name: 'Individual', priceUsd: 11.99, cycle: 'monthly' },
+      { name: 'Duo (2 cuentas)', priceUsd: 16.99, cycle: 'monthly' },
+      { name: 'Familiar (6 cuentas)', priceUsd: 19.99, cycle: 'monthly' },
+      { name: 'Estudiantes', priceUsd: 5.99, cycle: 'monthly' }
+    ]
+  },
+  {
+    name: 'Apple Music',
+    category: 'Música',
+    color: '#FC3C44',
+    url: 'https://music.apple.com',
+    defaultPlan: 'Individual',
+    plans: [
+      { name: 'Individual', priceUsd: 10.99, cycle: 'monthly' },
+      { name: 'Familiar', priceUsd: 16.99, cycle: 'monthly' },
+      { name: 'Estudiante', priceUsd: 5.99, cycle: 'monthly' }
+    ]
+  },
+  {
+    name: 'YouTube Music',
+    category: 'Música',
+    color: '#FF0000',
+    url: 'https://music.youtube.com',
+    defaultPlan: 'Individual',
+    plans: [
+      { name: 'Individual', priceUsd: 10.99, cycle: 'monthly' },
+      { name: 'Familiar', priceUsd: 16.99, cycle: 'monthly' }
+    ]
+  },
+
+  // Inteligencia Artificial & Productividad
+  {
+    name: 'ChatGPT Plus',
+    category: 'IA & Productividad',
+    color: '#10A37F',
+    url: 'https://chatgpt.com',
+    defaultPlan: 'Plus',
+    plans: [
+      { name: 'Plus (GPT-4o & o1)', priceUsd: 20.00, cycle: 'monthly' },
+      { name: 'Pro (o1 Pro ilimitado)', priceUsd: 200.00, cycle: 'monthly' }
+    ]
+  },
+  {
+    name: 'Claude Pro',
+    category: 'IA & Productividad',
+    color: '#D97706',
+    url: 'https://claude.ai',
+    defaultPlan: 'Pro',
+    plans: [
+      { name: 'Pro (Claude 3.5 Sonnet)', priceUsd: 20.00, cycle: 'monthly' }
+    ]
+  },
+  {
+    name: 'Midjourney',
+    category: 'IA & Productividad',
+    color: '#2B2D42',
+    url: 'https://www.midjourney.com',
+    defaultPlan: 'Estándar',
+    plans: [
+      { name: 'Básico', priceUsd: 10.00, cycle: 'monthly' },
+      { name: 'Estándar', priceUsd: 30.00, cycle: 'monthly' },
+      { name: 'Pro', priceUsd: 60.00, cycle: 'monthly' }
+    ]
+  },
+  {
+    name: 'GitHub Copilot',
+    category: 'IA & Productividad',
+    color: '#24292F',
+    url: 'https://github.com/features/copilot',
+    defaultPlan: 'Individual',
+    plans: [
+      { name: 'Individual', priceUsd: 10.00, cycle: 'monthly' },
+      { name: 'Individual Anual', priceUsd: 100.00, cycle: 'annual' }
+    ]
+  },
+  {
+    name: 'Microsoft 365',
+    category: 'IA & Productividad',
+    color: '#D83B01',
+    url: 'https://www.microsoft.com/microsoft-365',
+    defaultPlan: 'Personal',
+    plans: [
+      { name: 'Personal Mensual', priceUsd: 6.99, cycle: 'monthly' },
+      { name: 'Personal Anual', priceUsd: 69.99, cycle: 'annual' },
+      { name: 'Familia (6 pers) Mensual', priceUsd: 9.99, cycle: 'monthly' },
+      { name: 'Familia (6 pers) Anual', priceUsd: 99.99, cycle: 'annual' }
+    ]
+  },
+  {
+    name: 'Notion Plus',
+    category: 'IA & Productividad',
+    color: '#000000',
+    url: 'https://www.notion.so',
+    defaultPlan: 'Plus Mensual',
+    plans: [
+      { name: 'Plus Mensual', priceUsd: 10.00, cycle: 'monthly' },
+      { name: 'Plus Anual', priceUsd: 96.00, cycle: 'annual' }
+    ]
+  },
+
+  // Gaming
+  {
+    name: 'Xbox Game Pass',
+    category: 'Gaming',
+    color: '#107C10',
+    url: 'https://www.xbox.com/game-pass',
+    defaultPlan: 'Ultimate',
+    plans: [
+      { name: 'Core (Consola)', priceUsd: 9.99, cycle: 'monthly' },
+      { name: 'PC Game Pass', priceUsd: 11.99, cycle: 'monthly' },
+      { name: 'Ultimate (PC + Cloud)', priceUsd: 19.99, cycle: 'monthly' }
+    ]
+  },
+  {
+    name: 'PlayStation Plus',
+    category: 'Gaming',
+    color: '#003791',
+    url: 'https://www.playstation.com/ps-plus',
+    defaultPlan: 'Extra',
+    plans: [
+      { name: 'Essential', priceUsd: 9.99, cycle: 'monthly' },
+      { name: 'Extra (Catálogo juegos)', priceUsd: 14.99, cycle: 'monthly' },
+      { name: 'Premium (Clásicos & Nube)', priceUsd: 17.99, cycle: 'monthly' },
+      { name: 'Essential Anual', priceUsd: 79.99, cycle: 'annual' },
+      { name: 'Extra Anual', priceUsd: 134.99, cycle: 'annual' },
+      { name: 'Premium Anual', priceUsd: 159.99, cycle: 'annual' }
+    ]
+  },
+  {
+    name: 'Nintendo Switch Online',
+    category: 'Gaming',
+    color: '#E60012',
+    url: 'https://www.nintendo.com/switch-online',
+    defaultPlan: 'Individual Anual',
+    plans: [
+      { name: 'Individual Anual', priceUsd: 19.99, cycle: 'annual' },
+      { name: 'Individual + Paquete Expansión', priceUsd: 49.99, cycle: 'annual' },
+      { name: 'Familiar Anual (hasta 8)', priceUsd: 34.99, cycle: 'annual' }
+    ]
+  },
+
+  // Almacenamiento en Nube & Seguridad
+  {
+    name: 'Google One',
+    category: 'Nube & Utilidades',
+    color: '#4285F4',
+    url: 'https://one.google.com',
+    defaultPlan: '100 GB',
+    plans: [
+      { name: 'Básico (100 GB)', priceUsd: 1.99, cycle: 'monthly' },
+      { name: 'Estándar (200 GB)', priceUsd: 2.99, cycle: 'monthly' },
+      { name: 'Premium (2 TB)', priceUsd: 9.99, cycle: 'monthly' },
+      { name: 'AI Premium (Gemini Advanced 2TB)', priceUsd: 19.99, cycle: 'monthly' }
+    ]
+  },
+  {
+    name: 'iCloud+',
+    category: 'Nube & Utilidades',
+    color: '#007AFF',
+    url: 'https://www.apple.com/icloud',
+    defaultPlan: '50 GB',
+    plans: [
+      { name: '50 GB', priceUsd: 0.99, cycle: 'monthly' },
+      { name: '200 GB', priceUsd: 2.99, cycle: 'monthly' },
+      { name: '2 TB', priceUsd: 9.99, cycle: 'monthly' }
+    ]
+  },
+  {
+    name: 'Dropbox Plus',
+    category: 'Nube & Utilidades',
+    color: '#0061FF',
+    url: 'https://www.dropbox.com',
+    defaultPlan: 'Plus 2TB',
+    plans: [
+      { name: 'Plus Mensual (2 TB)', priceUsd: 11.99, cycle: 'monthly' },
+      { name: 'Plus Anual (2 TB)', priceUsd: 119.88, cycle: 'annual' }
+    ]
+  },
+  {
+    name: '1Password',
+    category: 'Nube & Utilidades',
+    color: '#0A85EA',
+    url: 'https://1password.com',
+    defaultPlan: 'Individual',
+    plans: [
+      { name: 'Individual Anual', priceUsd: 35.88, cycle: 'annual' },
+      { name: 'Familiar Anual (5 pers)', priceUsd: 59.88, cycle: 'annual' }
+    ]
+  }
+];
+
 function convertCurrency(amount, fromCurr, toCurr) {
   if (!amount || isNaN(amount)) return 0;
   fromCurr = fromCurr || 'USD';
@@ -442,16 +739,20 @@ function initEventListeners() {
   document.getElementById('subBillingCycle')?.addEventListener('change', updateModalLiveCalculation);
   document.getElementById('subMySharePrice')?.addEventListener('input', updateModalLiveCalculation);
 
-  // Plantillas
-  document.querySelectorAll('.tpl-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.getElementById('subName').value = btn.dataset.name;
-      document.getElementById('subPrice').value = btn.dataset.price;
-      document.getElementById('subBillingCycle').value = btn.dataset.cycle;
-      document.getElementById('subCategory').value = btn.dataset.cat;
-      document.getElementById('subCurrency').value = btn.dataset.currency || 'USD';
-      document.getElementById('subColor').value = btn.dataset.color || '#4F46E5';
-      updateModalLiveCalculation();
+  // Catálogo M3 de Servicios & Presets
+  document.getElementById('presetSearchInput')?.addEventListener('input', (e) => {
+    const query = e.target.value.trim();
+    const activeChip = document.querySelector('#presetCategoryChips .m3-chip.active');
+    const cat = activeChip ? activeChip.dataset.cat : 'all';
+    renderPresetCatalog(cat, query);
+  });
+
+  document.querySelectorAll('#presetCategoryChips .m3-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      document.querySelectorAll('#presetCategoryChips .m3-chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      const query = document.getElementById('presetSearchInput')?.value.trim() || '';
+      renderPresetCatalog(chip.dataset.cat, query);
     });
   });
 
@@ -837,28 +1138,23 @@ function switchTab(tab) {
 
   [viewDash, viewCal, viewPay, viewFriends].forEach(v => v?.classList.add('hidden'));
   [tabDash, tabCal, tabPay, tabFriends].forEach(t => {
-    t?.classList.remove('active', 'text-indigo-400', 'border-indigo-500');
-    t?.classList.add('text-slate-400', 'border-transparent');
+    t?.classList.remove('active');
   });
 
   if (tab === 'dashboard') {
     viewDash?.classList.remove('hidden');
-    tabDash?.classList.add('active', 'text-indigo-400', 'border-indigo-500');
-    tabDash?.classList.remove('text-slate-400', 'border-transparent');
+    tabDash?.classList.add('active');
   } else if (tab === 'calendar') {
     viewCal?.classList.remove('hidden');
-    tabCal?.classList.add('active', 'text-indigo-400', 'border-indigo-500');
-    tabCal?.classList.remove('text-slate-400', 'border-transparent');
+    tabCal?.classList.add('active');
     renderCalendar();
   } else if (tab === 'payments') {
     viewPay?.classList.remove('hidden');
-    tabPay?.classList.add('active', 'text-indigo-400', 'border-indigo-500');
-    tabPay?.classList.remove('text-slate-400', 'border-transparent');
+    tabPay?.classList.add('active');
     loadPayments();
   } else if (tab === 'friends') {
     viewFriends?.classList.remove('hidden');
-    tabFriends?.classList.add('active', 'text-indigo-400', 'border-indigo-500');
-    tabFriends?.classList.remove('text-slate-400', 'border-transparent');
+    tabFriends?.classList.add('active');
     loadFriends();
   }
   initIcons();
@@ -1106,8 +1402,8 @@ function createCardHtml(sub) {
   let sharedBadge = sub.is_shared ? `<span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1"><i data-lucide="users" class="w-3 h-3"></i> Dividido /${sub.shared_with_count || 2}</span>` : '';
 
   return `
-    <div class="sub-card bg-slate-900/90 border border-slate-800 rounded-2xl p-5 relative overflow-hidden flex flex-col justify-between">
-      <div class="absolute top-0 left-0 right-0 h-1" style="background-color: ${sub.color || '#4F46E5'}"></div>
+    <div class="m3-card p-5 relative overflow-hidden flex flex-col justify-between m3-elevation-1">
+      <div class="absolute top-0 left-0 right-0 h-1.5" style="background-color: ${sub.color || '#4F46E5'}"></div>
 
       <div>
         <div class="flex items-start justify-between gap-3">
@@ -1935,12 +2231,91 @@ function openModal(sub = null) {
     document.getElementById('subCurrency').value = state.baseCurrencyCode || 'USD';
     document.getElementById('subNextBillingDate').value = defaultDateStr;
     document.getElementById('subColor').value = '#4F46E5';
+
+    // Renderizar catálogo actualizado a la divisa del usuario
+    renderPresetCatalog();
   }
 
   populateSharedFriendsCheckboxes(selectedFriendIds);
   updateModalLiveCalculation();
   modal.classList.remove('hidden');
   initIcons();
+}
+
+// ================= RENDERIZADO DEL CATÁLOGO DE PRESETS M3 =================
+function renderPresetCatalog(filterCategory = 'all', searchQuery = '') {
+  const container = document.getElementById('presetGridContainer');
+  if (!container) return;
+
+  const baseCurr = state.baseCurrencyCode || 'USD';
+  const baseSymbol = state.currency || '$';
+  const q = searchQuery.toLowerCase().trim();
+
+  const filtered = PRESET_SERVICES.filter(service => {
+    const matchCategory = filterCategory === 'all' || service.category.toLowerCase() === filterCategory.toLowerCase();
+    const matchQuery = !q || service.name.toLowerCase().includes(q) || service.category.toLowerCase().includes(q);
+    return matchCategory && matchQuery;
+  });
+
+  if (filtered.length === 0) {
+    container.innerHTML = `
+      <div class="col-span-full py-4 text-center text-xs text-slate-500">
+        No se encontraron servicios que coincidan con la búsqueda.
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = filtered.map((service, sIndex) => {
+    // Tomar el plan por defecto o el primer plan
+    const plan = service.plans[0];
+    const converted = convertCurrency(plan.priceUsd, 'USD', baseCurr);
+    const cycleLabel = plan.cycle === 'annual' ? '/año' : '/mes';
+    const isDiffCurr = baseCurr !== 'USD';
+
+    return `
+      <div class="m3-preset-card group" onclick="selectPresetService(${sIndex})" title="Añadir ${escapeHtml(service.name)} (${plan.name})">
+        <div class="w-8 h-8 rounded-xl flex items-center justify-center text-white font-bold text-xs shrink-0 shadow-sm transition-transform group-hover:scale-105"
+             style="background-color: ${service.color || '#4F46E5'}">
+          ${service.name.charAt(0).toUpperCase()}
+        </div>
+        <div class="overflow-hidden flex-1 min-w-0">
+          <div class="text-xs font-bold text-white truncate flex items-center gap-1">
+            <span>${escapeHtml(service.name)}</span>
+          </div>
+          <div class="text-[11px] font-mono font-semibold text-indigo-300 truncate">
+            ${baseSymbol}${formatNumber(converted)}${cycleLabel}
+          </div>
+          ${isDiffCurr ? `<div class="text-[9px] text-slate-400 font-mono truncate">($${formatNumber(plan.priceUsd)} USD)</div>` : ''}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function selectPresetService(serviceIndex) {
+  const service = PRESET_SERVICES[serviceIndex];
+  if (!service) return;
+
+  const baseCurr = state.baseCurrencyCode || 'USD';
+  // Si tiene más de un plan, usar el primer plan o permitir elegir
+  const plan = service.plans[0];
+  const convertedPrice = convertCurrency(plan.priceUsd, 'USD', baseCurr);
+
+  document.getElementById('subName').value = service.name;
+  document.getElementById('subPrice').value = formatNumber(convertedPrice).replace(/,/g, '');
+  document.getElementById('subCurrency').value = baseCurr;
+  document.getElementById('subBillingCycle').value = plan.cycle || 'monthly';
+  document.getElementById('subCategory').value = service.category || 'Otros';
+  document.getElementById('subColor').value = service.color || '#4F46E5';
+  if (service.url) {
+    document.getElementById('subUrl').value = service.url;
+  }
+
+  updateModalLiveCalculation();
+
+  // Pequeña notificación o feedback visual
+  showToast(`Autocompletado: ${service.name} (${plan.name}) con precio al día en ${baseCurr}`, 'info');
 }
 
 function closeModal() {

@@ -74,41 +74,41 @@
         <div class="flex items-center gap-1.5 sm:gap-2">
           <!-- Botón Sincronizar Calendario .ICS -->
           <a href="/api/calendar.ics" download="suscripciones.ics" title="Exportar calendario (.ics)" 
-            class="hidden lg:inline-flex items-center justify-center p-2 sm:px-2.5 sm:py-2 text-xs font-medium rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700/80 transition">
+            class="hidden lg:inline-flex items-center justify-center p-2 sm:px-3 sm:py-2 text-xs font-semibold rounded-full bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700/80 transition">
             <i data-lucide="calendar-plus" class="w-4 h-4 mr-1 text-indigo-400"></i>
             <span>.ICS</span>
           </a>
 
           <!-- Botón Notificaciones -->
-          <button id="btnEnableNotifications" title="Activar notificaciones" class="hidden sm:inline-flex items-center justify-center p-2 sm:py-2 text-xs font-medium rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700/80 transition">
+          <button id="btnEnableNotifications" title="Activar notificaciones" class="hidden sm:inline-flex items-center justify-center p-2 text-xs font-medium rounded-full bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700/80 transition">
             <i data-lucide="bell" class="w-4 h-4 text-amber-400"></i>
           </button>
 
           <!-- Botón Ajustes -->
-          <button id="btnOpenSettingsModal" title="Ajustes y Presupuesto" class="inline-flex items-center justify-center p-2 sm:px-2.5 sm:py-2 text-xs font-medium rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700/80 transition">
+          <button id="btnOpenSettingsModal" title="Ajustes y Presupuesto" class="inline-flex items-center justify-center p-2 sm:px-2.5 sm:py-2 text-xs font-medium rounded-full bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700/80 transition">
             <i data-lucide="settings" class="w-4 h-4 text-slate-400"></i>
           </button>
 
           <!-- Botón Respaldo -->
-          <button id="btnOpenBackupModal" title="Respaldos" class="hidden md:inline-flex items-center justify-center p-2 sm:px-2.5 sm:py-2 text-xs font-medium rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700/80 transition">
+          <button id="btnOpenBackupModal" title="Respaldos" class="hidden md:inline-flex items-center justify-center p-2 sm:px-2.5 sm:py-2 text-xs font-medium rounded-full bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700/80 transition">
             <i data-lucide="database" class="w-4 h-4 text-slate-400"></i>
           </button>
 
           <!-- Menú / Perfil de Usuario & Login -->
           <div id="userProfileContainer" class="flex items-center gap-1.5 pl-1 sm:pl-2 border-l border-slate-800">
             <!-- Botón Login (visible cuando no está autenticado) -->
-            <button id="btnOpenLoginModal" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white shadow-md shadow-indigo-600/20 transition active:scale-95">
+            <button id="btnOpenLoginModal" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white shadow-md shadow-indigo-600/20 transition active:scale-95">
               <i data-lucide="log-in" class="w-3.5 h-3.5"></i>
               <span>Iniciar Sesión</span>
             </button>
 
             <!-- Perfil Activo (visible cuando está autenticado) -->
             <div id="userLoggedInMenu" class="hidden flex items-center">
-              <button id="btnOpenProfileModal" type="button" class="flex items-center gap-2 p-1.5 rounded-xl hover:bg-slate-800/90 transition cursor-pointer text-left group" title="Ver perfil y cuenta">
+              <button id="btnOpenProfileModal" type="button" class="flex items-center gap-2 p-1.5 rounded-full hover:bg-slate-800/90 transition cursor-pointer text-left group" title="Ver perfil y cuenta">
                 <div id="userAvatarBadge" class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white shadow ring-2 ring-indigo-500/40 shrink-0 group-hover:ring-indigo-400 transition" style="background-color: #4F46E5">
                   -
                 </div>
-                <div class="hidden sm:block text-left leading-tight">
+                <div class="hidden sm:block text-left leading-tight pr-2">
                   <div id="userDisplayNameText" class="text-xs font-bold text-white group-hover:text-indigo-300 transition">Usuario</div>
                   <div id="userUsernameText" class="text-[10px] text-slate-400">@usuario</div>
                 </div>
@@ -116,9 +116,9 @@
             </div>
           </div>
 
-          <!-- Botón Nueva Suscripción -->
-          <button id="btnOpenAddModal" class="ml-1 inline-flex items-center justify-center px-3 py-2 text-xs sm:text-sm font-semibold rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/30 transition active:scale-95 shrink-0">
-            <i data-lucide="plus" class="w-4 h-4 mr-0.5 sm:mr-1 stroke-[2.5]"></i>
+          <!-- Botón Nueva Suscripción M3 FAB Style -->
+          <button id="btnOpenAddModal" class="ml-1 m3-fab-extended shrink-0 cursor-pointer">
+            <i data-lucide="plus" class="w-4 h-4 stroke-[2.5]"></i>
             <span>Nueva</span>
           </button>
         </div>
@@ -126,32 +126,32 @@
       </div>
     </div>
 
-    <!-- PESTAÑAS DE VISTA (DASHBOARD / HISTORIAL / AMIGOS) -->
-    <div class="border-t border-slate-800/80 bg-slate-900/40">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between overflow-x-auto">
-        <div class="flex items-center gap-1 sm:gap-2">
+    <!-- PESTAÑAS DE VISTA M3 (DASHBOARD / CALENDARIO / HISTORIAL / AMIGOS) -->
+    <div class="border-t border-slate-800/80 bg-slate-900/40 py-1">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between overflow-x-auto gap-2">
+        <div class="flex items-center gap-1.5 sm:gap-2 py-1">
           <!-- Tab 1: Dashboard -->
-          <button id="tabBtnDashboard" class="nav-tab active px-3.5 py-2.5 text-xs sm:text-sm font-medium text-indigo-400 border-b-2 border-indigo-500 flex items-center gap-1.5 transition whitespace-nowrap">
+          <button id="tabBtnDashboard" class="m3-nav-pill active whitespace-nowrap cursor-pointer">
             <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
             <span>Suscripciones & Analítica</span>
           </button>
 
           <!-- Tab Calendario: Cortes del Mes -->
-          <button id="tabBtnCalendar" class="nav-tab px-3.5 py-2.5 text-xs sm:text-sm font-medium text-slate-400 hover:text-slate-200 border-b-2 border-transparent flex items-center gap-1.5 transition whitespace-nowrap">
+          <button id="tabBtnCalendar" class="m3-nav-pill whitespace-nowrap cursor-pointer">
             <i data-lucide="calendar" class="w-4 h-4"></i>
             <span>Calendario de Cortes</span>
             <span id="calendarBadgeCount" class="text-[10px] px-1.5 py-0.2 rounded-full bg-indigo-500/20 text-indigo-300 font-bold">0</span>
           </button>
 
           <!-- Tab 2: Historial de Pagos -->
-          <button id="tabBtnPayments" class="nav-tab px-3.5 py-2.5 text-xs sm:text-sm font-medium text-slate-400 hover:text-slate-200 border-b-2 border-transparent flex items-center gap-1.5 transition whitespace-nowrap">
+          <button id="tabBtnPayments" class="m3-nav-pill whitespace-nowrap cursor-pointer">
             <i data-lucide="history" class="w-4 h-4"></i>
             <span>Historial de Pagos</span>
             <span id="paymentsBadgeCount" class="text-[10px] px-1.5 py-0.2 rounded-full bg-slate-800 text-slate-400">0</span>
           </button>
 
           <!-- Tab 3: Amigos & Cuentas Compartidas -->
-          <button id="tabBtnFriends" class="nav-tab px-3.5 py-2.5 text-xs sm:text-sm font-medium text-slate-400 hover:text-slate-200 border-b-2 border-transparent flex items-center gap-1.5 transition whitespace-nowrap">
+          <button id="tabBtnFriends" class="m3-nav-pill whitespace-nowrap cursor-pointer">
             <i data-lucide="users" class="w-4 h-4"></i>
             <span>Amigos & Cuentas Compartidas</span>
             <span id="friendsBadgeCount" class="text-[10px] px-1.5 py-0.2 rounded-full bg-emerald-500/20 text-emerald-300 font-bold">0</span>
@@ -160,7 +160,7 @@
 
         <div class="text-[11px] text-slate-400 hidden md:flex items-center gap-2">
           <span>Moneda:</span>
-          <span id="navBaseCurrencyBadge" class="font-bold text-slate-200 px-2 py-0.5 rounded bg-slate-800 border border-slate-700">USD ($)</span>
+          <span id="navBaseCurrencyBadge" class="font-bold text-slate-200 px-2.5 py-0.5 rounded-full bg-slate-800 border border-slate-700">USD ($)</span>
         </div>
       </div>
     </div>
@@ -176,16 +176,16 @@
       <div id="trialAlertsBanner" class="hidden rounded-2xl p-4 sm:p-5 border bg-rose-950/40 border-rose-500/40 text-rose-200 transition-all shadow-xl shadow-rose-950/30"></div>
 
       <!-- BARRA DE META Y CONTROL DE PRESUPUESTO MENSUAL -->
-      <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-4 sm:p-5 backdrop-blur-sm">
+      <div class="m3-card p-5">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-2.5">
-          <div class="flex items-center gap-2">
-            <div class="w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
-              <i data-lucide="target" class="w-4 h-4"></i>
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
+              <i data-lucide="target" class="w-5 h-5"></i>
             </div>
             <div>
               <h3 class="text-xs sm:text-sm font-bold text-white flex items-center gap-2">
                 Presupuesto Mensual de Suscripciones
-                <span id="budgetAlertPill" class="text-[10px] px-2 py-0.5 rounded-full font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">En Presupuesto</span>
+                <span id="budgetAlertPill" class="text-[10px] px-2.5 py-0.5 rounded-full font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">En Presupuesto</span>
               </h3>
               <p class="text-[11px] text-slate-400" id="budgetSubtitle">Calculando límites y consumo actual...</p>
             </div>
@@ -209,72 +209,71 @@
       <!-- BANNER DE ALERTAS DE FECHAS DE CORTE INMINENTES -->
       <div id="cutOffAlertsBanner" class="hidden rounded-2xl p-4 sm:p-5 border transition-all duration-300"></div>
 
-      <!-- TARJETAS DE RESUMEN FINANCIERO (KPIs) -->
+      <!-- TARJETAS DE RESUMEN FINANCIERO (KPIs) CON ESTILO M3 -->
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
         
         <!-- KPI 1: Gasto Mensual -->
-        <div class="stat-card bg-slate-800/60 border border-slate-700/60 rounded-2xl p-5 relative overflow-hidden backdrop-blur-sm">
+        <div class="m3-card p-5 relative overflow-hidden">
           <div class="absolute -right-4 -bottom-4 w-24 h-24 bg-indigo-500/10 rounded-full blur-xl pointer-events-none"></div>
           <div class="flex items-center justify-between">
-            <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Gasto Mensual Total</span>
-            <div class="w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
+            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Gasto Mensual Total</span>
+            <div class="w-9 h-9 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
               <i data-lucide="calendar" class="w-4 h-4"></i>
             </div>
           </div>
           <div class="mt-3">
-            <div class="text-2xl sm:text-3xl font-bold text-white tracking-tight" id="kpiMonthlyCost">$0.00</div>
+            <div class="text-2xl sm:text-3xl font-bold text-white tracking-tight font-mono" id="kpiMonthlyCost">$0.00</div>
             <p class="text-xs text-slate-400 mt-1" id="kpiMonthlySubtitle">Total recurrente activo</p>
           </div>
         </div>
 
         <!-- KPI 2: Gasto Anual Proyectado -->
-        <div class="stat-card bg-slate-800/60 border border-slate-700/60 rounded-2xl p-5 relative overflow-hidden backdrop-blur-sm ring-1 ring-indigo-500/30">
+        <div class="m3-card p-5 relative overflow-hidden border-indigo-500/30">
           <div class="absolute -right-4 -bottom-4 w-24 h-24 bg-purple-500/10 rounded-full blur-xl pointer-events-none"></div>
           <div class="flex items-center justify-between">
-            <span class="text-xs font-medium text-indigo-300 uppercase tracking-wider flex items-center gap-1.5">
+            <span class="text-xs font-semibold text-indigo-300 uppercase tracking-wider flex items-center gap-1.5">
               <i data-lucide="sparkles" class="w-3.5 h-3.5 text-indigo-400"></i>
               Costo Anual Proyectado
             </span>
-            <div class="w-8 h-8 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400">
+            <div class="w-9 h-9 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400">
               <i data-lucide="trending-up" class="w-4 h-4"></i>
             </div>
           </div>
           <div class="mt-3">
-            <div class="text-2xl sm:text-3xl font-bold text-indigo-100 tracking-tight" id="kpiAnnualCost">$0.00</div>
+            <div class="text-2xl sm:text-3xl font-bold text-indigo-100 tracking-tight font-mono" id="kpiAnnualCost">$0.00</div>
             <p class="text-xs text-indigo-300/80 mt-1" id="kpiSavingsTip">Impacto acumulado en 12 meses</p>
           </div>
         </div>
 
         <!-- KPI 3: Próximos Cortes (7 días) -->
-        <div class="stat-card bg-slate-800/60 border border-slate-700/60 rounded-2xl p-5 relative overflow-hidden backdrop-blur-sm">
+        <div class="m3-card p-5 relative overflow-hidden">
           <div class="absolute -right-4 -bottom-4 w-24 h-24 bg-amber-500/10 rounded-full blur-xl pointer-events-none"></div>
           <div class="flex items-center justify-between">
-            <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Cortes en 7 Días</span>
-            <div class="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
+            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Cortes en 7 Días</span>
+            <div class="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
               <i data-lucide="bell" class="w-4 h-4"></i>
             </div>
           </div>
           <div class="mt-3">
-            <div class="text-2xl sm:text-3xl font-bold text-white tracking-tight" id="kpiUpcomingCount">0</div>
+            <div class="text-2xl sm:text-3xl font-bold text-white tracking-tight font-mono" id="kpiUpcomingCount">0</div>
             <p class="text-xs text-amber-400/90 mt-1 font-medium" id="kpiUpcomingSubtitle">Sin cobros inmediatos</p>
           </div>
         </div>
 
         <!-- KPI 4: Ahorro por Cuentas Compartidas -->
-        <div class="stat-card bg-slate-800/60 border border-slate-700/60 rounded-2xl p-5 relative overflow-hidden backdrop-blur-sm">
+        <div class="m3-card p-5 relative overflow-hidden">
           <div class="absolute -right-4 -bottom-4 w-24 h-24 bg-emerald-500/10 rounded-full blur-xl pointer-events-none"></div>
           <div class="flex items-center justify-between">
-            <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Ahorro Compartido</span>
-            <div class="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Ahorro Compartido</span>
+            <div class="w-9 h-9 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
               <i data-lucide="users" class="w-4 h-4"></i>
             </div>
           </div>
           <div class="mt-3">
-            <div class="text-2xl sm:text-3xl font-bold text-emerald-300 tracking-tight" id="kpiSharedSavings">$0.00</div>
-            <p class="text-xs text-slate-400 mt-1">Ahorro anual dividiendo cuentas</p>
+            <div class="text-2xl sm:text-3xl font-bold text-emerald-400 tracking-tight font-mono" id="kpiSharedSavings">$0.00</div>
+            <p class="text-xs text-slate-400 mt-1" id="kpiSharedSubtitle">Total aportado por amigos</p>
           </div>
         </div>
-
       </div>
 
       <!-- SECCIÓN DE GRÁFICAS DE COSTOS -->
@@ -784,30 +783,36 @@
       <form id="subscriptionForm" class="p-6 space-y-4 overflow-y-auto flex-1">
         <input type="hidden" id="subId">
 
-        <!-- Plantillas Rápidas -->
-        <div id="templatesContainer">
-          <label class="block text-xs font-medium text-slate-400 mb-1.5">⚡ Plantillas Populares (1-clic):</label>
-          <div class="flex flex-wrap gap-1.5">
-            <button type="button" class="tpl-btn px-2.5 py-1 text-xs rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 transition flex items-center gap-1.5"
-              data-name="Netflix" data-price="15.49" data-currency="USD" data-cycle="monthly" data-cat="Streaming" data-color="#E50914">
-              <span class="w-2 h-2 rounded-full bg-[#E50914]"></span> Netflix
-            </button>
-            <button type="button" class="tpl-btn px-2.5 py-1 text-xs rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 transition flex items-center gap-1.5"
-              data-name="Spotify" data-price="10.99" data-currency="USD" data-cycle="monthly" data-cat="Streaming" data-color="#1DB954">
-              <span class="w-2 h-2 rounded-full bg-[#1DB954]"></span> Spotify
-            </button>
-            <button type="button" class="tpl-btn px-2.5 py-1 text-xs rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 transition flex items-center gap-1.5"
-              data-name="ChatGPT Plus" data-price="20.00" data-currency="USD" data-cycle="monthly" data-cat="Software" data-color="#10A37F">
-              <span class="w-2 h-2 rounded-full bg-[#10A37F]"></span> ChatGPT
-            </button>
-            <button type="button" class="tpl-btn px-2.5 py-1 text-xs rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 transition flex items-center gap-1.5"
-              data-name="Amazon Prime" data-price="139.00" data-currency="USD" data-cycle="annual" data-cat="Servicios" data-color="#FF9900">
-              <span class="w-2 h-2 rounded-full bg-[#FF9900]"></span> Prime
-            </button>
-            <button type="button" class="tpl-btn px-2.5 py-1 text-xs rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 transition flex items-center gap-1.5"
-              data-name="Disney+" data-price="13.99" data-currency="USD" data-cycle="monthly" data-cat="Streaming" data-color="#113CCF">
-              <span class="w-2 h-2 rounded-full bg-[#113CCF]"></span> Disney+
-            </button>
+        <!-- Catálogo M3 de Servicios Populares con Precios del Día -->
+        <div id="templatesContainer" class="p-3.5 bg-slate-900/90 border border-slate-700/80 rounded-2xl space-y-3">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div>
+              <span class="text-xs font-bold text-white flex items-center gap-1.5">
+                <i data-lucide="sparkles" class="w-3.5 h-3.5 text-indigo-400"></i> Catálogo de Servicios (Precios del Día)
+              </span>
+              <p class="text-[10px] text-slate-400">Selecciona un servicio para autocompletar con sus planes y precios oficiales al día.</p>
+            </div>
+            <!-- Buscador en Catálogo -->
+            <div class="relative w-full sm:w-48">
+              <i data-lucide="search" class="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
+              <input type="text" id="presetSearchInput" placeholder="Buscar servicio..."
+                class="w-full pl-8 pr-2.5 py-1.5 bg-slate-800 border border-slate-700 rounded-full text-xs text-white placeholder-slate-400 focus:outline-none focus:border-indigo-500">
+            </div>
+          </div>
+
+          <!-- Filtro de Categorías M3 Chips -->
+          <div class="flex items-center gap-1.5 overflow-x-auto pb-1" id="presetCategoryChips">
+            <button type="button" class="m3-chip active cursor-pointer" data-cat="all">Todos</button>
+            <button type="button" class="m3-chip cursor-pointer" data-cat="Streaming">Streaming</button>
+            <button type="button" class="m3-chip cursor-pointer" data-cat="Música">Música</button>
+            <button type="button" class="m3-chip cursor-pointer" data-cat="IA & Productividad">IA & Productividad</button>
+            <button type="button" class="m3-chip cursor-pointer" data-cat="Gaming">Gaming</button>
+            <button type="button" class="m3-chip cursor-pointer" data-cat="Nube & Utilidades">Nube</button>
+          </div>
+
+          <!-- Cuadrícula de Servicios M3 -->
+          <div id="presetGridContainer" class="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-48 overflow-y-auto pr-1">
+            <!-- Renderizado dinámicamente con precios convertidos al día en app.js -->
           </div>
         </div>
 
