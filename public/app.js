@@ -1434,7 +1434,10 @@ function renderSplitPayRequests() {
     };
     const st = statusMap[req.status] || { text: req.status, badge: 'bg-zinc-700 text-zinc-300' };
     const curSym = CURRENCY_SYMBOLS[req.currency] || req.currency || '$';
-    const otherPerson = isReceived ? (req.creator_name || req.creator_username) : (req.friend_name || req.friend_username);
+    const otherPerson = isReceived
+      ? (req.creator_display_name || req.creator_name || req.creator_username || 'Usuario')
+      : (req.friend_display_name || req.friend_name || req.friend_username || 'Amigo');
+    const subName = req.subscription_name || req.sub_name || 'Suscripción';
 
     return `
       <div class="p-3.5 bg-[#211f26] border border-[#49454f]/40 rounded-2xl flex flex-col justify-between space-y-3">
@@ -1444,7 +1447,7 @@ function renderSplitPayRequests() {
               <span class="text-[10px] text-[#cac4d0] uppercase tracking-wider block">
                 ${isReceived ? `Solicitado por ${escapeHtml(otherPerson)}` : `Enviado a ${escapeHtml(otherPerson)}`}
               </span>
-              <h4 class="text-xs font-bold text-white font-google-sans mt-0.5">${escapeHtml(req.sub_name || 'Suscripción')}</h4>
+              <h4 class="text-xs font-bold text-white font-google-sans mt-0.5">${escapeHtml(subName)}</h4>
             </div>
             <span class="text-[10px] px-2 py-0.5 rounded-full border font-semibold ${st.badge}">
               ${st.text}
@@ -1517,13 +1520,16 @@ function openSplitPayModalForFriend(friendId, friendName, friendUserId, preselec
   const dueDateInput = document.getElementById('splitPayDueDate');
   const notesInput = document.getElementById('splitPayNotes');
 
+  // Sanear friendUserId si viene como null, undefined, 0 o 'null'
+  const validFriendUserId = (friendUserId && friendUserId !== 'null' && friendUserId !== 'undefined') ? parseInt(friendUserId) : null;
+
   if (friendIdInput) friendIdInput.value = friendId;
-  if (friendUserIdInput) friendUserIdInput.value = friendUserId || '';
+  if (friendUserIdInput) friendUserIdInput.value = validFriendUserId || '';
   if (friendNameDisplay) {
     friendNameDisplay.innerHTML = `
       <i data-lucide="user" class="w-4 h-4 text-[#d0bcff]"></i>
       <span>${escapeHtml(friendName)}</span>
-      ${friendUserId ? `<span class="text-[10px] px-2 py-0.5 rounded-full bg-[#381e72] text-[#d0bcff]">Usuario Conectado</span>` : '<span class="text-[10px] px-2 py-0.5 rounded-full bg-[#211f26] text-[#cac4d0]">Amigo Local</span>'}
+      ${validFriendUserId ? `<span class="text-[10px] px-2 py-0.5 rounded-full bg-[#381e72] text-[#d0bcff]">Usuario Conectado</span>` : '<span class="text-[10px] px-2 py-0.5 rounded-full bg-[#211f26] text-[#cac4d0]">Amigo Local</span>'}
     `;
   }
 
@@ -1586,7 +1592,7 @@ async function handleSplitPaySubmit(e) {
   e.preventDefault();
   const friendId = parseInt(document.getElementById('splitFriendId').value);
   const friendUserIdVal = document.getElementById('splitFriendUserId').value;
-  const friendUserId = friendUserIdVal ? parseInt(friendUserIdVal) : null;
+  const friendUserId = (friendUserIdVal && friendUserIdVal !== 'null' && friendUserIdVal !== 'undefined') ? parseInt(friendUserIdVal) : null;
   const subId = parseInt(document.getElementById('splitPaySubSelect').value);
   const amount = parseFloat(document.getElementById('splitPayAmount').value);
   const currency = document.getElementById('splitPayCurrency').value || 'USD';

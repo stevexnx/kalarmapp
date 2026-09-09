@@ -1015,10 +1015,25 @@ def create_split_pay_request(creator_id: int, data: dict, db_path=None):
     cursor = conn.cursor()
 
     friend_user_id = data.get('friend_user_id')
+    friend_id = data.get('friend_id')
+
+    # Si friend_user_id no viene especificado directamente pero sí friend_id, buscar en friends
+    if not friend_user_id and friend_id:
+        try:
+            cursor.execute("SELECT linked_user_id FROM friends WHERE id = ? AND user_id = ?", (int(friend_id), creator_id))
+            row = cursor.fetchone()
+            if row:
+                friend_user_id = row['linked_user_id'] if isinstance(row, dict) else row[0]
+        except Exception:
+            pass
+
     amount = float(data.get('amount', 0))
-    if not friend_user_id or amount <= 0:
+    if not friend_user_id:
         conn.close()
-        raise ValueError("El usuario destinatario y un monto válido son obligatorios")
+        raise ValueError("Para enviar una solicitud de pago en conjunto, el amigo debe tener una cuenta vinculada en SubTracker.")
+    if amount <= 0:
+        conn.close()
+        raise ValueError("El monto a solicitar debe ser mayor a 0.")
 
     sub_id = data.get('subscription_id') or None
     currency = data.get('currency', 'USD')
@@ -1052,10 +1067,15 @@ def get_split_pay_requests(user_id: int, db_path=None):
 
     # Recibidas (me solicitan pagar)
     cursor.execute('''
-        SELECT sp.*, u.username as creator_username, u.display_name as creator_display_name,
-               u.avatar_color as creator_avatar_color, s.name as subscription_name
+        SELECT sp.*,
+               u.username as creator_username,
+               u.display_name as creator_display_name,
+               u.display_name as creator_name,
+               u.avatar_color as creator_avatar_color,
+               s.name as subscription_name,
+               s.name as sub_name
         FROM shared_pay_requests sp
-        JOIN users u ON sp.creator_id = u.id
+        LEFT JOIN users u ON sp.creator_id = u.id
         LEFT JOIN subscriptions s ON sp.subscription_id = s.id
         WHERE sp.friend_user_id = ?
         ORDER BY sp.created_at DESC
@@ -1064,10 +1084,15 @@ def get_split_pay_requests(user_id: int, db_path=None):
 
     # Creadas por mí (yo solicité a amigos)
     cursor.execute('''
-        SELECT sp.*, u.username as friend_username, u.display_name as friend_display_name,
-               u.avatar_color as friend_avatar_color, s.name as subscription_name
+        SELECT sp.*,
+               u.username as friend_username,
+               u.display_name as friend_display_name,
+               u.display_name as friend_name,
+               u.avatar_color as friend_avatar_color,
+               s.name as subscription_name,
+               s.name as sub_name
         FROM shared_pay_requests sp
-        JOIN users u ON sp.friend_user_id = u.id
+        LEFT JOIN users u ON sp.friend_user_id = u.id
         LEFT JOIN subscriptions s ON sp.subscription_id = s.id
         WHERE sp.creator_id = ?
         ORDER BY sp.created_at DESC
