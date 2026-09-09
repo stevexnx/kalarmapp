@@ -14,7 +14,9 @@ PUBLIC_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file
 
 class SubscriptionAPIHandler(http.server.SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, directory=PUBLIC_DIR, **kwargs)
+        if 'directory' not in kwargs:
+            kwargs['directory'] = PUBLIC_DIR
+        super().__init__(*args, **kwargs)
 
     def guess_type(self, path):
         if path.endswith('.json') or path.endswith('.webmanifest'):
