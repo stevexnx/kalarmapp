@@ -29,6 +29,13 @@ class SubscriptionAPIHandler(http.server.SimpleHTTPRequestHandler):
             return 'image/svg+xml'
         return super().guess_type(path)
 
+    def end_headers(self):
+        # Desactivar caché agresivamente para todos los recursos estáticos y respuestas
+        self.send_header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+        self.send_header('Pragma', 'no-cache')
+        self.send_header('Expires', '0')
+        super().end_headers()
+
     def _set_headers(self, status=200, content_type='application/json'):
         self.send_response(status)
         self.send_header('Content-Type', content_type)

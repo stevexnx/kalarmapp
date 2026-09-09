@@ -491,9 +491,33 @@ function initIcons() {
 
 function initPWA() {
   if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js').catch(err => console.log('SW error:', err));
-    });
+    const isDev = window.location.hostname === 'localhost' ||
+                  window.location.hostname === '127.0.0.1' ||
+                  window.location.hostname.endsWith('.local') ||
+                  window.location.search.includes('disable_sw=true');
+
+    if (isDev) {
+      // En desarrollo: desregistrar SW activos y limpiar caches para evitar bloqueos de caché
+      navigator.serviceWorker.getRegistrations().then(registrations => {
+        for (const reg of registrations) {
+          reg.unregister().then(() => console.log('SW desregistrado para entorno de desarrollo'));
+        }
+      });
+      if ('caches' in window) {
+        caches.keys().then(names => {
+          for (const name of names) {
+            caches.delete(name);
+          }
+        });
+      }
+    } else {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').then(reg => {
+          // Chequear si hay actualización inmediatamente
+          reg.update();
+        }).catch(err => console.log('SW error:', err));
+      });
+    }
   }
 }
 

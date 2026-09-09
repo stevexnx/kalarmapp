@@ -30,15 +30,27 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  // Ignorar llamadas de API para que siempre consulten datos frescos
+  // Ignorar llamadas de API para que siempre consulten datos frescos del servidor
   if (event.request.url.includes('/api/')) {
     return;
   }
 
+  // Estrategia Network-First: intentar siempre la red primero para ver cambios de inmediato.
+  // Solo si la red falla (offline), recurrir a la caché guardada.
   event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      return cachedResponse || fetch(event.request);
-    })
+    fetch(event.request)
+      .then((networkResponse) => {
+        if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
+          const responseToCache = networkResponse.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, responseToCache);
+          });
+        }
+        return networkResponse;
+      })
+      .catch(() => {
+        return caches.match(event.request);
+      })
   );
 });
 
