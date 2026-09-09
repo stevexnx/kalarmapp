@@ -58,13 +58,14 @@ const CATEGORY_COLORS = {
   'Otros': '#8B5CF6'
 };
 
-// ================= CATÁLOGO DE SUSCRIPCIONES POPULARES (PRECIOS OFICIALES) =================
+// ================= CATÁLOGO DE SUSCRIPCIONES POPULARES (PRECIOS OFICIALES E ICONOS) =================
 const PRESET_SERVICES = [
   // Streaming de Video
   {
     name: 'Netflix',
     category: 'Streaming',
     color: '#E50914',
+    icon: 'netflix',
     url: 'https://www.netflix.com',
     defaultPlan: 'Estándar',
     plans: [
@@ -77,6 +78,7 @@ const PRESET_SERVICES = [
     name: 'Disney+',
     category: 'Streaming',
     color: '#113CCF',
+    icon: 'disneyplus',
     url: 'https://www.disneyplus.com',
     defaultPlan: 'Estándar',
     plans: [
@@ -89,7 +91,8 @@ const PRESET_SERVICES = [
   {
     name: 'Amazon Prime',
     category: 'Streaming',
-    color: '#FF9900',
+    color: '#00A8E1',
+    icon: 'amazonprime',
     url: 'https://www.amazon.com/prime',
     defaultPlan: 'Mensual',
     plans: [
@@ -101,6 +104,7 @@ const PRESET_SERVICES = [
     name: 'Max (HBO)',
     category: 'Streaming',
     color: '#002BE7',
+    icon: 'max',
     url: 'https://www.max.com',
     defaultPlan: 'Estándar',
     plans: [
@@ -113,6 +117,7 @@ const PRESET_SERVICES = [
     name: 'YouTube Premium',
     category: 'Streaming',
     color: '#FF0000',
+    icon: 'youtube',
     url: 'https://www.youtube.com/premium',
     defaultPlan: 'Individual',
     plans: [
@@ -124,7 +129,8 @@ const PRESET_SERVICES = [
   {
     name: 'Apple TV+',
     category: 'Streaming',
-    color: '#1C1C1E',
+    color: '#000000',
+    icon: 'appletv',
     url: 'https://tv.apple.com',
     defaultPlan: 'Mensual',
     plans: [
@@ -136,6 +142,7 @@ const PRESET_SERVICES = [
     name: 'Paramount+',
     category: 'Streaming',
     color: '#0064FF',
+    icon: 'paramountplus',
     url: 'https://www.paramountplus.com',
     defaultPlan: 'Estándar',
     plans: [
@@ -147,6 +154,7 @@ const PRESET_SERVICES = [
     name: 'Crunchyroll',
     category: 'Streaming',
     color: '#F47521',
+    icon: 'crunchyroll',
     url: 'https://www.crunchyroll.com',
     defaultPlan: 'Fan',
     plans: [
@@ -161,6 +169,7 @@ const PRESET_SERVICES = [
     name: 'Spotify',
     category: 'Música',
     color: '#1DB954',
+    icon: 'spotify',
     url: 'https://www.spotify.com',
     defaultPlan: 'Individual',
     plans: [
@@ -174,6 +183,7 @@ const PRESET_SERVICES = [
     name: 'Apple Music',
     category: 'Música',
     color: '#FC3C44',
+    icon: 'applemusic',
     url: 'https://music.apple.com',
     defaultPlan: 'Individual',
     plans: [
@@ -186,6 +196,7 @@ const PRESET_SERVICES = [
     name: 'YouTube Music',
     category: 'Música',
     color: '#FF0000',
+    icon: 'youtubemusic',
     url: 'https://music.youtube.com',
     defaultPlan: 'Individual',
     plans: [
@@ -199,6 +210,7 @@ const PRESET_SERVICES = [
     name: 'ChatGPT Plus',
     category: 'IA & Productividad',
     color: '#10A37F',
+    icon: 'openai',
     url: 'https://chatgpt.com',
     defaultPlan: 'Plus',
     plans: [
@@ -210,6 +222,7 @@ const PRESET_SERVICES = [
     name: 'Claude Pro',
     category: 'IA & Productividad',
     color: '#D97706',
+    icon: 'anthropic',
     url: 'https://claude.ai',
     defaultPlan: 'Pro',
     plans: [
@@ -220,6 +233,7 @@ const PRESET_SERVICES = [
     name: 'Midjourney',
     category: 'IA & Productividad',
     color: '#2B2D42',
+    icon: 'midjourney',
     url: 'https://www.midjourney.com',
     defaultPlan: 'Estándar',
     plans: [
@@ -232,6 +246,7 @@ const PRESET_SERVICES = [
     name: 'GitHub Copilot',
     category: 'IA & Productividad',
     color: '#24292F',
+    icon: 'github',
     url: 'https://github.com/features/copilot',
     defaultPlan: 'Individual',
     plans: [
@@ -243,6 +258,7 @@ const PRESET_SERVICES = [
     name: 'Microsoft 365',
     category: 'IA & Productividad',
     color: '#D83B01',
+    icon: 'microsoft',
     url: 'https://www.microsoft.com/microsoft-365',
     defaultPlan: 'Personal',
     plans: [
@@ -256,6 +272,7 @@ const PRESET_SERVICES = [
     name: 'Notion Plus',
     category: 'IA & Productividad',
     color: '#000000',
+    icon: 'notion',
     url: 'https://www.notion.so',
     defaultPlan: 'Plus Mensual',
     plans: [
@@ -269,6 +286,7 @@ const PRESET_SERVICES = [
     name: 'Xbox Game Pass',
     category: 'Gaming',
     color: '#107C10',
+    icon: 'xbox',
     url: 'https://www.xbox.com/game-pass',
     defaultPlan: 'Ultimate',
     plans: [
@@ -281,6 +299,7 @@ const PRESET_SERVICES = [
     name: 'PlayStation Plus',
     category: 'Gaming',
     color: '#003791',
+    icon: 'playstation',
     url: 'https://www.playstation.com/ps-plus',
     defaultPlan: 'Extra',
     plans: [
@@ -296,6 +315,7 @@ const PRESET_SERVICES = [
     name: 'Nintendo Switch Online',
     category: 'Gaming',
     color: '#E60012',
+    icon: 'nintendo',
     url: 'https://www.nintendo.com/switch-online',
     defaultPlan: 'Individual Anual',
     plans: [
@@ -310,6 +330,7 @@ const PRESET_SERVICES = [
     name: 'Google One',
     category: 'Nube & Utilidades',
     color: '#4285F4',
+    icon: 'google',
     url: 'https://one.google.com',
     defaultPlan: '100 GB',
     plans: [
@@ -323,6 +344,7 @@ const PRESET_SERVICES = [
     name: 'iCloud+',
     category: 'Nube & Utilidades',
     color: '#007AFF',
+    icon: 'apple',
     url: 'https://www.apple.com/icloud',
     defaultPlan: '50 GB',
     plans: [
@@ -335,6 +357,7 @@ const PRESET_SERVICES = [
     name: 'Dropbox Plus',
     category: 'Nube & Utilidades',
     color: '#0061FF',
+    icon: 'dropbox',
     url: 'https://www.dropbox.com',
     defaultPlan: 'Plus 2TB',
     plans: [
@@ -346,6 +369,7 @@ const PRESET_SERVICES = [
     name: '1Password',
     category: 'Nube & Utilidades',
     color: '#0A85EA',
+    icon: '1password',
     url: 'https://1password.com',
     defaultPlan: 'Individual',
     plans: [
@@ -354,6 +378,78 @@ const PRESET_SERVICES = [
     ]
   }
 ];
+
+// ================= ICONOS OFICIALES DE SERVICIOS (SVG OPTIMIZADOS) =================
+const OFFICIAL_ICONS = {
+  netflix: `<svg viewBox="0 0 24 24" fill="#E50914"><path d="M5.398 0v24c1.196-.27 2.378-.584 3.546-.944V8.49L15.06 24c1.23-.33 2.44-.7 3.542-1.077V0h-3.542v15.228L8.944 0H5.398z"/></svg>`,
+  spotify: `<svg viewBox="0 0 24 24" fill="#1DB954"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.503 17.308c-.215.354-.676.467-1.03.252-2.825-1.728-6.38-2.119-10.57-1.162-.405.093-.811-.161-.904-.567-.093-.405.162-.811.567-.904 4.588-1.048 8.524-.606 11.685 1.33.354.215.467.676.252 1.031zm1.47-3.266c-.27.44-.847.578-1.287.308-3.235-1.988-8.167-2.563-11.994-1.401-.497.151-1.025-.133-1.176-.63-.151-.498.133-1.026.63-1.177 4.375-1.328 9.805-.688 13.519 1.593.44.27.578.847.308 1.287zm.126-3.41C15.228 8.35 8.843 8.14 5.15 9.26c-.604.184-1.246-.164-1.43-.768-.184-.604.164-1.246.768-1.43 4.24-1.287 11.29-1.047 15.753 1.603.543.322.721 1.027.4 1.57-.323.542-1.028.72-1.57.398z"/></svg>`,
+  disneyplus: `<svg viewBox="0 0 24 24" fill="#FFFFFF"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm3.8 14.5c-1.3 0-2.4-.6-3.2-1.5-.7.9-1.8 1.5-3.1 1.5-2.2 0-3.9-1.8-3.9-4s1.7-4 3.9-4c1.3 0 2.4.6 3.1 1.5.8-.9 1.9-1.5 3.2-1.5 2.2 0 3.9 1.8 3.9 4s-1.7 4-3.9 4z"/></svg>`,
+  amazonprime: `<svg viewBox="0 0 24 24" fill="#00A8E1"><path d="M13.88 15.65c-2.3 1.7-5.63 2.6-8.52 2.6-4.04 0-7.7-1.5-10.46-4.02-.22-.2-.04-.5.22-.35 3.06 1.77 6.8 2.82 10.63 2.82 2.56 0 5.4-.53 7.97-1.63.39-.17.72.27.16.58zm1.09-.97c-.29-.38-1.94-.18-2.68-.09-.23.03-.26-.16-.06-.31 1.34-.98 3.53-.7 3.79-.38.26.33-.07 2.53-1.34 3.6-.19.16-.38.07-.3-.14.28-.7 1.01-2.02.59-2.68zM24 12c0 6.627-5.373 12-12 12S0 18.627 0 12 5.373 0 12 0s12 5.373 12 12z"/></svg>`,
+  youtube: `<svg viewBox="0 0 24 24" fill="#FF0000"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>`,
+  youtubemusic: `<svg viewBox="0 0 24 24" fill="#FF0000"><circle cx="12" cy="12" r="12" fill="#FF0000"/><path fill="#FFF" d="M12 6a6 6 0 1 0 0 12 6 6 0 0 0 0-12zm-2 8.5v-5l4.5 2.5-4.5 2.5z"/></svg>`,
+  appletv: `<svg viewBox="0 0 24 24" fill="#FFFFFF"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.37c.62-.75 1.04-1.8 1.01-2.85-.92.04-2.03.62-2.69 1.38-.58.67-1.09 1.74-1.04 2.81 1.03.08 2.1-.59 2.72-1.34z"/></svg>`,
+  applemusic: `<svg viewBox="0 0 24 24" fill="#FC3C44"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.025 8.643l-5.69 1.393v5.82c0 1.258-.948 2.144-2.115 2.144-1.168 0-2.115-.886-2.115-2.144 0-1.257.947-2.143 2.115-2.143.438 0 .84.14 1.183.376V7.472a.933.933 0 0 1 .715-.91l6.198-1.517c.563-.138 1.074.286 1.074.863v8.948c0 1.258-.948 2.144-2.115 2.144-1.168 0-2.115-.886-2.115-2.144 0-1.257.947-2.143 2.115-2.143.438 0 .84.14 1.183.376V8.92c0-.15-.099-.27-.248-.277z"/></svg>`,
+  apple: `<svg viewBox="0 0 24 24" fill="#FFFFFF"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.37c.62-.75 1.04-1.8 1.01-2.85-.92.04-2.03.62-2.69 1.38-.58.67-1.09 1.74-1.04 2.81 1.03.08 2.1-.59 2.72-1.34z"/></svg>`,
+  max: `<svg viewBox="0 0 24 24" fill="#FFFFFF"><path d="M2.5 7.5h3.2l2.3 4.6 2.3-4.6h3.2v9h-2.8v-5.2l-1.9 3.8h-1.6l-1.9-3.8v5.2H2.5v-9zm12.3 0h3.5l2.7 5.5 2.7-5.5h3.5v9h-2.8v-5.2l-2.4 4.8h-1.9l-2.4-4.8v5.2h-2.9v-9z"/></svg>`,
+  paramountplus: `<svg viewBox="0 0 24 24" fill="#FFFFFF"><path d="M12 2L2 20h20L12 2zm0 4.8l6.2 11.2H5.8L12 6.8z"/></svg>`,
+  crunchyroll: `<svg viewBox="0 0 24 24" fill="#F47521"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.8 14.5A7.5 7.5 0 0 1 6.5 12a7.5 7.5 0 0 1 10.3-6.5 6 6 0 1 0 0 13z"/></svg>`,
+  openai: `<svg viewBox="0 0 24 24" fill="#10A37F"><path d="M22.282 9.821a5.985 5.985 0 0 0-.516-4.91 6.046 6.046 0 0 0-6.51-2.9A6.065 6.065 0 0 0 4.981 4.18a5.985 5.985 0 0 0-3.998 2.9 6.046 6.046 0 0 0 .743 7.097 5.98 5.98 0 0 0 .51 4.911 6.051 6.051 0 0 0 6.515 2.9A5.985 5.985 0 0 0 13.26 24a6.056 6.056 0 0 0 5.772-4.206 5.99 5.99 0 0 0 3.997-2.9 6.056 6.056 0 0 0-.747-7.073zM13.26 22.43a4.476 4.476 0 0 1-2.876-1.04l.141-.081 4.779-2.758a.795.795 0 0 0 .392-.681v-6.737l2.02 1.168a.071.071 0 0 1 .038.052v5.583a4.504 4.504 0 0 1-4.494 4.494zM3.6 18.304a4.47 4.47 0 0 1-.535-3.014l.142.085 4.783 2.759a.771.771 0 0 0 .78 0l5.843-3.369v2.332a.08.08 0 0 1-.033.062L9.74 19.95a4.5 4.5 0 0 1-6.14-1.646zm-1.22-9.61a4.472 4.472 0 0 1 2.34-1.97v5.676a.799.799 0 0 0 .392.682l5.844 3.37-2.02 1.168a.076.076 0 0 1-.071 0l-4.83-2.786A4.504 4.504 0 0 1 2.38 8.694zm15.932 3.532l-5.844-3.37 2.02-1.168a.076.076 0 0 1 .071 0l4.83 2.79a4.494 4.494 0 0 1-.685 8.105v-5.676a.795.795 0 0 0-.392-.681zm2.01-4.852l-.141-.085-4.779-2.76a.776.776 0 0 0-.78 0l-5.844 3.37V5.568a.085.085 0 0 1 .033-.062l4.84-2.793a4.5 4.5 0 0 1 6.67 4.659zM8.305 13.576l-2.02-1.168a.076.076 0 0 1-.038-.052V6.773a4.5 4.5 0 0 1 7.37-3.453l-.142.08-4.778 2.758a.795.795 0 0 0-.392.681v6.737zm1.141-2.072l2.554-1.474 2.554 1.474v2.95l-2.554 1.475-2.554-1.475v-2.95z"/></svg>`,
+  anthropic: `<svg viewBox="0 0 24 24" fill="#D97706"><path d="M14.5 2.5h-5L2 21.5h4.8l1.8-4.6h6.8l1.8 4.6H22L14.5 2.5zm-4.4 11.2l2.4-6.3 2.4 6.3h-4.8z"/></svg>`,
+  midjourney: `<svg viewBox="0 0 24 24" fill="#FFFFFF"><path d="M12 2L4 20h4.5l1.8-4.2h3.4L15.5 20H20L12 2zm-.8 9.8l1.3-3.2 1.3 3.2h-2.6z"/></svg>`,
+  github: `<svg viewBox="0 0 24 24" fill="#FFFFFF"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>`,
+  microsoft: `<svg viewBox="0 0 24 24"><path fill="#f25022" d="M1 1h10v10H1z"/><path fill="#00a4ef" d="M1 13h10v10H1z"/><path fill="#7fba00" d="M13 1h10v10H13z"/><path fill="#ffb900" d="M13 13h10v10H13z"/></svg>`,
+  notion: `<svg viewBox="0 0 24 24" fill="#FFFFFF"><path d="M4.459 4.208c.746.606 1.026.56 2.428.466l13.215-.793c.28 0 .047-.28-.046-.326L17.86 1.97c-.42-.326-.98-.7-2.054-.607L3.01 2.457c-.466.046-.56.28-.374.466zm.793 3.08v13.904c0 .747.373 1.027 1.213.98l14.523-.84c.84-.046.933-.56.933-1.167V6.354c0-.606-.233-.933-.793-.887l-15.084.887c-.56.046-.792.373-.792.934zm12.364 1.773c.093.42 0 .84-.42.887l-.934.186v8.492c-.606.327-1.166.514-1.633.514-.746 0-1.026-.233-1.633-.98l-4.526-7.045v6.578l1.353.327c.42.093.514.513.514.84 0 .326-.234.466-.654.466l-3.313.187c-.093-.374 0-.794.373-.84l.98-.234V9.998l-1.306-.14c-.374-.047-.467-.42-.467-.747 0-.327.28-.467.653-.467l3.733-.233 4.9 7.372V10.14l-1.213-.234c-.42-.093-.467-.466-.467-.793 0-.327.28-.467.653-.467z"/></svg>`,
+  xbox: `<svg viewBox="0 0 24 24" fill="#107C10"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm0 2.25c2.44 0 4.678.89 6.425 2.37-1.12.87-2.92 2.38-4.525 3.99-1.25-1.3-2.65-2.65-3.9-3.8 0-.01 0-.01 0-.01 1.99-.95 4.23-.55 2-.55zm-7.75 3.25c.87-.72 1.87-1.32 2.97-1.76 1.48 1.34 3.09 2.89 4.54 4.38-2.6 2.5-5.38 4.79-7.51 4.79-.04 0-.08 0-.12-.01.07-2.73 1.1-5.26 2.12-7.4zm15.5 0c1.02 2.14 2.05 4.67 2.12 7.4-.04.01-.08.01-.12.01-2.13 0-4.91-2.29-7.51-4.79 1.45-1.49 3.06-3.04 4.54-4.38 1.1.44 2.1 1.04 2.97 1.76zM12 21.75c-2.31 0-4.46-.77-6.2-2.07 2.66-.4 6.2-3.8 6.2-7.08 0 3.28 3.54 6.68 6.2 7.08-1.74 1.3-3.89 2.07-6.2 2.07z"/></svg>`,
+  playstation: `<svg viewBox="0 0 24 24" fill="#003791"><path d="M12.01 2c-3.15 0-4.91 1.25-5.01 3.48-.12 2.67 2.14 3.65 4.96 4.13l1.83.33v3.74c-.95-.14-1.93-.41-2.91-.84-.96-.42-1.42-.92-1.42-1.55 0-.29.1-.55.33-.82l-2.79-1.1c-.53.71-.8 1.48-.8 2.31 0 1.41.67 2.58 2.02 3.51 1.34.93 3.19 1.5 5.57 1.71v3.1h2.78v-3.04c2.25-.13 4.14-.64 5.67-1.52 1.54-.88 2.31-2 2.31-3.36 0-1.63-1.07-2.88-3.21-3.76l-1.99-.83v-3.7c1.01.12 1.83.35 2.45.69.63.34.94.75.94 1.23 0 .27-.08.5-.26.69l2.7 1.21c.42-.64.63-1.32.63-2.04 0-1.28-.6-2.34-1.8-3.18-1.2-.84-2.89-1.37-5.07-1.59V2h-2.23zm-.01 5.37c-.96-.13-1.63-.37-2.02-.73-.38-.36-.45-.75-.22-1.18.23-.42.72-.64 1.48-.64.76 0 1.44.22 2.04.65l-1.28 1.9zm2.79 5.86v-1.92l1.37.58c.84.36 1.26.83 1.26 1.41 0 .58-.42 1.01-1.26 1.29-.84.28-1.84.42-3.01.42l1.64-1.78z"/></svg>`,
+  nintendo: `<svg viewBox="0 0 24 24" fill="#E60012"><path d="M0 12c0 6.627 5.373 12 12 12s12-5.373 12-12S18.627 0 12 0 0 5.373 0 12zm7.5-6.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5zm9 8a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5zm-9-5.5h3v11h-3V8zm6-3h3v11h-3V5z"/></svg>`,
+  google: `<svg viewBox="0 0 24 24"><path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"/><path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.33 24 12 24z"/><path fill="#FBBC05" d="M5.28 14.27A7.16 7.16 0 0 1 4.9 12c0-.79.14-1.57.38-2.27V6.58H1.25A11.97 11.97 0 0 0 0 12c0 1.92.45 3.74 1.25 5.42l4.03-3.15z"/><path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/></svg>`,
+  dropbox: `<svg viewBox="0 0 24 24" fill="#0061FF"><path d="M6 2l6 3.93-6 3.93-6-3.93L6 2zm12 0l6 3.93-6 3.93-6-3.93L18 2zM0 13.79l6 3.93 6-3.93-6-3.93-6 3.93zm18-3.93l-6 3.93 6 3.93 6-3.93-6-3.93zM6 19.36l6-3.93 6 3.93-6 3.93-6-3.93z"/></svg>`,
+  '1password': `<svg viewBox="0 0 24 24" fill="#0A85EA"><circle cx="12" cy="12" r="12"/><path fill="#FFF" d="M12 6a6 6 0 1 0 0 12 6 6 0 0 0 0-12zm-1 2.5a1 1 0 0 1 2 0v2.09a2.5 2.5 0 1 1-2 0V8.5zm1 4.5a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/></svg>`
+};
+
+function getServiceOfficialIcon(name, customColor = '#4F46E5', sizeClass = 'w-5 h-5') {
+  if (!name) return `<i data-lucide="credit-card" class="${sizeClass}"></i>`;
+  const lower = name.toLowerCase().trim();
+
+  // Buscar coincidencia en PRESET_SERVICES
+  const matched = PRESET_SERVICES.find(s => 
+    lower.includes(s.name.toLowerCase()) || 
+    s.name.toLowerCase().includes(lower)
+  );
+
+  if (matched && matched.icon && OFFICIAL_ICONS[matched.icon]) {
+    return OFFICIAL_ICONS[matched.icon];
+  }
+
+  // Comprobaciones heurísticas directas
+  if (lower.includes('netflix')) return OFFICIAL_ICONS.netflix;
+  if (lower.includes('spotify')) return OFFICIAL_ICONS.spotify;
+  if (lower.includes('disney')) return OFFICIAL_ICONS.disneyplus;
+  if (lower.includes('prime') || lower.includes('amazon')) return OFFICIAL_ICONS.amazonprime;
+  if (lower.includes('youtube music')) return OFFICIAL_ICONS.youtubemusic;
+  if (lower.includes('youtube')) return OFFICIAL_ICONS.youtube;
+  if (lower.includes('apple tv')) return OFFICIAL_ICONS.appletv;
+  if (lower.includes('apple music')) return OFFICIAL_ICONS.applemusic;
+  if (lower.includes('apple') || lower.includes('icloud')) return OFFICIAL_ICONS.apple;
+  if (lower.includes('chatgpt') || lower.includes('openai') || lower.includes('gpt')) return OFFICIAL_ICONS.openai;
+  if (lower.includes('claude') || lower.includes('anthropic')) return OFFICIAL_ICONS.anthropic;
+  if (lower.includes('midjourney')) return OFFICIAL_ICONS.midjourney;
+  if (lower.includes('github') || lower.includes('copilot')) return OFFICIAL_ICONS.github;
+  if (lower.includes('microsoft') || lower.includes('office') || lower.includes('365')) return OFFICIAL_ICONS.microsoft;
+  if (lower.includes('notion')) return OFFICIAL_ICONS.notion;
+  if (lower.includes('xbox') || lower.includes('game pass')) return OFFICIAL_ICONS.xbox;
+  if (lower.includes('playstation') || lower.includes('ps plus')) return OFFICIAL_ICONS.playstation;
+  if (lower.includes('nintendo') || lower.includes('switch')) return OFFICIAL_ICONS.nintendo;
+  if (lower.includes('google') || lower.includes('drive')) return OFFICIAL_ICONS.google;
+  if (lower.includes('dropbox')) return OFFICIAL_ICONS.dropbox;
+  if (lower.includes('1password') || lower.includes('password')) return OFFICIAL_ICONS['1password'];
+  if (lower.includes('max') || lower.includes('hbo')) return OFFICIAL_ICONS.max;
+  if (lower.includes('paramount')) return OFFICIAL_ICONS.paramountplus;
+  if (lower.includes('crunchyroll')) return OFFICIAL_ICONS.crunchyroll;
+
+  // Letra inicial por defecto si no es una marca reconocida
+  return `<span class="font-bold text-sm text-white">${name.charAt(0).toUpperCase()}</span>`;
+}
 
 function convertCurrency(amount, fromCurr, toCurr) {
   if (!amount || isNaN(amount)) return 0;
@@ -1401,6 +1497,8 @@ function createCardHtml(sub) {
   let trialBadge = sub.is_trial ? `<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/30 flex items-center gap-1"><i data-lucide="timer" class="w-3 h-3"></i> Trial</span>` : '';
   let sharedBadge = sub.is_shared ? `<span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1"><i data-lucide="users" class="w-3 h-3"></i> Dividido /${sub.shared_with_count || 2}</span>` : '';
 
+  const iconHtml = getServiceOfficialIcon(sub.name, sub.color);
+
   return `
     <div class="m3-card p-5 relative overflow-hidden flex flex-col justify-between m3-elevation-1">
       <div class="absolute top-0 left-0 right-0 h-1.5" style="background-color: ${sub.color || '#4F46E5'}"></div>
@@ -1408,8 +1506,8 @@ function createCardHtml(sub) {
       <div>
         <div class="flex items-start justify-between gap-3">
           <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-md font-bold text-sm" style="background: linear-gradient(135deg, ${sub.color || '#4F46E5'}, #1E1B4B)">
-              ${sub.name.charAt(0).toUpperCase()}
+            <div class="m3-brand-icon-box" style="background: linear-gradient(135deg, ${sub.color || '#4F46E5'}22, ${sub.color || '#4F46E5'}55); border: 1px solid ${sub.color || '#4F46E5'}66">
+              ${iconHtml}
             </div>
             <div>
               <h4 class="text-sm font-bold text-white tracking-tight flex items-center gap-1.5">
@@ -1508,11 +1606,15 @@ function createTableRowHtml(sub) {
   const convertedMonthly = sub.converted_monthly_cost !== undefined ? sub.converted_monthly_cost : convertCurrency(sub.monthly_cost, subCurr, baseCurr);
   const convertedAnnual = sub.converted_annual_cost !== undefined ? sub.converted_annual_cost : convertCurrency(sub.annual_cost, subCurr, baseCurr);
 
+  const iconHtml = getServiceOfficialIcon(sub.name, sub.color, 'w-3.5 h-3.5');
+
   return `
     <tr class="hover:bg-slate-800/40 transition">
       <td class="px-4 py-3.5">
         <div class="flex items-center gap-2.5">
-          <span class="w-2.5 h-2.5 rounded-full" style="background-color: ${sub.color || '#4F46E5'}"></span>
+          <div class="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 shadow-sm" style="background: linear-gradient(135deg, ${sub.color || '#4F46E5'}22, ${sub.color || '#4F46E5'}55); border: 1px solid ${sub.color || '#4F46E5'}66">
+            ${iconHtml}
+          </div>
           <div>
             <div class="font-bold text-white flex items-center gap-1">
               ${escapeHtml(sub.name)}
@@ -2272,12 +2374,13 @@ function renderPresetCatalog(filterCategory = 'all', searchQuery = '') {
     const converted = convertCurrency(plan.priceUsd, 'USD', baseCurr);
     const cycleLabel = plan.cycle === 'annual' ? '/año' : '/mes';
     const isDiffCurr = baseCurr !== 'USD';
+    const iconHtml = getServiceOfficialIcon(service.name, service.color);
 
     return `
       <div class="m3-preset-card group" onclick="selectPresetService(${sIndex})" title="Añadir ${escapeHtml(service.name)} (${plan.name})">
-        <div class="w-8 h-8 rounded-xl flex items-center justify-center text-white font-bold text-xs shrink-0 shadow-sm transition-transform group-hover:scale-105"
-             style="background-color: ${service.color || '#4F46E5'}">
-          ${service.name.charAt(0).toUpperCase()}
+        <div class="m3-brand-icon-box transition-transform group-hover:scale-105"
+             style="background: linear-gradient(135deg, ${service.color || '#4F46E5'}22, ${service.color || '#4F46E5'}44); border: 1px solid ${service.color || '#4F46E5'}55">
+          ${iconHtml}
         </div>
         <div class="overflow-hidden flex-1 min-w-0">
           <div class="text-xs font-bold text-white truncate flex items-center gap-1">

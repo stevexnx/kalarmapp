@@ -187,6 +187,23 @@ body {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
 }
 
+.m3-brand-icon-box {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--md-shape-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+  background-color: rgba(255, 255, 255, 0.05);
+}
+.m3-brand-icon-box svg {
+  width: 20px;
+  height: 20px;
+}
+
 /* M3 Input Styles */
 .m3-text-field {
   width: 100%;
