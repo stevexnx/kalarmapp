@@ -1,0 +1,104 @@
+/* Estilos complementarios y animaciones para SubTracker Pro */
+body {
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+}
+
+/* Scrollbar refinado */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.6);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(71, 85, 105, 0.6);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(99, 102, 241, 0.8);
+}
+
+/* Animaciones suaves */
+@keyframes scaleUp {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.animate-scale-up {
+  animation: scaleUp 0.18s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Efectos de tarjeta */
+.sub-card {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.sub-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(99, 102, 241, 0.4);
+  box-shadow: 0 12px 24px -10px rgba(0, 0, 0, 0.5);
+}
+
+/* Pestañas de Navegación */
+.nav-tab.active {
+  color: #818cf8;
+  border-color: #6366f1;
+}
+
+/* Badges de Estado y Alertas */
+.urgency-urgent {
+  background-color: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.4);
+  color: #fca5a5;
+}
+
+.urgency-soon {
+  background-color: rgba(245, 158, 11, 0.15);
+  border-color: rgba(245, 158, 11, 0.4);
+  color: #fde68a;
+}
+
+.urgency-normal {
+  background-color: rgba(59, 130, 246, 0.1);
+  border-color: rgba(59, 130, 246, 0.25);
+  color: #93c5fd;
+}
+
+/* Estilos de Celdas del Calendario */
+.calendar-day-cell {
+  min-height: 80px;
+  transition: all 0.15s ease-in-out;
+}
+
+@media (min-width: 640px) {
+  .calendar-day-cell {
+    min-height: 100px;
+  }
+}
+
+.calendar-day-cell:hover {
+  background-color: rgba(30, 41, 59, 0.8);
+}
+
+.calendar-day-cell.is-selected {
+  border-color: #6366f1;
+  background-color: rgba(99, 102, 241, 0.12);
+  box-shadow: 0 0 0 1px #6366f1;
+}
+
+.calendar-day-cell.is-today {
+  border-color: rgba(245, 158, 11, 0.6);
+}
+
+.calendar-badge-chip {
+  transition: transform 0.1s ease;
+}
+.calendar-badge-chip:hover {
+  transform: scale(1.02);
+}

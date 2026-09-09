@@ -1,0 +1,13 @@
+services:
+  subtracker:
+    build: .
+    container_name: subtracker-app
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      # Persistencia de la base de datos SQLite en el host
+      - ./subscriptions.db:/app/subscriptions.db
+    environment:
+      - PORT=8000
+
