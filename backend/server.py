@@ -224,22 +224,25 @@ class SubscriptionAPIHandler(http.server.SimpleHTTPRequestHandler):
 
         # 2. Inicio de Sesión (Login)
         elif path == '/api/auth/login':
-            data = self._read_json_body() or {}
-            username = data.get('username', '').strip()
-            password = data.get('password', '')
+            try:
+                data = self._read_json_body() or {}
+                username = data.get('username', '').strip()
+                password = data.get('password', '')
 
-            user = db.authenticate_user(username, password)
-            if not user:
-                self._send_error('Usuario o contraseña incorrectos', 401)
-                return
+                user = db.authenticate_user(username, password)
+                if not user:
+                    self._send_error('Usuario o contraseña incorrectos', 401)
+                    return
 
-            token = db.create_session(user['id'])
-            self._send_json({
-                'success': True,
-                'token': token,
-                'user': user,
-                'message': 'Inicio de sesión correcto'
-            })
+                token = db.create_session(user['id'])
+                self._send_json({
+                    'success': True,
+                    'token': token,
+                    'user': user,
+                    'message': 'Inicio de sesión correcto'
+                })
+            except Exception as e:
+                self._send_error(f'Error interno del servidor: {str(e)}', 500)
             return
 
         # 3. Cierre de Sesión (Logout)

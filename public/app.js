@@ -654,7 +654,14 @@ async function handleAuthSubmit(e) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password })
       });
-      const result = await res.json();
+      let result;
+      try {
+        result = await res.json();
+      } catch (parseErr) {
+        const text = await res.text().catch(() => '');
+        showToast(`Error del servidor (${res.status}): ${text.slice(0, 100) || 'Respuesta inválida'}`, 'error');
+        return;
+      }
       if (result.success) {
         state.token = result.token;
         state.user = result.user;
@@ -675,7 +682,8 @@ async function handleAuthSubmit(e) {
         showToast(result.error || 'Credenciales inválidas', 'error');
       }
     } catch (err) {
-      showToast('Error al conectar con el servidor', 'error');
+      console.error('Login error:', err);
+      showToast(`Error de conexión: ${err.message || err}`, 'error');
     }
   } else {
     const displayName = document.getElementById('authDisplayName').value.trim();
