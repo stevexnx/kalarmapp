@@ -140,6 +140,7 @@ class PostgresConnectionWrapper:
         return self._conn.close()
 
 def get_connection(db_path=None):
+    """Retorna una conexión a la base de datos SQLite con timeout y modo WAL."""
     """
     Retorna una conexión a la base de datos:
     - Si existe DATABASE_URL / POSTGRES_URL y no se especificó un db_path local explícito: conecta a PostgreSQL.
@@ -219,12 +220,36 @@ def convert_currency(amount: float, from_curr: str, to_curr: str, rates: dict):
     return round(amount_converted, 2)
 
 def init_db(db_path=None):
+    """Inicializa y migra las tablas en la base de datos SQLite."""
     """Inicializa y migra las tablas en la base de datos (PostgreSQL o SQLite)."""
     conn = get_connection(db_path)
     cursor = conn.cursor()
 
+    # 1. Tabla de Usuarios
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT UNIQUE NOT NULL,
+            email TEXT UNIQUE,
+            password_hash TEXT NOT NULL,
+            salt TEXT NOT NULL,
+            display_name TEXT NOT NULL,
+            avatar_color TEXT DEFAULT '#4F46E5',
+            created_at TEXT NOT NULL
+        )
+    ''')
     is_postgres = isinstance(conn, PostgresConnectionWrapper)
 
+    # 2. Tabla de Sesiones (Tokens)
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS sessions (
+            token TEXT PRIMARY KEY,
+            user_id INTEGER NOT NULL,
+            created_at TEXT NOT NULL,
+            expires_at TEXT NOT NULL,
+            FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+        )
+    ''')
     if is_postgres:
         # 1. Tabla de Usuarios
         cursor.execute('''
@@ -240,6 +265,20 @@ def init_db(db_path=None):
             )
         ''')
 
+    # 3. Tabla de Amigos / Contactos
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS friends (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            name TEXT NOT NULL,
+            email TEXT DEFAULT '',
+            phone TEXT DEFAULT '',
+            avatar_color TEXT DEFAULT '#10B981',
+            notes TEXT DEFAULT '',
+            created_at TEXT NOT NULL,
+            FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+        )
+    ''')
         # 2. Tabla de Sesiones (Tokens)
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS sessions (
@@ -250,6 +289,21 @@ def init_db(db_path=None):
             )
         ''')
 
+    # 4. Tabla de Pagos de Amigos (Reembolsos recibidos)
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS friend_payments (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            friend_id INTEGER NOT NULL,
+            subscription_id INTEGER,
+            amount REAL NOT NULL,
+            payment_date TEXT NOT NULL,
+            notes TEXT DEFAULT '',
+            created_at TEXT NOT NULL,
+            FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+            FOREIGN KEY (friend_id) REFERENCES friends (id) ON DELETE CASCADE
+        )
+    ''')
         # 3. Tabla de Amigos / Contactos
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS friends (
@@ -264,6 +318,27 @@ def init_db(db_path=None):
             )
         ''')
 
+    # 5. Tabla de Suscripciones
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS subscriptions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER DEFAULT 1,
+            name TEXT NOT NULL,
+            price REAL NOT NULL,
+            currency TEXT NOT NULL DEFAULT 'USD',
+            billing_cycle TEXT NOT NULL DEFAULT 'monthly',
+            next_billing_date TEXT NOT NULL,
+            category TEXT NOT NULL DEFAULT 'Otros',
+            payment_method TEXT DEFAULT 'Tarjeta de Crédito',
+            status TEXT NOT NULL DEFAULT 'active',
+            notes TEXT DEFAULT '',
+            url TEXT DEFAULT '',
+            icon TEXT DEFAULT '',
+            color TEXT DEFAULT '',
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL
+        )
+    ''')
         # 4. Tabla de Pagos de Amigos
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS friend_payments (
@@ -278,6 +353,9 @@ def init_db(db_path=None):
             )
         ''')
 
+    # Migración de columnas en subscriptions
+    cursor.execute("PRAGMA table_info(subscriptions)")
+    sub_columns = [row['name'] for row in cursor.fetchall()]
         # 5. Tabla de Suscripciones
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS subscriptions (
@@ -307,6 +385,16 @@ def init_db(db_path=None):
             )
         ''')
 
+    new_sub_columns = [
+        ('user_id', 'INTEGER DEFAULT 1'),
+        ('is_trial', 'INTEGER DEFAULT 0'),
+        ('trial_end_date', 'TEXT'),
+        ('is_shared', 'INTEGER DEFAULT 0'),
+        ('shared_with_count', 'INTEGER DEFAULT 1'),
+        ('my_share_price', 'REAL'),
+        ('original_currency', "TEXT DEFAULT 'USD'"),
+        ('shared_friend_ids', "TEXT DEFAULT ''")
+    ]
         # 6. Tabla de Historial de Pagos
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS payment_history (
@@ -323,6 +411,9 @@ def init_db(db_path=None):
             )
         ''')
 
+    for col_name, col_type in new_sub_columns:
+        if col_name not in sub_columns:
+            cursor.execute(f"ALTER TABLE subscriptions ADD COLUMN {col_name} {col_type}")
         # 7. Tabla de Ajustes
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS settings (
@@ -348,6 +439,22 @@ def init_db(db_path=None):
             )
         ''')
 
+    # 6. Tabla de Historial de Pagos
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS payment_history (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER DEFAULT 1,
+            subscription_id INTEGER NOT NULL,
+            subscription_name TEXT NOT NULL,
+            amount REAL NOT NULL,
+            currency TEXT NOT NULL DEFAULT 'USD',
+            payment_date TEXT NOT NULL,
+            payment_method TEXT DEFAULT 'Tarjeta de Crédito',
+            notes TEXT DEFAULT '',
+            created_at TEXT NOT NULL,
+            FOREIGN KEY (subscription_id) REFERENCES subscriptions (id) ON DELETE CASCADE
+        )
+    ''')
         # 2. Tabla de Sesiones (Tokens)
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS sessions (
@@ -359,6 +466,10 @@ def init_db(db_path=None):
             )
         ''')
 
+    cursor.execute("PRAGMA table_info(payment_history)")
+    pay_columns = [row['name'] for row in cursor.fetchall()]
+    if 'user_id' not in pay_columns:
+        cursor.execute("ALTER TABLE payment_history ADD COLUMN user_id INTEGER DEFAULT 1")
         # 3. Tabla de Amigos / Contactos
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS friends (
@@ -374,6 +485,10 @@ def init_db(db_path=None):
             )
         ''')
 
+    # 7. Tabla de Ajustes — migrar si el esquema antiguo tiene solo 'key' como PK
+    cursor.execute("SELECT sql FROM sqlite_master WHERE type='table' AND name='settings'")
+    settings_sql_row = cursor.fetchone()
+    settings_sql = settings_sql_row[0] if settings_sql_row else ''
         # 4. Tabla de Pagos de Amigos (Reembolsos recibidos)
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS friend_payments (
@@ -390,11 +505,17 @@ def init_db(db_path=None):
             )
         ''')
 
+    if not settings_sql:
+        # Tabla no existe, crearla con el esquema correcto
         # 5. Tabla de Suscripciones
         cursor.execute('''
+            CREATE TABLE settings (
             CREATE TABLE IF NOT EXISTS subscriptions (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 user_id INTEGER DEFAULT 1,
+                key TEXT NOT NULL,
+                value TEXT NOT NULL,
+                PRIMARY KEY (user_id, key)
                 name TEXT NOT NULL,
                 price REAL NOT NULL,
                 currency TEXT NOT NULL DEFAULT 'USD',
@@ -411,6 +532,11 @@ def init_db(db_path=None):
                 updated_at TEXT NOT NULL
             )
         ''')
+    elif 'user_id, key' not in settings_sql and '(user_id,' not in settings_sql:
+        # Esquema viejo con 'key TEXT PRIMARY KEY' — migrar sin perder datos
+        cursor.execute("SELECT * FROM settings")
+        old_rows = cursor.fetchall()
+        cursor.execute("ALTER TABLE settings RENAME TO settings_old")
 
         # Migración de columnas en subscriptions
         cursor.execute("PRAGMA table_info(subscriptions)")
@@ -433,9 +559,13 @@ def init_db(db_path=None):
 
         # 6. Tabla de Historial de Pagos
         cursor.execute('''
+            CREATE TABLE settings (
             CREATE TABLE IF NOT EXISTS payment_history (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 user_id INTEGER DEFAULT 1,
+                key TEXT NOT NULL,
+                value TEXT NOT NULL,
+                PRIMARY KEY (user_id, key)
                 subscription_id INTEGER NOT NULL,
                 subscription_name TEXT NOT NULL,
                 amount REAL NOT NULL,
@@ -447,6 +577,19 @@ def init_db(db_path=None):
                 FOREIGN KEY (subscription_id) REFERENCES subscriptions (id) ON DELETE CASCADE
             )
         ''')
+        for r in old_rows:
+            uid = r['user_id'] if 'user_id' in r.keys() else 1
+            cursor.execute(
+                "INSERT OR IGNORE INTO settings (user_id, key, value) VALUES (?, ?, ?)",
+                (uid or 1, r['key'], r['value'])
+            )
+        cursor.execute("DROP TABLE settings_old")
+    else:
+        # Esquema ya correcto; solo agregar user_id si falta
+        cursor.execute("PRAGMA table_info(settings)")
+        settings_cols = [row['name'] for row in cursor.fetchall()]
+        if 'user_id' not in settings_cols:
+            cursor.execute("ALTER TABLE settings ADD COLUMN user_id INTEGER DEFAULT 1")
 
         cursor.execute("PRAGMA table_info(payment_history)")
         pay_columns = [row['name'] for row in cursor.fetchall()]
@@ -497,6 +640,7 @@ def init_db(db_path=None):
 
     # Crear usuario administrador por defecto si la tabla users está vacía
     cursor.execute("SELECT COUNT(*) as count FROM users")
+    if cursor.fetchone()['count'] == 0:
     count_row = cursor.fetchone()
     count_val = count_row['count'] if isinstance(count_row, dict) else count_row[0]
     if count_val == 0:
