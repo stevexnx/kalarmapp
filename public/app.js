@@ -814,6 +814,9 @@ function initEventListeners() {
   document.getElementById('btnEmptyAdd')?.addEventListener('click', () => openModal());
   document.getElementById('btnCloseModal')?.addEventListener('click', closeModal);
   document.getElementById('btnCancelModal')?.addEventListener('click', closeModal);
+  document.getElementById('btnBackToPresets')?.addEventListener('click', showPresetsStep);
+  document.getElementById('btnBackToPresetsForm')?.addEventListener('click', showPresetsStep);
+  document.getElementById('btnCustomSubscription')?.addEventListener('click', openCustomSubscription);
   document.getElementById('subscriptionForm')?.addEventListener('submit', handleFormSubmit);
 
   // Checkboxes de Formulario
@@ -2310,13 +2313,77 @@ function populateSharedFriendsCheckboxes(selectedIds = []) {
   });
 }
 
+function showPresetsStep() {
+  const tplStep = document.getElementById('templatesStepContainer');
+  const form = document.getElementById('subscriptionForm');
+  const btnBack = document.getElementById('btnBackToPresets');
+  const modalTitle = document.getElementById('modalTitle');
+  const modalSubtitle = document.getElementById('modalSubtitle');
+
+  tplStep?.classList.remove('hidden');
+  form?.classList.add('hidden');
+  btnBack?.classList.add('hidden');
+
+  if (modalTitle) modalTitle.innerHTML = `<i data-lucide="plus-circle" class="w-5 h-5 text-[#d0bcff]"></i> Nueva Suscripción`;
+  if (modalSubtitle) modalSubtitle.textContent = 'Elige un servicio popular o crea una personalizada';
+
+  renderPresetCatalog();
+  initIcons();
+}
+
+function showDetailsForm(titleText = 'Detalles de Suscripción', isEdit = false) {
+  const tplStep = document.getElementById('templatesStepContainer');
+  const form = document.getElementById('subscriptionForm');
+  const btnBack = document.getElementById('btnBackToPresets');
+  const modalTitle = document.getElementById('modalTitle');
+  const modalSubtitle = document.getElementById('modalSubtitle');
+
+  tplStep?.classList.add('hidden');
+  form?.classList.remove('hidden');
+
+  if (isEdit) {
+    btnBack?.classList.add('hidden');
+    if (modalTitle) modalTitle.innerHTML = `<i data-lucide="edit-3" class="w-5 h-5 text-[#d0bcff]"></i> Editar Suscripción`;
+    if (modalSubtitle) modalSubtitle.textContent = 'Modifica los valores y fechas de tu suscripción';
+  } else {
+    btnBack?.classList.remove('hidden');
+    if (modalTitle) modalTitle.innerHTML = `<i data-lucide="check-circle-2" class="w-5 h-5 text-[#a8d5b5]"></i> ${escapeHtml(titleText)}`;
+    if (modalSubtitle) modalSubtitle.textContent = 'Configura el plan, fecha de corte y división de gastos';
+  }
+
+  updateModalLiveCalculation();
+  initIcons();
+}
+
+function openCustomSubscription() {
+  const form = document.getElementById('subscriptionForm');
+  form.reset();
+
+  const defaultDate = new Date();
+  defaultDate.setMonth(defaultDate.getMonth() + 1);
+  const defaultDateStr = defaultDate.toISOString().split('T')[0];
+
+  document.getElementById('subId').value = '';
+  document.getElementById('subName').value = '';
+  document.getElementById('subPrice').value = '';
+  document.getElementById('subCurrency').value = state.baseCurrencyCode || 'USD';
+  document.getElementById('subBillingCycle').value = 'monthly';
+  document.getElementById('subCategory').value = 'Servicios';
+  document.getElementById('subNextBillingDate').value = defaultDateStr;
+  document.getElementById('subColor').value = '#d0bcff';
+
+  document.getElementById('trialFieldsContainer')?.classList.add('hidden');
+  document.getElementById('sharedFieldsContainer')?.classList.add('hidden');
+  populateSharedFriendsCheckboxes([]);
+
+  showDetailsForm('Suscripción Personalizada', false);
+}
+
 function openModal(sub = null) {
   state.editingId = sub ? sub.id : null;
   const modal = document.getElementById('subscriptionModal');
-  const modalTitle = document.getElementById('modalTitle');
   const btnSubmitText = document.getElementById('btnSubmitText');
   const form = document.getElementById('subscriptionForm');
-  const tplContainer = document.getElementById('templatesContainer');
 
   form.reset();
 
@@ -2330,9 +2397,7 @@ function openModal(sub = null) {
   let selectedFriendIds = [];
 
   if (sub) {
-    modalTitle.innerHTML = `<i data-lucide="edit-3" class="w-5 h-5 text-[#d0bcff]"></i> Editar Suscripción`;
     btnSubmitText.textContent = 'Actualizar Suscripción';
-    if (tplContainer) tplContainer.classList.add('hidden');
 
     document.getElementById('subId').value = sub.id;
     document.getElementById('subName').value = sub.name;
@@ -2360,22 +2425,21 @@ function openModal(sub = null) {
       document.getElementById('subMySharePrice').value = sub.my_share_price || '';
       selectedFriendIds = (sub.shared_friend_ids || '').split(',').filter(Boolean);
     }
+
+    showDetailsForm(sub.name, true);
   } else {
-    modalTitle.innerHTML = `<i data-lucide="plus-circle" class="w-5 h-5 text-[#d0bcff]"></i> Nueva Suscripción`;
     btnSubmitText.textContent = 'Guardar Suscripción';
-    if (tplContainer) tplContainer.classList.remove('hidden');
 
     document.getElementById('subId').value = '';
     document.getElementById('subCurrency').value = state.baseCurrencyCode || 'USD';
     document.getElementById('subNextBillingDate').value = defaultDateStr;
     document.getElementById('subColor').value = '#d0bcff';
 
-    // Renderizar catálogo actualizado a la divisa del usuario
-    renderPresetCatalog();
+    // Abrir directamente en el paso 1 (Buscador y Plantillas)
+    showPresetsStep();
   }
 
   populateSharedFriendsCheckboxes(selectedFriendIds);
-  updateModalLiveCalculation();
   modal.classList.remove('hidden');
   initIcons();
 }
@@ -2395,17 +2459,36 @@ function renderPresetCatalog(filterCategory = 'all', searchQuery = '') {
     return matchCategory && matchQuery;
   });
 
+  // Tarjeta de Personalizada siempre accesible como primera o destacada opción
+  const customCardHtml = `
+    <div class="m3-preset-card border-dashed border-[#d0bcff]/50 bg-[#2b2930]/40 group hover:border-[#d0bcff]" onclick="openCustomSubscription()" title="Crear suscripción propia desde cero">
+      <div class="m3-brand-icon-box bg-[#d0bcff]/20 text-[#d0bcff] transition-transform group-hover:scale-105 border border-[#d0bcff]/40">
+        <i data-lucide="plus" class="w-5 h-5"></i>
+      </div>
+      <div class="overflow-hidden flex-1 min-w-0">
+        <div class="text-xs font-bold text-white truncate flex items-center gap-1.5 font-google-sans">
+          <span>Personalizada</span>
+          <span class="m3-badge-primary text-[9px]">Nuevo</span>
+        </div>
+        <div class="text-[11px] text-[#cac4d0] truncate">
+          Crea un servicio que no esté en la lista
+        </div>
+      </div>
+    </div>
+  `;
+
   if (filtered.length === 0) {
     container.innerHTML = `
-      <div class="col-span-full py-4 text-center text-xs text-slate-500">
-        No se encontraron servicios que coincidan con la búsqueda.
+      ${customCardHtml}
+      <div class="col-span-full py-6 text-center text-xs text-[#cac4d0]">
+        No se encontraron servicios que coincidan con la búsqueda. Puedes crear una <button type="button" onclick="openCustomSubscription()" class="text-[#d0bcff] font-semibold underline">Personalizada</button>.
       </div>
     `;
+    initIcons();
     return;
   }
 
-  container.innerHTML = filtered.map((service, sIndex) => {
-    // Tomar el plan por defecto o el primer plan
+  const itemsHtml = filtered.map((service, sIndex) => {
     const plan = service.plans[0];
     const converted = convertCurrency(plan.priceUsd, 'USD', baseCurr);
     const cycleLabel = plan.cycle === 'annual' ? '/año' : '/mes';
@@ -2415,11 +2498,11 @@ function renderPresetCatalog(filterCategory = 'all', searchQuery = '') {
     return `
       <div class="m3-preset-card group" onclick="selectPresetService(${sIndex})" title="Añadir ${escapeHtml(service.name)} (${plan.name})">
         <div class="m3-brand-icon-box transition-transform group-hover:scale-105"
-             style="background: linear-gradient(135deg, ${service.color || '#4F46E5'}22, ${service.color || '#4F46E5'}44); border: 1px solid ${service.color || '#4F46E5'}55">
+             style="background: linear-gradient(135deg, ${service.color || '#d0bcff'}22, ${service.color || '#d0bcff'}44); border: 1px solid ${service.color || '#d0bcff'}55">
           ${iconHtml}
         </div>
         <div class="overflow-hidden flex-1 min-w-0">
-          <div class="text-xs font-bold text-white truncate flex items-center gap-1">
+          <div class="text-xs font-bold text-white truncate flex items-center gap-1 font-google-sans">
             <span>${escapeHtml(service.name)}</span>
           </div>
           <div class="text-[11px] font-mono font-semibold text-[#d0bcff] truncate">
@@ -2430,6 +2513,9 @@ function renderPresetCatalog(filterCategory = 'all', searchQuery = '') {
       </div>
     `;
   }).join('');
+
+  container.innerHTML = customCardHtml + itemsHtml;
+  initIcons();
 }
 
 function selectPresetService(serviceIndex) {
@@ -2437,7 +2523,6 @@ function selectPresetService(serviceIndex) {
   if (!service) return;
 
   const baseCurr = state.baseCurrencyCode || 'USD';
-  // Si tiene más de un plan, usar el primer plan o permitir elegir
   const plan = service.plans[0];
   const convertedPrice = convertCurrency(plan.priceUsd, 'USD', baseCurr);
 
@@ -2446,15 +2531,12 @@ function selectPresetService(serviceIndex) {
   document.getElementById('subCurrency').value = baseCurr;
   document.getElementById('subBillingCycle').value = plan.cycle || 'monthly';
   document.getElementById('subCategory').value = service.category || 'Otros';
-  document.getElementById('subColor').value = service.color || '#4F46E5';
+  document.getElementById('subColor').value = service.color || '#d0bcff';
   if (service.url) {
     document.getElementById('subUrl').value = service.url;
   }
 
-  updateModalLiveCalculation();
-
-  // Pequeña notificación o feedback visual
-  showToast(`Autocompletado: ${service.name} (${plan.name}) con precio al día en ${baseCurr}`, 'info');
+  showDetailsForm(service.name, false);
 }
 
 function closeModal() {
@@ -2923,3 +3005,6 @@ window.recordFriendPaymentPrompt = recordFriendPaymentPrompt;
 window.selectCalendarDate = selectCalendarDate;
 window.changeCalendarMonth = changeCalendarMonth;
 window.resetCalendarToToday = resetCalendarToToday;
+window.openCustomSubscription = openCustomSubscription;
+window.showPresetsStep = showPresetsStep;
+window.selectPresetService = selectPresetService;
