@@ -284,5 +284,81 @@ class TestServerAPI(unittest.TestCase):
         with urllib.request.urlopen(del_req) as resp:
             self.assertEqual(resp.status, 200)
 
+    def test_social_friend_requests_and_split_pay(self):
+        # Crear segundo usuario con username único para soportar múltiples corridas
+        import time
+        unique_user = f"pedro_{int(time.time()*1000)}"
+        reg_data = json.dumps({'username': unique_user, 'password': 'password123', 'display_name': 'Pedro Pascal', 'email': f'{unique_user}@example.com'}).encode('utf-8')
+        r_req = urllib.request.Request(f"{self.base_url}/api/auth/register", data=reg_data, headers={"Content-Type": "application/json"}, method="POST")
+        with urllib.request.urlopen(r_req) as resp:
+            pedro_res = json.loads(resp.read().decode('utf-8'))
+            pedro_token = pedro_res['token']
+            pedro_id = pedro_res['user']['id']
+
+        # Obtener token de admin
+        login_data = json.dumps({'username': 'admin', 'password': 'admin123'}).encode('utf-8')
+        l_req = urllib.request.Request(f"{self.base_url}/api/auth/login", data=login_data, headers={"Content-Type": "application/json"}, method="POST")
+        with urllib.request.urlopen(l_req) as resp:
+            admin_token = json.loads(resp.read().decode('utf-8'))['token']
+
+        # 1. Admin busca a pedro
+        s_req = urllib.request.Request(f"{self.base_url}/api/users/search?q={unique_user}", headers={"Authorization": f"Bearer {admin_token}"})
+        with urllib.request.urlopen(s_req) as resp:
+            s_res = json.loads(resp.read().decode('utf-8'))
+            self.assertTrue(s_res['success'])
+            self.assertTrue(any(u['username'] == unique_user for u in s_res['data']))
+
+        # 2. Admin envía solicitud de amistad a pedro
+        fr_data = json.dumps({'receiver': unique_user}).encode('utf-8')
+        fr_req = urllib.request.Request(f"{self.base_url}/api/friends/request", data=fr_data, headers={"Content-Type": "application/json", "Authorization": f"Bearer {admin_token}"}, method="POST")
+        with urllib.request.urlopen(fr_req) as resp:
+            self.assertEqual(resp.status, 201)
+            fr_res = json.loads(resp.read().decode('utf-8'))
+            request_id = fr_res['data']['id']
+
+        # 3. Pedro revisa solicitudes recibidas
+        inbox_req = urllib.request.Request(f"{self.base_url}/api/friends/requests", headers={"Authorization": f"Bearer {pedro_token}"})
+        with urllib.request.urlopen(inbox_req) as resp:
+            inbox_res = json.loads(resp.read().decode('utf-8'))
+            self.assertTrue(inbox_res['success'])
+            self.assertTrue(any(r['id'] == request_id for r in inbox_res['data']['received']))
+
+        # 4. Pedro acepta la solicitud
+        resp_data = json.dumps({'request_id': request_id, 'action': 'accept'}).encode('utf-8')
+        acc_req = urllib.request.Request(f"{self.base_url}/api/friends/respond-request", data=resp_data, headers={"Content-Type": "application/json", "Authorization": f"Bearer {pedro_token}"}, method="POST")
+        with urllib.request.urlopen(acc_req) as resp:
+            self.assertEqual(resp.status, 200)
+
+        # 5. Ambos deben tenerse en amigos vinculados
+        list_req = urllib.request.Request(f"{self.base_url}/api/friends", headers={"Authorization": f"Bearer {admin_token}"})
+        with urllib.request.urlopen(list_req) as resp:
+            friends_admin = json.loads(resp.read().decode('utf-8'))['data']
+            self.assertTrue(any(f.get('linked_user_id') == pedro_id for f in friends_admin))
+
+        # 6. Admin solicita a Pedro pagar en conjunto ($7.50 de Spotify)
+        split_data = json.dumps({
+            'friend_user_id': pedro_id,
+            'amount': 7.50,
+            'currency': 'USD',
+            'notes': 'Mitad de Spotify Dúo'
+        }).encode('utf-8')
+        sp_req = urllib.request.Request(f"{self.base_url}/api/friends/split-request", data=split_data, headers={"Content-Type": "application/json", "Authorization": f"Bearer {admin_token}"}, method="POST")
+        with urllib.request.urlopen(sp_req) as resp:
+            self.assertEqual(resp.status, 201)
+            sp_res = json.loads(resp.read().decode('utf-8'))
+            split_req_id = sp_res['data']['id']
+
+        # 7. Pedro ve la solicitud de pago recibida
+        sp_list_req = urllib.request.Request(f"{self.base_url}/api/friends/split-requests", headers={"Authorization": f"Bearer {pedro_token}"})
+        with urllib.request.urlopen(sp_list_req) as resp:
+            sp_list_res = json.loads(resp.read().decode('utf-8'))
+            self.assertTrue(any(r['id'] == split_req_id for r in sp_list_res['data']['received']))
+
+        # 8. Pedro confirma el pago
+        sp_resp_data = json.dumps({'request_id': split_req_id, 'action': 'paid'}).encode('utf-8')
+        pay_conf_req = urllib.request.Request(f"{self.base_url}/api/friends/split-requests/respond", data=sp_resp_data, headers={"Content-Type": "application/json", "Authorization": f"Bearer {pedro_token}"}, method="POST")
+        with urllib.request.urlopen(pay_conf_req) as resp:
+            self.assertEqual(resp.status, 200)
+
 if __name__ == '__main__':
     unittest.main()

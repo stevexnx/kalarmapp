@@ -107,6 +107,39 @@ class SubscriptionAPIHandler(http.server.SimpleHTTPRequestHandler):
             self._send_json({'success': True, 'data': friends})
             return
 
+        # 2.1 API: Buscar usuarios en la red
+        elif path == '/api/users/search':
+            user = self._get_current_user()
+            q = query_params.get('q', [''])[0]
+            users = db.search_users(query=q, current_user_id=user['id']) if q else []
+            self._send_json({'success': True, 'data': users})
+            return
+
+        # 2.2 API: Solicitudes de amistad recibidas y enviadas
+        elif path == '/api/friends/requests':
+            user = self._get_current_user()
+            reqs = db.get_friend_requests(user_id=user['id'])
+            self._send_json({'success': True, 'data': reqs})
+            return
+
+        # 2.3 API: Solicitudes de pago en conjunto
+        elif path == '/api/friends/split-requests':
+            user = self._get_current_user()
+            split_reqs = db.get_split_pay_requests(user_id=user['id'])
+            self._send_json({'success': True, 'data': split_reqs})
+            return
+
+        # 2.4 API: Suscripciones en común con un amigo
+        elif path == '/api/friends/shared-subs':
+            user = self._get_current_user()
+            friend_id = query_params.get('friend_id', [None])[0]
+            if not friend_id:
+                self._send_error('friend_id requerido')
+                return
+            shared_subs = db.get_shared_subscriptions_with_friend(user_id=user['id'], friend_id=int(friend_id))
+            self._send_json({'success': True, 'data': shared_subs})
+            return
+
         # 3. API: Saldos y Deudas de Amigos
         elif path == '/api/friends/balances':
             user = self._get_current_user()
@@ -260,6 +293,66 @@ class SubscriptionAPIHandler(http.server.SimpleHTTPRequestHandler):
             try:
                 friend = db.create_friend(user['id'], data)
                 self._send_json({'success': True, 'data': friend, 'message': 'Amigo agregado'}, 201)
+            except ValueError as e:
+                self._send_error(str(e), 400)
+            return
+
+        # 4.1 Enviar Solicitud de Amistad
+        elif path == '/api/friends/request':
+            user = self._get_current_user()
+            data = self._read_json_body() or {}
+            target = data.get('receiver') or data.get('username') or data.get('user_id')
+            if not target:
+                self._send_error('El usuario o ID es obligatorio')
+                return
+            try:
+                req = db.send_friend_request(sender_id=user['id'], receiver_username_or_id=target)
+                self._send_json({'success': True, 'data': req, 'message': 'Solicitud enviada con éxito'}, 201)
+            except ValueError as e:
+                self._send_error(str(e), 400)
+            return
+
+        # 4.2 Responder Solicitud de Amistad (Aceptar / Rechazar)
+        elif path == '/api/friends/respond-request':
+            user = self._get_current_user()
+            data = self._read_json_body() or {}
+            request_id = data.get('request_id')
+            action = data.get('action', 'accept')
+            if not request_id:
+                self._send_error('request_id es obligatorio')
+                return
+            try:
+                res = db.respond_friend_request(request_id=int(request_id), user_id=user['id'], action=action)
+                msg = 'Solicitud aceptada' if action == 'accept' else 'Solicitud rechazada'
+                self._send_json({'success': True, 'data': res, 'message': msg})
+            except ValueError as e:
+                self._send_error(str(e), 400)
+            return
+
+        # 4.3 Solicitar Pagar en Conjunto (Split Pay Request)
+        elif path == '/api/friends/split-request':
+            user = self._get_current_user()
+            data = self._read_json_body() or {}
+            try:
+                split_req = db.create_split_pay_request(creator_id=user['id'], data=data)
+                self._send_json({'success': True, 'data': split_req, 'message': 'Solicitud de pago enviada a tu amigo'}, 201)
+            except ValueError as e:
+                self._send_error(str(e), 400)
+            return
+
+        # 4.4 Responder Solicitud de Pago Conjunto (Marcar como Pagada / Rechazar)
+        elif path == '/api/friends/split-requests/respond':
+            user = self._get_current_user()
+            data = self._read_json_body() or {}
+            request_id = data.get('request_id')
+            action = data.get('action', 'paid')
+            if not request_id:
+                self._send_error('request_id es obligatorio')
+                return
+            try:
+                res = db.respond_split_pay_request(request_id=int(request_id), user_id=user['id'], action=action)
+                msg = 'Pago confirmado' if action in ('paid', 'pay', 'accept') else 'Solicitud declinada'
+                self._send_json({'success': True, 'data': res, 'message': msg})
             except ValueError as e:
                 self._send_error(str(e), 400)
             return

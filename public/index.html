@@ -515,14 +515,64 @@
 
         <div class="m3-card p-5 flex flex-col justify-between">
           <div class="flex items-center justify-between">
-            <span class="text-xs font-semibold uppercase tracking-wider text-[#cac4d0]">Directorio de Amigos</span>
-            <button id="btnOpenAddFriendModal" class="m3-btn-filled py-1.5 px-3.5 text-xs">
-              <i data-lucide="user-plus" class="w-3.5 h-3.5"></i> Agregar Amigo
-            </button>
+            <span class="text-xs font-semibold uppercase tracking-wider text-[#cac4d0]">Comunidad & Amigos</span>
+            <div class="flex items-center gap-2">
+              <button id="btnOpenUserSearchModal" class="m3-btn-tonal py-1.5 px-3 text-xs flex items-center gap-1.5">
+                <i data-lucide="user-search" class="w-3.5 h-3.5 text-[#d0bcff]"></i> Buscar Usuarios
+              </button>
+              <button id="btnOpenAddFriendModal" class="m3-btn-filled py-1.5 px-3 text-xs flex items-center gap-1.5">
+                <i data-lucide="user-plus" class="w-3.5 h-3.5"></i> Agregar Manual
+              </button>
+            </div>
           </div>
           <div class="mt-2 text-xs text-[#cac4d0]">
-            Etiqueta amigos en tus suscripciones compartidas para calcular sus cuotas automáticamente y enviarles recordatorios de cobro.
+            Encuentra a otros usuarios registrados de SubTracker, comparte suscripciones, consulta planes en común y solicita pagos en conjunto al instante.
           </div>
+        </div>
+      </div>
+
+      <!-- Banner de Solicitudes de Amistad Pendientes -->
+      <div id="friendRequestsSection" class="hidden m3-card p-4 sm:p-5 border border-[#d0bcff]/40 bg-[#4f378b]/15 space-y-3">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <div class="w-7 h-7 rounded-full bg-[#d0bcff] flex items-center justify-center text-[#381e72]">
+              <i data-lucide="user-check" class="w-4 h-4"></i>
+            </div>
+            <h3 class="text-xs sm:text-sm font-bold text-white font-google-sans flex items-center gap-2">
+              Solicitudes de Amistad Recibidas
+              <span id="friendRequestsCountBadge" class="text-[10px] px-2 py-0.5 rounded-full bg-[#d0bcff] text-[#381e72] font-bold">0</span>
+            </h3>
+          </div>
+        </div>
+        <div id="friendRequestsList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          <!-- Solicitudes renderizadas dinámicamente -->
+        </div>
+      </div>
+
+      <!-- Sección de Solicitudes de Pago en Conjunto (Split Pay) -->
+      <div class="m3-card p-5 sm:p-6 space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h3 class="text-sm font-bold text-white flex items-center gap-2 font-google-sans">
+              <i data-lucide="split" class="w-4 h-4 text-[#d0bcff]"></i>
+              Pagos en Conjunto (Split Pay)
+              <span id="splitPayInboxBadge" class="hidden text-[10px] px-2 py-0.5 rounded-full bg-amber-400 text-amber-950 font-bold">0 pendientes</span>
+            </h3>
+            <p class="text-xs text-[#cac4d0] mt-0.5">Solicitudes enviadas y recibidas para dividir pagos de suscripciones con amigos.</p>
+          </div>
+          <!-- Filtro Recibidas / Enviadas -->
+          <div class="flex items-center gap-1 bg-[#141218] p-1 rounded-full border border-[#49454f]/40 text-xs">
+            <button id="btnTabSplitReceived" class="px-3 py-1 rounded-full bg-[#d0bcff] text-[#381e72] font-semibold transition">
+              Recibidas (<span id="countSplitReceived">0</span>)
+            </button>
+            <button id="btnTabSplitSent" class="px-3 py-1 rounded-full text-[#cac4d0] hover:text-white transition">
+              Enviadas (<span id="countSplitSent">0</span>)
+            </button>
+          </div>
+        </div>
+
+        <div id="splitPayRequestsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
+          <!-- Renderizado de Split Pay dinámicamente -->
         </div>
       </div>
 
@@ -811,6 +861,127 @@
           <button type="submit" class="m3-btn-filled py-2 px-5 text-xs">Guardar Amigo</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- ================= MODAL: BUSCAR USUARIOS REGISTRADOS ================= -->
+  <div id="userSearchModal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-black/70 backdrop-blur-sm p-4 flex items-center justify-center">
+    <div class="relative w-full max-w-md m3-dialog p-6 space-y-4 animate-scale-up">
+      <div class="flex items-center justify-between border-b border-[#49454f]/40 pb-3">
+        <h3 class="text-base font-bold text-white flex items-center gap-2 font-google-sans">
+          <i data-lucide="user-search" class="w-5 h-5 text-[#d0bcff]"></i>
+          Buscar Usuarios Registrados
+        </h3>
+        <button id="btnCloseUserSearchModal" class="text-[#cac4d0] hover:text-white p-1 rounded-full hover:bg-[#2b2930]">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="space-y-3">
+        <div class="relative flex items-center">
+          <i data-lucide="search" class="w-4 h-4 text-[#cac4d0] absolute left-3 pointer-events-none"></i>
+          <input type="text" id="userSearchInput" placeholder="Buscar por usuario (@usuario), nombre o email..." 
+            class="m3-text-field pl-9 text-xs">
+        </div>
+        <p class="text-[11px] text-[#cac4d0]">
+          Envía una solicitud de amistad para vincular cuentas y poder compartir gastos y suscripciones.
+        </p>
+      </div>
+
+      <!-- Resultados de búsqueda -->
+      <div id="userSearchResults" class="space-y-2 max-h-64 overflow-y-auto pr-1">
+        <div class="text-center py-6 text-xs text-[#938f99]">
+          Escribe al menos 2 letras para buscar usuarios.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= MODAL: CREAR SOLICITUD DE PAGO EN CONJUNTO (SPLIT PAY) ================= -->
+  <div id="splitPayModal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-black/70 backdrop-blur-sm p-4 flex items-center justify-center">
+    <div class="relative w-full max-w-md m3-dialog p-6 space-y-4 animate-scale-up">
+      <div class="flex items-center justify-between border-b border-[#49454f]/40 pb-3">
+        <h3 class="text-base font-bold text-white flex items-center gap-2 font-google-sans">
+          <i data-lucide="split" class="w-5 h-5 text-[#d0bcff]"></i>
+          Solicitar Pago en Conjunto
+        </h3>
+        <button id="btnCloseSplitPayModal" class="text-[#cac4d0] hover:text-white p-1 rounded-full hover:bg-[#2b2930]">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <form id="splitPayForm" class="space-y-3.5 text-xs">
+        <input type="hidden" id="splitFriendId">
+        <input type="hidden" id="splitFriendUserId">
+
+        <div>
+          <label class="block text-[#cac4d0] mb-1">Amigo destinatario</label>
+          <div id="splitPayFriendNameDisplay" class="p-2.5 rounded-xl bg-[#141218] border border-[#49454f]/40 font-bold text-white flex items-center gap-2">
+            <!-- Amigo seleccionado -->
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-[#cac4d0] mb-1">Suscripción a dividir *</label>
+          <select id="splitPaySubSelect" required class="m3-text-field">
+            <!-- Cargado dinámicamente -->
+          </select>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2.5">
+          <div>
+            <label class="block text-[#cac4d0] mb-1">Monto a solicitar *</label>
+            <input type="number" id="splitPayAmount" step="0.01" min="0.01" required placeholder="0.00" class="m3-text-field font-mono">
+          </div>
+          <div>
+            <label class="block text-[#cac4d0] mb-1">Divisa</label>
+            <input type="text" id="splitPayCurrency" readonly class="m3-text-field font-mono bg-[#1d1b20] text-[#cac4d0]">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-[#cac4d0] mb-1">Fecha Límite sugerida</label>
+          <input type="date" id="splitPayDueDate" class="m3-text-field">
+        </div>
+
+        <div>
+          <label class="block text-[#cac4d0] mb-1">Nota o Mensaje</label>
+          <textarea id="splitPayNotes" rows="2" placeholder="Ej: Tu parte del plan familiar este mes..." class="m3-text-field"></textarea>
+        </div>
+
+        <div class="pt-3 border-t border-[#49454f]/40 flex justify-end gap-2">
+          <button type="button" id="btnCancelSplitPayModal" class="m3-btn-outline">Cancelar</button>
+          <button type="submit" class="m3-btn-filled py-2 px-5 text-xs flex items-center gap-1.5">
+            <i data-lucide="send" class="w-3.5 h-3.5"></i> Enviar Solicitud
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= MODAL: SUSCRIPCIONES EN COMÚN ================= -->
+  <div id="sharedSubsModal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-black/70 backdrop-blur-sm p-4 flex items-center justify-center">
+    <div class="relative w-full max-w-lg m3-dialog p-6 space-y-4 animate-scale-up">
+      <div class="flex items-center justify-between border-b border-[#49454f]/40 pb-3">
+        <div>
+          <h3 id="sharedSubsModalTitle" class="text-base font-bold text-white flex items-center gap-2 font-google-sans">
+            <i data-lucide="layers" class="w-5 h-5 text-[#a8d5b5]"></i>
+            Suscripciones en Común
+          </h3>
+          <p id="sharedSubsModalSubtitle" class="text-xs text-[#cac4d0] mt-0.5">Suscripciones compartidas con este amigo</p>
+        </div>
+        <button id="btnCloseSharedSubsModal" class="text-[#cac4d0] hover:text-white p-1 rounded-full hover:bg-[#2b2930]">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div id="sharedSubsModalContent" class="space-y-3 max-h-80 overflow-y-auto pr-1">
+        <!-- Renderizado dinámicamente -->
+      </div>
+
+      <div class="pt-3 border-t border-[#49454f]/40 flex justify-end">
+        <button type="button" id="btnOkSharedSubsModal" class="m3-btn-outline text-xs">Cerrar</button>
+      </div>
     </div>
   </div>
 

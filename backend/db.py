@@ -75,7 +75,7 @@ class PostgresCursorWrapper:
         should_add_returning = False
         if is_insert and 'RETURNING' not in clean_sql.upper():
             # Tablas que tienen columna 'id' autonumérica
-            tbls_with_id = ['users', 'friends', 'friend_payments', 'subscriptions', 'payment_history']
+            tbls_with_id = ['users', 'friends', 'friend_payments', 'subscriptions', 'payment_history', 'friend_requests', 'shared_pay_requests']
             for tbl in tbls_with_id:
                 if f'INSERT INTO {tbl}' in clean_sql:
                     should_add_returning = True
@@ -244,10 +244,35 @@ def init_db(db_path=None):
             CREATE TABLE IF NOT EXISTS friends (
                 id SERIAL PRIMARY KEY,
                 user_id INTEGER NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+                linked_user_id INTEGER REFERENCES users (id) ON DELETE SET NULL,
                 name TEXT NOT NULL,
                 email TEXT DEFAULT '',
                 phone TEXT DEFAULT '',
                 avatar_color VARCHAR(50) DEFAULT '#10B981',
+                notes TEXT DEFAULT '',
+                created_at TEXT NOT NULL
+            )
+        """)
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS friend_requests (
+                id SERIAL PRIMARY KEY,
+                sender_id INTEGER NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+                receiver_id INTEGER NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+                status VARCHAR(50) NOT NULL DEFAULT 'pending',
+                created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL
+            )
+        """)
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS shared_pay_requests (
+                id SERIAL PRIMARY KEY,
+                subscription_id INTEGER REFERENCES subscriptions (id) ON DELETE SET NULL,
+                creator_id INTEGER NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+                friend_user_id INTEGER NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+                amount DOUBLE PRECISION NOT NULL,
+                currency VARCHAR(10) NOT NULL DEFAULT 'USD',
+                due_date TEXT,
+                status VARCHAR(50) NOT NULL DEFAULT 'pending',
                 notes TEXT DEFAULT '',
                 created_at TEXT NOT NULL
             )
@@ -339,13 +364,49 @@ def init_db(db_path=None):
             CREATE TABLE IF NOT EXISTS friends (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 user_id INTEGER NOT NULL,
+                linked_user_id INTEGER,
                 name TEXT NOT NULL,
                 email TEXT DEFAULT '',
                 phone TEXT DEFAULT '',
                 avatar_color TEXT DEFAULT '#10B981',
                 notes TEXT DEFAULT '',
                 created_at TEXT NOT NULL,
-                FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+                FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+                FOREIGN KEY (linked_user_id) REFERENCES users (id) ON DELETE SET NULL
+            )
+        """)
+        cursor.execute("PRAGMA table_info(friends)")
+        friend_cols = [row['name'] for row in cursor.fetchall()]
+        if 'linked_user_id' not in friend_cols:
+            cursor.execute("ALTER TABLE friends ADD COLUMN linked_user_id INTEGER")
+
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS friend_requests (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                sender_id INTEGER NOT NULL,
+                receiver_id INTEGER NOT NULL,
+                status TEXT NOT NULL DEFAULT 'pending',
+                created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL,
+                FOREIGN KEY (sender_id) REFERENCES users (id) ON DELETE CASCADE,
+                FOREIGN KEY (receiver_id) REFERENCES users (id) ON DELETE CASCADE
+            )
+        """)
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS shared_pay_requests (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                subscription_id INTEGER,
+                creator_id INTEGER NOT NULL,
+                friend_user_id INTEGER NOT NULL,
+                amount REAL NOT NULL,
+                currency TEXT NOT NULL DEFAULT 'USD',
+                due_date TEXT,
+                status TEXT NOT NULL DEFAULT 'pending',
+                notes TEXT DEFAULT '',
+                created_at TEXT NOT NULL,
+                FOREIGN KEY (subscription_id) REFERENCES subscriptions (id) ON DELETE SET NULL,
+                FOREIGN KEY (creator_id) REFERENCES users (id) ON DELETE CASCADE,
+                FOREIGN KEY (friend_user_id) REFERENCES users (id) ON DELETE CASCADE
             )
         """)
         cursor.execute("""
@@ -643,12 +704,14 @@ def create_friend(user_id: int, data: dict, db_path=None):
     colors = ['#3B82F6', '#10B981', '#F59E0B', '#EC4899', '#8B5CF6', '#06B6D4']
     avatar_color = data.get('avatar_color') or secrets.choice(colors)
     now_str = datetime.now().isoformat()
+    linked_user_id = data.get('linked_user_id') or None
 
     cursor.execute('''
-        INSERT INTO friends (user_id, name, email, phone, avatar_color, notes, created_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO friends (user_id, linked_user_id, name, email, phone, avatar_color, notes, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     ''', (
         user_id,
+        linked_user_id,
         name,
         data.get('email', '').strip(),
         data.get('phone', '').strip(),
@@ -668,10 +731,13 @@ def update_friend(friend_id: int, user_id: int, data: dict, db_path=None):
 
     fields = []
     values = []
-    for k in ['name', 'email', 'phone', 'avatar_color', 'notes']:
+    for k in ['name', 'email', 'phone', 'avatar_color', 'notes', 'linked_user_id']:
         if k in data:
             fields.append(f"{k} = ?")
-            values.append(str(data[k]).strip())
+            val = data[k]
+            if val is not None and k != 'linked_user_id':
+                val = str(val).strip()
+            values.append(val)
 
     if not fields:
         conn.close()
@@ -765,6 +831,291 @@ def get_friend_balances(user_id=1, db_path=None):
         })
 
     return balances
+
+# ================= RED SOCIAL: USUARIOS, SOLICITUDES Y PAGOS EN CONJUNTO =================
+def search_users(query: str, current_user_id: int, db_path=None):
+    """Busca usuarios registrados en la plataforma por username, display_name o email (excluye al usuario actual)."""
+    conn = get_connection(db_path)
+    cursor = conn.cursor()
+    term = f"%{query.strip().lower()}%"
+    cursor.execute('''
+        SELECT id, username, display_name, email, avatar_color, created_at
+        FROM users
+        WHERE id != ? AND (LOWER(username) LIKE ? OR LOWER(display_name) LIKE ? OR LOWER(email) LIKE ?)
+        LIMIT 20
+    ''', (current_user_id, term, term, term))
+    rows = cursor.fetchall()
+    conn.close()
+
+    # Obtener estado de solicitud y si ya es amigo
+    friends = get_friends(current_user_id, db_path)
+    linked_ids = {f.get('linked_user_id') for f in friends if f.get('linked_user_id')}
+
+    res = []
+    for r in rows:
+        d = dict(r)
+        d['is_friend'] = d['id'] in linked_ids
+        res.append(d)
+    return res
+
+def send_friend_request(sender_id: int, receiver_username_or_id, db_path=None):
+    """Envía una solicitud de amistad a otro usuario."""
+    conn = get_connection(db_path)
+    cursor = conn.cursor()
+
+    # Resolver receiver_id
+    if isinstance(receiver_username_or_id, int) or (isinstance(receiver_username_or_id, str) and receiver_username_or_id.isdigit()):
+        receiver_id = int(receiver_username_or_id)
+        cursor.execute("SELECT id, username, display_name FROM users WHERE id = ?", (receiver_id,))
+    else:
+        target_name = str(receiver_username_or_id).strip().lower()
+        cursor.execute("SELECT id, username, display_name FROM users WHERE LOWER(username) = ? OR LOWER(email) = ?", (target_name, target_name))
+
+    target_user = cursor.fetchone()
+    if not target_user:
+        conn.close()
+        raise ValueError("El usuario no existe")
+
+    receiver_id = target_user['id'] if isinstance(target_user, dict) else target_user[0]
+    if receiver_id == sender_id:
+        conn.close()
+        raise ValueError("No puedes enviarte una solicitud a ti mismo")
+
+    # Verificar si ya existe solicitud pendiente o aceptada
+    cursor.execute('''
+        SELECT id, status FROM friend_requests
+        WHERE (sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?)
+    ''', (sender_id, receiver_id, receiver_id, sender_id))
+    existing = cursor.fetchone()
+    if existing:
+        status = existing['status'] if isinstance(existing, dict) else existing[1]
+        if status == 'accepted':
+            conn.close()
+            raise ValueError("Ya son amigos")
+        elif status == 'pending':
+            conn.close()
+            raise ValueError("Ya hay una solicitud pendiente entre ambos")
+        else:
+            # Si estaba rechazada, la volvemos a poner en pending
+            now_str = datetime.now().isoformat()
+            req_id = existing['id'] if isinstance(existing, dict) else existing[0]
+            cursor.execute("UPDATE friend_requests SET status = 'pending', sender_id = ?, receiver_id = ?, updated_at = ? WHERE id = ?", (sender_id, receiver_id, now_str, req_id))
+            conn.commit()
+            conn.close()
+            return {'id': req_id, 'sender_id': sender_id, 'receiver_id': receiver_id, 'status': 'pending'}
+
+    now_str = datetime.now().isoformat()
+    cursor.execute('''
+        INSERT INTO friend_requests (sender_id, receiver_id, status, created_at, updated_at)
+        VALUES (?, ?, 'pending', ?, ?)
+    ''', (sender_id, receiver_id, now_str, now_str))
+    new_id = cursor.lastrowid
+    conn.commit()
+    conn.close()
+    return {'id': new_id, 'sender_id': sender_id, 'receiver_id': receiver_id, 'status': 'pending'}
+
+def get_friend_requests(user_id: int, db_path=None):
+    """Obtiene las solicitudes de amistad recibidas y enviadas."""
+    conn = get_connection(db_path)
+    cursor = conn.cursor()
+
+    # Recibidas
+    cursor.execute('''
+        SELECT fr.id, fr.sender_id, fr.receiver_id, fr.status, fr.created_at,
+               u.username as sender_username, u.display_name as sender_display_name,
+               u.avatar_color as sender_avatar_color, u.email as sender_email
+        FROM friend_requests fr
+        JOIN users u ON fr.sender_id = u.id
+        WHERE fr.receiver_id = ? AND fr.status = 'pending'
+        ORDER BY fr.created_at DESC
+    ''', (user_id,))
+    received = [dict(r) for r in cursor.fetchall()]
+
+    # Enviadas
+    cursor.execute('''
+        SELECT fr.id, fr.sender_id, fr.receiver_id, fr.status, fr.created_at,
+               u.username as receiver_username, u.display_name as receiver_display_name,
+               u.avatar_color as receiver_avatar_color
+        FROM friend_requests fr
+        JOIN users u ON fr.receiver_id = u.id
+        WHERE fr.sender_id = ? AND fr.status = 'pending'
+        ORDER BY fr.created_at DESC
+    ''', (user_id,))
+    sent = [dict(r) for r in cursor.fetchall()]
+
+    conn.close()
+    return {'received': received, 'sent': sent}
+
+def respond_friend_request(request_id: int, user_id: int, action: str, db_path=None):
+    """Acepta o rechaza una solicitud de amistad recibida."""
+    conn = get_connection(db_path)
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT * FROM friend_requests WHERE id = ? AND receiver_id = ?", (request_id, user_id))
+    req = cursor.fetchone()
+    if not req:
+        conn.close()
+        raise ValueError("Solicitud no encontrada")
+
+    req_dict = dict(req)
+    if req_dict['status'] != 'pending':
+        conn.close()
+        raise ValueError(f"La solicitud ya fue {req_dict['status']}")
+
+    new_status = 'accepted' if action == 'accept' else 'rejected'
+    now_str = datetime.now().isoformat()
+    cursor.execute("UPDATE friend_requests SET status = ?, updated_at = ? WHERE id = ?", (new_status, now_str, request_id))
+
+    if action == 'accept':
+        sender_id = req_dict['sender_id']
+
+        # Obtener datos de ambos usuarios
+        cursor.execute("SELECT id, username, display_name, email, avatar_color FROM users WHERE id = ?", (sender_id,))
+        sender = dict(cursor.fetchone())
+
+        cursor.execute("SELECT id, username, display_name, email, avatar_color FROM users WHERE id = ?", (user_id,))
+        receiver = dict(cursor.fetchone())
+
+        # 1. Agregar sender como amigo de user_id si no existe
+        cursor.execute("SELECT id FROM friends WHERE user_id = ? AND linked_user_id = ?", (user_id, sender_id))
+        if not cursor.fetchone():
+            cursor.execute('''
+                INSERT INTO friends (user_id, linked_user_id, name, email, phone, avatar_color, notes, created_at)
+                VALUES (?, ?, ?, ?, '', ?, 'Usuario conectado de SubTracker', ?)
+            ''', (user_id, sender_id, sender['display_name'], sender.get('email', ''), sender.get('avatar_color', '#10B981'), now_str))
+
+        # 2. Agregar user_id como amigo de sender si no existe
+        cursor.execute("SELECT id FROM friends WHERE user_id = ? AND linked_user_id = ?", (sender_id, user_id))
+        if not cursor.fetchone():
+            cursor.execute('''
+                INSERT INTO friends (user_id, linked_user_id, name, email, phone, avatar_color, notes, created_at)
+                VALUES (?, ?, ?, ?, '', ?, 'Usuario conectado de SubTracker', ?)
+            ''', (sender_id, user_id, receiver['display_name'], receiver.get('email', ''), receiver.get('avatar_color', '#10B981'), now_str))
+
+    conn.commit()
+    conn.close()
+    return {'id': request_id, 'status': new_status}
+
+def create_split_pay_request(creator_id: int, data: dict, db_path=None):
+    """Crea una solicitud de pago en conjunto (Split Request) a un amigo con cuenta vinculada."""
+    conn = get_connection(db_path)
+    cursor = conn.cursor()
+
+    friend_user_id = data.get('friend_user_id')
+    amount = float(data.get('amount', 0))
+    if not friend_user_id or amount <= 0:
+        conn.close()
+        raise ValueError("El usuario destinatario y un monto válido son obligatorios")
+
+    sub_id = data.get('subscription_id') or None
+    currency = data.get('currency', 'USD')
+    due_date = data.get('due_date') or date.today().isoformat()
+    notes = data.get('notes', '').strip()
+    now_str = datetime.now().isoformat()
+
+    cursor.execute('''
+        INSERT INTO shared_pay_requests (subscription_id, creator_id, friend_user_id, amount, currency, due_date, status, notes, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, 'pending', ?, ?)
+    ''', (sub_id, creator_id, int(friend_user_id), amount, currency, due_date, notes, now_str))
+    new_id = cursor.lastrowid
+    conn.commit()
+    conn.close()
+    return {
+        'id': new_id,
+        'creator_id': creator_id,
+        'friend_user_id': int(friend_user_id),
+        'amount': amount,
+        'currency': currency,
+        'due_date': due_date,
+        'status': 'pending',
+        'notes': notes,
+        'created_at': now_str
+    }
+
+def get_split_pay_requests(user_id: int, db_path=None):
+    """Obtiene las solicitudes de pago conjunto recibidas y creadas por el usuario."""
+    conn = get_connection(db_path)
+    cursor = conn.cursor()
+
+    # Recibidas (me solicitan pagar)
+    cursor.execute('''
+        SELECT sp.*, u.username as creator_username, u.display_name as creator_display_name,
+               u.avatar_color as creator_avatar_color, s.name as subscription_name
+        FROM shared_pay_requests sp
+        JOIN users u ON sp.creator_id = u.id
+        LEFT JOIN subscriptions s ON sp.subscription_id = s.id
+        WHERE sp.friend_user_id = ?
+        ORDER BY sp.created_at DESC
+    ''', (user_id,))
+    received = [dict(r) for r in cursor.fetchall()]
+
+    # Creadas por mí (yo solicité a amigos)
+    cursor.execute('''
+        SELECT sp.*, u.username as friend_username, u.display_name as friend_display_name,
+               u.avatar_color as friend_avatar_color, s.name as subscription_name
+        FROM shared_pay_requests sp
+        JOIN users u ON sp.friend_user_id = u.id
+        LEFT JOIN subscriptions s ON sp.subscription_id = s.id
+        WHERE sp.creator_id = ?
+        ORDER BY sp.created_at DESC
+    ''', (user_id,))
+    sent = [dict(r) for r in cursor.fetchall()]
+
+    conn.close()
+    return {'received': received, 'sent': sent}
+
+def respond_split_pay_request(request_id: int, user_id: int, action: str, db_path=None):
+    """Responde a una solicitud de pago conjunto (marcar 'paid' o 'declined')."""
+    conn = get_connection(db_path)
+    cursor = conn.cursor()
+
+    # El usuario puede responder si es el friend_user_id (pagador) o el creator_id (creador confirmando pago)
+    cursor.execute("SELECT * FROM shared_pay_requests WHERE id = ? AND (friend_user_id = ? OR creator_id = ?)", (request_id, user_id, user_id))
+    req = cursor.fetchone()
+    if not req:
+        conn.close()
+        raise ValueError("Solicitud de pago no encontrada o sin permisos")
+
+    req_dict = dict(req)
+    new_status = 'paid' if action in ('paid', 'pay', 'accept') else 'declined'
+    cursor.execute("UPDATE shared_pay_requests SET status = ? WHERE id = ?", (new_status, request_id))
+
+    # Si se marcó como pagada, registrar automáticamente en friend_payments del creador
+    if new_status == 'paid':
+        creator_id = req_dict['creator_id']
+        friend_user_id = req_dict['friend_user_id']
+
+        # Localizar el friend_id en la agenda del creador
+        cursor.execute("SELECT id FROM friends WHERE user_id = ? AND linked_user_id = ?", (creator_id, friend_user_id))
+        f_row = cursor.fetchone()
+        friend_id = f_row['id'] if isinstance(f_row, dict) else (f_row[0] if f_row else None)
+        if friend_id:
+            now_str = datetime.now().isoformat()
+            p_date = date.today().isoformat()
+            cursor.execute('''
+                INSERT INTO friend_payments (user_id, friend_id, subscription_id, amount, payment_date, notes, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            ''', (creator_id, friend_id, req_dict.get('subscription_id'), req_dict['amount'], p_date, 'Saldado vía solicitud de pago conjunto', now_str))
+
+    conn.commit()
+    conn.close()
+    return {'id': request_id, 'status': new_status}
+
+def get_shared_subscriptions_with_friend(user_id: int, friend_id: int, db_path=None):
+    """Devuelve las suscripciones compartidas y en común entre el usuario y un amigo."""
+    friend = get_friend_by_id(friend_id, user_id=user_id, db_path=db_path)
+    if not friend:
+        return []
+
+    subs = get_all_subscriptions(user_id=user_id, db_path=db_path)
+    common_subs = []
+    for s in subs:
+        if not s.get('is_shared') or s.get('status') != 'active':
+            continue
+        ids = [int(x) for x in str(s.get('shared_friend_ids') or '').split(',') if x.strip().isdigit()]
+        if friend_id in ids:
+            common_subs.append(s)
+    return common_subs
 
 # ================= CRUD DE SUSCRIPCIONES =================
 def dict_from_row(row):

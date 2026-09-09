@@ -10,6 +10,9 @@ const state = {
   subscriptions: [],
   friends: [],
   friendBalances: [],
+  friendRequests: { received: [], sent: [] },
+  splitPayRequests: { received: [], sent: [] },
+  splitPayTab: 'received', // 'received' | 'sent'
   stats: null,
   settings: null,
   currency: '$',
@@ -793,12 +796,29 @@ function initEventListeners() {
     document.getElementById('profileModal')?.classList.add('hidden');
   });
 
-  // Amigos
+  // Amigos y Funciones Sociales
   document.getElementById('btnOpenAddFriendModal')?.addEventListener('click', () => openFriendModal());
   document.getElementById('btnOpenAddFriendModal2')?.addEventListener('click', () => openFriendModal());
   document.getElementById('btnCloseFriendModal')?.addEventListener('click', closeFriendModal);
   document.getElementById('btnCancelFriendModal')?.addEventListener('click', closeFriendModal);
   document.getElementById('friendForm')?.addEventListener('submit', handleFriendSubmit);
+
+  // Buscador de Usuarios Registrados
+  document.getElementById('btnOpenUserSearchModal')?.addEventListener('click', openUserSearchModal);
+  document.getElementById('btnCloseUserSearchModal')?.addEventListener('click', closeUserSearchModal);
+  document.getElementById('userSearchInput')?.addEventListener('input', debounce((e) => handleUserSearch(e.target.value.trim()), 300));
+
+  // Split Pay (Pago en Conjunto)
+  document.getElementById('btnCloseSplitPayModal')?.addEventListener('click', closeSplitPayModal);
+  document.getElementById('btnCancelSplitPayModal')?.addEventListener('click', closeSplitPayModal);
+  document.getElementById('splitPayForm')?.addEventListener('submit', handleSplitPaySubmit);
+  document.getElementById('splitPaySubSelect')?.addEventListener('change', handleSplitPaySubChange);
+  document.getElementById('btnTabSplitReceived')?.addEventListener('click', () => setSplitPayTab('received'));
+  document.getElementById('btnTabSplitSent')?.addEventListener('click', () => setSplitPayTab('sent'));
+
+  // Suscripciones en Común
+  document.getElementById('btnCloseSharedSubsModal')?.addEventListener('click', closeSharedSubsModal);
+  document.getElementById('btnOkSharedSubsModal')?.addEventListener('click', closeSharedSubsModal);
 
   // Notificaciones
   document.getElementById('btnEnableNotifications')?.addEventListener('click', requestNotificationPermission);
@@ -980,12 +1000,16 @@ async function loadPayments() {
 
 async function loadFriends() {
   try {
-    const [resFriends, resBalances] = await Promise.all([
+    const [resFriends, resBalances, resReqs, resSplit] = await Promise.all([
       fetch('/api/friends', { headers: getAuthHeaders() }),
-      fetch('/api/friends/balances', { headers: getAuthHeaders() })
+      fetch('/api/friends/balances', { headers: getAuthHeaders() }),
+      fetch('/api/friends/requests', { headers: getAuthHeaders() }),
+      fetch('/api/friends/split-requests', { headers: getAuthHeaders() })
     ]);
     const friendsData = await resFriends.json();
     const balancesData = await resBalances.json();
+    const reqsData = await resReqs.json();
+    const splitData = await resSplit.json();
 
     if (friendsData.success) {
       state.friends = friendsData.data;
@@ -999,8 +1023,16 @@ async function loadFriends() {
       state.friendBalances = balancesData.data;
       renderFriendBalances();
     }
+    if (reqsData.success) {
+      state.friendRequests = reqsData.data || { received: [], sent: [] };
+      renderFriendRequests();
+    }
+    if (splitData.success) {
+      state.splitPayRequests = splitData.data || { received: [], sent: [] };
+      renderSplitPayRequests();
+    }
   } catch (err) {
-    console.error('Error cargando amigos:', err);
+    console.error('Error cargando amigos y datos sociales:', err);
   }
 }
 
@@ -1012,30 +1044,48 @@ function renderFriendsList() {
   if (state.friends.length === 0) {
     grid.innerHTML = `
       <div class="col-span-full py-8 text-center text-slate-500 text-xs">
-        No tienes amigos agregados aún. Agrega amigos para vincularlos a planes familiares o suscripciones compartidas.
+        No tienes amigos agregados aún. Busca usuarios registrados o agrega amigos manualmente para dividir suscripciones.
       </div>
     `;
     return;
   }
 
-  grid.innerHTML = state.friends.map(f => `
-    <div class="p-3.5 bg-[#211f26] border border-[#49454f]/40 rounded-2xl flex items-center justify-between hover:border-[#d0bcff]/40 transition">
-      <div class="flex items-center gap-3">
-        <div class="w-9 h-9 rounded-full flex items-center justify-center font-bold text-xs shadow" style="background-color: ${f.avatar_color || '#a8d5b5'}; color: #133821">
-          ${escapeHtml(f.name.charAt(0).toUpperCase())}
+  grid.innerHTML = state.friends.map(f => {
+    const isRegistered = Boolean(f.linked_user_id);
+    return `
+    <div class="p-3.5 bg-[#211f26] border border-[#49454f]/40 rounded-2xl flex flex-col justify-between hover:border-[#d0bcff]/40 transition space-y-2.5">
+      <div class="flex items-start justify-between">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-full flex items-center justify-center font-bold text-xs shadow shrink-0" style="background-color: ${f.avatar_color || '#a8d5b5'}; color: #133821">
+            ${escapeHtml(f.name.charAt(0).toUpperCase())}
+          </div>
+          <div class="min-w-0">
+            <div class="flex items-center gap-1.5 flex-wrap">
+              <h4 class="text-xs font-bold text-white font-google-sans truncate">${escapeHtml(f.name)}</h4>
+              ${isRegistered ? `<span class="text-[9px] px-1.5 py-0.2 rounded-full bg-[#381e72] text-[#d0bcff] font-semibold border border-[#d0bcff]/30">SubTracker</span>` : ''}
+            </div>
+            <div class="text-[11px] text-[#cac4d0] truncate">${escapeHtml(f.phone || f.email || 'Sin contacto')}</div>
+            ${f.notes ? `<div class="text-[10px] text-[#938f99] italic mt-0.5 truncate">${escapeHtml(f.notes)}</div>` : ''}
+          </div>
         </div>
-        <div>
-          <h4 class="text-xs font-bold text-white font-google-sans">${escapeHtml(f.name)}</h4>
-          <div class="text-[11px] text-[#cac4d0]">${escapeHtml(f.phone || f.email || 'Sin contacto')}</div>
-          ${f.notes ? `<div class="text-[10px] text-[#938f99] italic mt-0.5 truncate max-w-[130px]">${escapeHtml(f.notes)}</div>` : ''}
+        <div class="flex items-center gap-0.5 text-[#cac4d0]">
+          <button onclick="editFriend(${f.id})" title="Editar" class="p-1 hover:text-white hover:bg-[#2b2930] rounded-full transition"><i data-lucide="edit-2" class="w-3.5 h-3.5"></i></button>
+          <button onclick="deleteFriend(${f.id}, '${escapeHtml(f.name)}')" title="Eliminar" class="p-1 hover:text-[#f2b8b5] hover:bg-[#2b2930] rounded-full transition"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
         </div>
       </div>
-      <div class="flex items-center gap-1 text-[#cac4d0]">
-        <button onclick="editFriend(${f.id})" title="Editar" class="p-1.5 hover:text-white hover:bg-[#2b2930] rounded-full transition"><i data-lucide="edit-2" class="w-3.5 h-3.5"></i></button>
-        <button onclick="deleteFriend(${f.id}, '${escapeHtml(f.name)}')" title="Eliminar" class="p-1.5 hover:text-[#f2b8b5] hover:bg-[#2b2930] rounded-full transition"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+
+      <!-- Acciones de Amigo -->
+      <div class="pt-2 border-t border-[#49454f]/30 flex items-center gap-1.5">
+        <button onclick="viewSharedSubsWithFriend(${f.id}, '${escapeHtml(f.name)}')" class="flex-1 m3-btn-tonal text-[10px] py-1 px-2 flex items-center justify-center gap-1" title="Ver suscripciones en común">
+          <i data-lucide="layers" class="w-3 h-3 text-[#d0bcff]"></i> En común
+        </button>
+        <button onclick="openSplitPayModalForFriend(${f.id}, '${escapeHtml(f.name)}', ${f.linked_user_id || 'null'})" class="flex-1 m3-btn-filled text-[10px] py-1 px-2 flex items-center justify-center gap-1" title="Solicitar pago en conjunto">
+          <i data-lucide="split" class="w-3 h-3"></i> Dividir pago
+        </button>
       </div>
     </div>
-  `).join('');
+  `;
+  }).join('');
 
   initIcons();
 }
@@ -1062,6 +1112,7 @@ function renderFriendBalances() {
     grandTotalOwed += b.monthly_total_owed;
     const f = b.friend;
     const subsList = b.shared_subscriptions;
+    const isRegistered = Boolean(f.linked_user_id);
 
     let subsBadgesHtml = subsList.map(s => {
       const isDiff = s.currency && s.currency !== state.baseCurrencyCode;
@@ -1071,8 +1122,8 @@ function renderFriendBalances() {
         : `${state.currency}${formatNumber(s.friend_share)}/mes`;
       return `
       <div class="flex items-center justify-between text-[11px] bg-[#141218] px-2.5 py-1.5 rounded-xl border border-[#49454f]/30">
-        <span class="text-[#e6e0e9] font-medium">${escapeHtml(s.name)}</span>
-        <span class="font-mono font-bold text-[#a8d5b5]">${shareText}</span>
+        <span class="text-[#e6e0e9] font-medium truncate pr-2">${escapeHtml(s.name)}</span>
+        <span class="font-mono font-bold text-[#a8d5b5] shrink-0">${shareText}</span>
       </div>
     `;
     }).join('');
@@ -1091,7 +1142,10 @@ function renderFriendBalances() {
                 ${f.name.charAt(0).toUpperCase()}
               </div>
               <div>
-                <h4 class="text-xs font-bold text-white font-google-sans">${escapeHtml(f.name)}</h4>
+                <div class="flex items-center gap-1.5">
+                  <h4 class="text-xs font-bold text-white font-google-sans">${escapeHtml(f.name)}</h4>
+                  ${isRegistered ? `<span class="text-[9px] px-1 py-0.2 rounded bg-[#381e72] text-[#d0bcff] font-semibold">SubTracker</span>` : ''}
+                </div>
                 <span class="text-[10px] text-[#cac4d0]">${subsList.length} ${subsList.length === 1 ? 'servicio compartido' : 'servicios compartidos'}</span>
               </div>
             </div>
@@ -1106,11 +1160,15 @@ function renderFriendBalances() {
           </div>
         </div>
 
-        <div class="pt-3 border-t border-[#49454f]/30 flex items-center gap-2">
+        <div class="pt-3 border-t border-[#49454f]/30 flex flex-wrap items-center gap-2">
           <a href="${waUrl}" target="_blank" rel="noopener" class="flex-1 py-1.5 rounded-full bg-[#2b5037] hover:bg-[#2b5037]/80 text-[#a8d5b5] text-xs font-semibold flex items-center justify-center gap-1.5 transition">
             <i data-lucide="message-circle" class="w-3.5 h-3.5"></i>
-            <span>Cobrar WhatsApp</span>
+            <span>WhatsApp</span>
           </a>
+          <button onclick="openSplitPayModalForFriend(${f.id}, '${escapeHtml(f.name)}', ${f.linked_user_id || 'null'})" class="m3-btn-filled text-xs py-1.5 px-3 flex items-center gap-1" title="Solicitar pago de suscripción dividida">
+            <i data-lucide="split" class="w-3.5 h-3.5"></i>
+            <span>Dividir</span>
+          </button>
           <button onclick="recordFriendPaymentPrompt(${f.id}, '${escapeHtml(f.name)}', ${b.monthly_total_owed})" class="m3-btn-outline text-xs py-1.5 px-3 flex items-center gap-1" title="Registrar que ya te pagó este mes">
             <i data-lucide="check" class="w-3.5 h-3.5 text-[#a8d5b5]"></i>
             <span>Saldado</span>
@@ -1125,6 +1183,498 @@ function renderFriendBalances() {
   }
 
   initIcons();
+}
+
+// ================= SOLICITUDES DE AMISTAD =================
+function renderFriendRequests() {
+  const section = document.getElementById('friendRequestsSection');
+  const list = document.getElementById('friendRequestsList');
+  const countBadge = document.getElementById('friendRequestsCountBadge');
+  if (!section || !list) return;
+
+  const received = state.friendRequests?.received || [];
+  if (countBadge) countBadge.textContent = received.length;
+
+  if (received.length === 0) {
+    section.classList.add('hidden');
+    list.innerHTML = '';
+    return;
+  }
+
+  section.classList.remove('hidden');
+  list.innerHTML = received.map(req => `
+    <div class="p-3 bg-[#1d1b20] border border-[#d0bcff]/30 rounded-2xl flex items-center justify-between gap-3">
+      <div class="flex items-center gap-2.5 min-w-0">
+        <div class="w-8 h-8 rounded-full bg-[#d0bcff] text-[#381e72] font-bold text-xs flex items-center justify-center shrink-0">
+          ${escapeHtml((req.sender_name || req.sender_username || '?').charAt(0).toUpperCase())}
+        </div>
+        <div class="min-w-0">
+          <h4 class="text-xs font-bold text-white truncate">${escapeHtml(req.sender_name || req.sender_username)}</h4>
+          <div class="text-[10px] text-[#cac4d0] truncate">@${escapeHtml(req.sender_username)}</div>
+        </div>
+      </div>
+      <div class="flex items-center gap-1.5 shrink-0">
+        <button onclick="respondFriendRequest(${req.id}, 'accept')" class="m3-btn-filled text-xs py-1 px-2.5 flex items-center gap-1">
+          <i data-lucide="check" class="w-3 h-3"></i> Aceptar
+        </button>
+        <button onclick="respondFriendRequest(${req.id}, 'reject')" class="m3-btn-outline text-xs py-1 px-2.5 text-rose-300 border-rose-500/30 hover:bg-rose-500/10">
+          <i data-lucide="x" class="w-3 h-3"></i>
+        </button>
+      </div>
+    </div>
+  `).join('');
+
+  initIcons();
+}
+
+async function respondFriendRequest(requestId, action) {
+  try {
+    const res = await fetch('/api/friends/respond-request', {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ request_id: requestId, action: action })
+    });
+    const result = await res.json();
+    if (result.success) {
+      showToast(action === 'accept' ? '¡Solicitud aceptada! Ahora son amigos en SubTracker' : 'Solicitud rechazada', 'success');
+      await loadFriends();
+    } else {
+      showToast(result.error || 'Error al procesar solicitud', 'error');
+    }
+  } catch (err) {
+    showToast('Error al conectar con el servidor', 'error');
+  }
+}
+
+// ================= BÚSQUEDA DE USUARIOS =================
+function openUserSearchModal() {
+  const modal = document.getElementById('userSearchModal');
+  const input = document.getElementById('userSearchInput');
+  const results = document.getElementById('userSearchResults');
+  if (input) input.value = '';
+  if (results) {
+    results.innerHTML = `
+      <div class="text-center py-6 text-xs text-[#938f99]">
+        Escribe al menos 2 letras para buscar usuarios.
+      </div>
+    `;
+  }
+  modal?.classList.remove('hidden');
+  input?.focus();
+  initIcons();
+}
+
+function closeUserSearchModal() {
+  document.getElementById('userSearchModal')?.classList.add('hidden');
+}
+
+async function handleUserSearch(query) {
+  const resultsContainer = document.getElementById('userSearchResults');
+  if (!resultsContainer) return;
+
+  if (!query || query.length < 2) {
+    resultsContainer.innerHTML = `
+      <div class="text-center py-6 text-xs text-[#938f99]">
+        Escribe al menos 2 letras para buscar usuarios.
+      </div>
+    `;
+    return;
+  }
+
+  try {
+    const res = await fetch(`/api/users/search?q=${encodeURIComponent(query)}`, { headers: getAuthHeaders() });
+    const result = await res.json();
+    if (!result.success) {
+      resultsContainer.innerHTML = `<div class="text-center py-4 text-xs text-rose-300">${escapeHtml(result.error || 'Error buscando')}</div>`;
+      return;
+    }
+
+    const users = result.data || [];
+    if (users.length === 0) {
+      resultsContainer.innerHTML = `
+        <div class="text-center py-6 text-xs text-[#938f99]">
+          No se encontraron usuarios que coincidan con "${escapeHtml(query)}".
+        </div>
+      `;
+      return;
+    }
+
+    resultsContainer.innerHTML = users.map(u => {
+      let actionBtn = '';
+      if (u.relationship_status === 'friends') {
+        actionBtn = `<span class="text-[10px] px-2 py-0.5 rounded-full bg-[#2b5037] text-[#a8d5b5] font-semibold flex items-center gap-1"><i data-lucide="check" class="w-3 h-3"></i> Amigos</span>`;
+      } else if (u.relationship_status === 'pending_sent') {
+        actionBtn = `<span class="text-[10px] px-2 py-0.5 rounded-full bg-[#4a4458] text-[#e8def8] font-semibold">Solicitud enviada</span>`;
+      } else if (u.relationship_status === 'pending_received') {
+        actionBtn = `<button onclick="respondFriendRequest(${u.request_id}, 'accept')" class="m3-btn-filled text-[10px] py-1 px-2.5">Aceptar</button>`;
+      } else {
+        actionBtn = `
+          <button onclick="sendFriendRequestToUser('${escapeHtml(u.username)}')" class="m3-btn-filled text-xs py-1.5 px-3 flex items-center gap-1">
+            <i data-lucide="user-plus" class="w-3.5 h-3.5"></i> Conectar
+          </button>
+        `;
+      }
+
+      return `
+        <div class="p-3 bg-[#1d1b20] border border-[#49454f]/40 rounded-2xl flex items-center justify-between gap-3">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-8 h-8 rounded-full bg-[#d0bcff] text-[#381e72] font-bold text-xs flex items-center justify-center shrink-0">
+              ${escapeHtml((u.display_name || u.username).charAt(0).toUpperCase())}
+            </div>
+            <div class="min-w-0">
+              <h4 class="text-xs font-bold text-white truncate">${escapeHtml(u.display_name || u.username)}</h4>
+              <div class="text-[10px] text-[#cac4d0] truncate">@${escapeHtml(u.username)}</div>
+            </div>
+          </div>
+          <div>${actionBtn}</div>
+        </div>
+      `;
+    }).join('');
+
+    initIcons();
+  } catch (err) {
+    console.error('Error buscando usuarios:', err);
+  }
+}
+
+async function sendFriendRequestToUser(target) {
+  try {
+    const res = await fetch('/api/friends/request', {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ receiver: target })
+    });
+    const result = await res.json();
+    if (result.success) {
+      showToast('¡Solicitud de amistad enviada con éxito!', 'success');
+      const input = document.getElementById('userSearchInput');
+      if (input && input.value) {
+        handleUserSearch(input.value.trim());
+      }
+      await loadFriends();
+    } else {
+      showToast(result.error || 'Error al enviar solicitud', 'error');
+    }
+  } catch (err) {
+    showToast('Error al conectar con el servidor', 'error');
+  }
+}
+
+// ================= SPLIT PAY (PAGO EN CONJUNTO) =================
+function setSplitPayTab(tab) {
+  state.splitPayTab = tab;
+  const btnRec = document.getElementById('btnTabSplitReceived');
+  const btnSent = document.getElementById('btnTabSplitSent');
+
+  if (tab === 'received') {
+    btnRec?.classList.add('bg-[#d0bcff]', 'text-[#381e72]', 'font-semibold');
+    btnRec?.classList.remove('text-[#cac4d0]');
+    btnSent?.classList.remove('bg-[#d0bcff]', 'text-[#381e72]', 'font-semibold');
+    btnSent?.classList.add('text-[#cac4d0]');
+  } else {
+    btnSent?.classList.add('bg-[#d0bcff]', 'text-[#381e72]', 'font-semibold');
+    btnSent?.classList.remove('text-[#cac4d0]');
+    btnRec?.classList.remove('bg-[#d0bcff]', 'text-[#381e72]', 'font-semibold');
+    btnRec?.classList.add('text-[#cac4d0]');
+  }
+  renderSplitPayRequests();
+}
+
+function renderSplitPayRequests() {
+  const container = document.getElementById('splitPayRequestsContainer');
+  const countRecElem = document.getElementById('countSplitReceived');
+  const countSentElem = document.getElementById('countSplitSent');
+  const inboxBadge = document.getElementById('splitPayInboxBadge');
+  if (!container) return;
+
+  const received = state.splitPayRequests?.received || [];
+  const sent = state.splitPayRequests?.sent || [];
+
+  if (countRecElem) countRecElem.textContent = received.length;
+  if (countSentElem) countSentElem.textContent = sent.length;
+
+  const pendingReceived = received.filter(r => r.status === 'pending');
+  if (inboxBadge) {
+    if (pendingReceived.length > 0) {
+      inboxBadge.textContent = `${pendingReceived.length} pendientes`;
+      inboxBadge.classList.remove('hidden');
+    } else {
+      inboxBadge.classList.add('hidden');
+    }
+  }
+
+  const list = state.splitPayTab === 'received' ? received : sent;
+
+  if (list.length === 0) {
+    container.innerHTML = `
+      <div class="col-span-full py-8 text-center text-[#cac4d0] text-xs">
+        No hay solicitudes de pago en conjunto ${state.splitPayTab === 'received' ? 'recibidas' : 'enviadas'}.
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = list.map(req => {
+    const isReceived = state.splitPayTab === 'received';
+    const statusMap = {
+      pending: { text: 'Pendiente', badge: 'bg-amber-400/20 text-amber-300 border-amber-500/30' },
+      paid: { text: 'Pagada', badge: 'bg-[#2b5037] text-[#a8d5b5] border-[#a8d5b5]/30' },
+      declined: { text: 'Rechazada', badge: 'bg-rose-500/20 text-rose-300 border-rose-500/30' }
+    };
+    const st = statusMap[req.status] || { text: req.status, badge: 'bg-zinc-700 text-zinc-300' };
+    const curSym = CURRENCY_SYMBOLS[req.currency] || req.currency || '$';
+    const otherPerson = isReceived ? (req.creator_name || req.creator_username) : (req.friend_name || req.friend_username);
+
+    return `
+      <div class="p-3.5 bg-[#211f26] border border-[#49454f]/40 rounded-2xl flex flex-col justify-between space-y-3">
+        <div>
+          <div class="flex items-start justify-between gap-2">
+            <div>
+              <span class="text-[10px] text-[#cac4d0] uppercase tracking-wider block">
+                ${isReceived ? `Solicitado por ${escapeHtml(otherPerson)}` : `Enviado a ${escapeHtml(otherPerson)}`}
+              </span>
+              <h4 class="text-xs font-bold text-white font-google-sans mt-0.5">${escapeHtml(req.sub_name || 'Suscripción')}</h4>
+            </div>
+            <span class="text-[10px] px-2 py-0.5 rounded-full border font-semibold ${st.badge}">
+              ${st.text}
+            </span>
+          </div>
+
+          <div class="mt-2.5 flex items-baseline justify-between">
+            <span class="text-xs text-[#cac4d0]">Monto requerido:</span>
+            <span class="text-base font-extrabold text-[#a8d5b5] font-mono">${curSym}${formatNumber(req.amount)}</span>
+          </div>
+
+          ${req.due_date ? `
+            <div class="mt-1 text-[10px] text-[#cac4d0] flex items-center gap-1">
+              <i data-lucide="calendar" class="w-3 h-3 text-[#d0bcff]"></i>
+              <span>Vence: ${formatDate(req.due_date)}</span>
+            </div>
+          ` : ''}
+
+          ${req.notes ? `
+            <p class="mt-1.5 text-[11px] text-[#938f99] italic bg-[#141218] p-2 rounded-xl border border-[#49454f]/30">
+              "${escapeHtml(req.notes)}"
+            </p>
+          ` : ''}
+        </div>
+
+        ${isReceived && req.status === 'pending' ? `
+          <div class="pt-2 border-t border-[#49454f]/30 flex items-center gap-2">
+            <button onclick="respondSplitPay(${req.id}, 'paid')" class="flex-1 m3-btn-filled text-xs py-1.5 px-3 flex items-center justify-center gap-1">
+              <i data-lucide="check-circle" class="w-3.5 h-3.5"></i> Confirmar Pago
+            </button>
+            <button onclick="respondSplitPay(${req.id}, 'declined')" class="m3-btn-outline text-xs py-1.5 px-3 text-rose-300 border-rose-500/30 hover:bg-rose-500/10">
+              Rechazar
+            </button>
+          </div>
+        ` : ''}
+      </div>
+    `;
+  }).join('');
+
+  initIcons();
+}
+
+async function respondSplitPay(requestId, action) {
+  try {
+    const res = await fetch('/api/friends/split-requests/respond', {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ request_id: requestId, action: action })
+    });
+    const result = await res.json();
+    if (result.success) {
+      showToast(action === 'paid' ? '¡Pago registrado exitosamente!' : 'Solicitud rechazada', 'success');
+      await loadFriends();
+    } else {
+      showToast(result.error || 'Error al procesar pago', 'error');
+    }
+  } catch (err) {
+    showToast('Error al conectar con el servidor', 'error');
+  }
+}
+
+function openSplitPayModalForFriend(friendId, friendName, friendUserId) {
+  const modal = document.getElementById('splitPayModal');
+  const friendNameDisplay = document.getElementById('splitPayFriendNameDisplay');
+  const friendIdInput = document.getElementById('splitFriendId');
+  const friendUserIdInput = document.getElementById('splitFriendUserId');
+  const subSelect = document.getElementById('splitPaySubSelect');
+  const amountInput = document.getElementById('splitPayAmount');
+  const currencyInput = document.getElementById('splitPayCurrency');
+  const dueDateInput = document.getElementById('splitPayDueDate');
+  const notesInput = document.getElementById('splitPayNotes');
+
+  if (friendIdInput) friendIdInput.value = friendId;
+  if (friendUserIdInput) friendUserIdInput.value = friendUserId || '';
+  if (friendNameDisplay) {
+    friendNameDisplay.innerHTML = `
+      <i data-lucide="user" class="w-4 h-4 text-[#d0bcff]"></i>
+      <span>${escapeHtml(friendName)}</span>
+      ${friendUserId ? `<span class="text-[10px] px-2 py-0.5 rounded-full bg-[#381e72] text-[#d0bcff]">Usuario Conectado</span>` : '<span class="text-[10px] px-2 py-0.5 rounded-full bg-[#211f26] text-[#cac4d0]">Amigo Local</span>'}
+    `;
+  }
+
+  // Filtrar suscripciones compartidas que involucren a este amigo, o todas las suscripciones activas
+  const friendBalance = (state.friendBalances || []).find(b => b.friend.id === friendId);
+  let relevantSubs = [];
+  if (friendBalance && friendBalance.shared_subscriptions && friendBalance.shared_subscriptions.length > 0) {
+    relevantSubs = friendBalance.shared_subscriptions;
+  } else {
+    relevantSubs = state.subscriptions.filter(s => s.status === 'active');
+  }
+
+  if (relevantSubs.length === 0) {
+    showToast('No tienes suscripciones activas disponibles para dividir', 'warning');
+    return;
+  }
+
+  subSelect.innerHTML = relevantSubs.map(s => `
+    <option value="${s.id}" data-price="${s.friend_share || s.my_share || s.price}" data-currency="${s.currency || 'USD'}" data-next="${s.next_payment_date || ''}">
+      ${escapeHtml(s.name)} - ${CURRENCY_SYMBOLS[s.currency] || s.currency}${formatNumber(s.friend_share || s.my_share || s.price)}
+    </option>
+  `).join('');
+
+  // Seleccionar la primera por defecto
+  handleSplitPaySubChange();
+
+  modal?.classList.remove('hidden');
+  initIcons();
+}
+
+function handleSplitPaySubChange() {
+  const subSelect = document.getElementById('splitPaySubSelect');
+  const amountInput = document.getElementById('splitPayAmount');
+  const currencyInput = document.getElementById('splitPayCurrency');
+  const dueDateInput = document.getElementById('splitPayDueDate');
+
+  if (!subSelect) return;
+  const opt = subSelect.options[subSelect.selectedIndex];
+  if (opt) {
+    const price = opt.dataset.price;
+    const curr = opt.dataset.currency || 'USD';
+    const nextDate = opt.dataset.next;
+    if (amountInput) amountInput.value = parseFloat(price || 0).toFixed(2);
+    if (currencyInput) currencyInput.value = curr;
+    if (dueDateInput && nextDate) dueDateInput.value = nextDate;
+  }
+}
+
+function closeSplitPayModal() {
+  document.getElementById('splitPayModal')?.classList.add('hidden');
+}
+
+async function handleSplitPaySubmit(e) {
+  e.preventDefault();
+  const friendId = parseInt(document.getElementById('splitFriendId').value);
+  const friendUserIdVal = document.getElementById('splitFriendUserId').value;
+  const friendUserId = friendUserIdVal ? parseInt(friendUserIdVal) : null;
+  const subId = parseInt(document.getElementById('splitPaySubSelect').value);
+  const amount = parseFloat(document.getElementById('splitPayAmount').value);
+  const currency = document.getElementById('splitPayCurrency').value || 'USD';
+  const dueDate = document.getElementById('splitPayDueDate').value || null;
+  const notes = document.getElementById('splitPayNotes').value.trim();
+
+  if (!friendId || !subId || !amount) {
+    showToast('Por favor completa los campos requeridos', 'warning');
+    return;
+  }
+
+  try {
+    const res = await fetch('/api/friends/split-request', {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({
+        subscription_id: subId,
+        friend_id: friendId,
+        friend_user_id: friendUserId,
+        amount: amount,
+        currency: currency,
+        due_date: dueDate,
+        notes: notes
+      })
+    });
+    const result = await res.json();
+    if (result.success) {
+      showToast('¡Solicitud de pago en conjunto enviada!', 'success');
+      closeSplitPayModal();
+      setSplitPayTab('sent');
+      await loadFriends();
+    } else {
+      showToast(result.error || 'Error enviando solicitud', 'error');
+    }
+  } catch (err) {
+    showToast('Error al conectar con el servidor', 'error');
+  }
+}
+
+// ================= SUSCRIPCIONES EN COMÚN =================
+async function viewSharedSubsWithFriend(friendId, friendName) {
+  const modal = document.getElementById('sharedSubsModal');
+  const title = document.getElementById('sharedSubsModalTitle');
+  const subtitle = document.getElementById('sharedSubsModalSubtitle');
+  const content = document.getElementById('sharedSubsModalContent');
+
+  if (title) title.innerHTML = `<i data-lucide="layers" class="w-5 h-5 text-[#a8d5b5]"></i> Suscripciones en Común con ${escapeHtml(friendName)}`;
+  if (subtitle) subtitle.textContent = `Planes compartidos y cuotas calculadas`;
+  if (content) content.innerHTML = `<div class="text-center py-6 text-xs text-[#cac4d0]">Cargando suscripciones en común...</div>`;
+  modal?.classList.remove('hidden');
+  initIcons();
+
+  try {
+    const res = await fetch(`/api/friends/shared-subs?friend_id=${friendId}`, { headers: getAuthHeaders() });
+    const result = await res.json();
+    if (!result.success) {
+      if (content) content.innerHTML = `<div class="text-center py-4 text-xs text-rose-300">${escapeHtml(result.error || 'Error cargando suscripciones')}</div>`;
+      return;
+    }
+
+    const subs = result.data || [];
+    if (subs.length === 0) {
+      if (content) {
+        content.innerHTML = `
+          <div class="text-center py-8 text-xs text-[#cac4d0]">
+            No tienes ninguna suscripción compartida con ${escapeHtml(friendName)} por el momento.<br>
+            Puedes editar una suscripción y marcarla como "Compartida" seleccionando a este amigo.
+          </div>
+        `;
+      }
+      return;
+    }
+
+    if (content) {
+      content.innerHTML = subs.map(s => {
+        const curSym = CURRENCY_SYMBOLS[s.currency] || s.currency || '$';
+        const friendShare = (s.price / (s.shared_with_count || 1));
+        return `
+          <div class="p-3.5 bg-[#211f26] border border-[#49454f]/40 rounded-2xl flex items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-xl flex items-center justify-center font-bold text-xs" style="background-color: ${s.color || '#d0bcff'}; color: #141218">
+                ${escapeHtml(s.name.charAt(0).toUpperCase())}
+              </div>
+              <div>
+                <h4 class="text-xs font-bold text-white font-google-sans">${escapeHtml(s.name)}</h4>
+                <div class="text-[11px] text-[#cac4d0]">Plan total: ${curSym}${formatNumber(s.price)} / ${CYCLE_LABELS[s.billing_cycle] || s.billing_cycle}</div>
+              </div>
+            </div>
+            <div class="text-right">
+              <span class="text-[10px] uppercase text-[#cac4d0] font-bold block">Parte del amigo</span>
+              <span class="text-xs font-bold text-[#a8d5b5] font-mono">${curSym}${formatNumber(friendShare)}</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    initIcons();
+  } catch (err) {
+    if (content) content.innerHTML = `<div class="text-center py-4 text-xs text-rose-300">Error al conectar con el servidor</div>`;
+  }
+}
+
+function closeSharedSubsModal() {
+  document.getElementById('sharedSubsModal')?.classList.add('hidden');
 }
 
 function openFriendModal(friend = null) {
