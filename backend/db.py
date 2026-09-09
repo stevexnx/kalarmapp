@@ -34,8 +34,127 @@ DEFAULT_EXCHANGE_RATES = {
     'GBP': 0.78
 }
 
+def get_database_url():
+    """Detecta si hay una URL de conexión de PostgreSQL configurada en el entorno."""
+    return os.environ.get('DATABASE_URL') or os.environ.get('POSTGRES_URL') or os.environ.get('POSTGRES_PRISMA_URL')
+
+class PostgresCursorWrapper:
+    """
+    Wrapper para cursor de psycopg2 que:
+    1. Traduce marcadores de parámetros '?' a '%s'.
+    2. Convierte 'INSERT OR IGNORE' a 'INSERT ... ON CONFLICT DO NOTHING'.
+    3. Convierte 'INSERT OR REPLACE INTO settings (user_id, key, value) ...' a 'ON CONFLICT (user_id, key) DO UPDATE ...'.
+    4. Maneja cursor.lastrowid inspeccionando RETURNING id automáticamente para INSERTs.
+    """
+    def __init__(self, real_cursor):
+        self._cur = real_cursor
+        self._last_insert_id = None
+
+    @property
+    def rowcount(self):
+        return self._cur.rowcount
+
+    @property
+    def lastrowid(self):
+        return self._last_insert_id
+
+    def _adapt_sql(self, sql):
+        clean_sql = sql.strip()
+        is_insert = clean_sql.upper().startswith('INSERT')
+
+        # Adaptar INSERT OR IGNORE
+        if 'INSERT OR IGNORE INTO' in clean_sql:
+            clean_sql = clean_sql.replace('INSERT OR IGNORE INTO', 'INSERT INTO')
+            if 'ON CONFLICT' not in clean_sql:
+                clean_sql += ' ON CONFLICT DO NOTHING'
+
+        # Adaptar INSERT OR REPLACE para settings
+        if 'INSERT OR REPLACE INTO settings' in clean_sql:
+            clean_sql = clean_sql.replace('INSERT OR REPLACE INTO settings', 'INSERT INTO settings')
+            clean_sql += ' ON CONFLICT (user_id, key) DO UPDATE SET value = EXCLUDED.value'
+
+        # Para INSERTs que no tengan RETURNING id, agregar RETURNING id si es una tabla con id autonumérico
+        should_add_returning = False
+        if is_insert and 'RETURNING' not in clean_sql.upper():
+            tbls_with_id = ['users', 'sessions', 'friends', 'friend_payments', 'subscriptions', 'payment_history']
+            for tbl in tbls_with_id:
+                if f'INSERT INTO {tbl}' in clean_sql:
+                    should_add_returning = True
+                    break
+
+        if should_add_returning:
+            clean_sql = clean_sql.rstrip(';') + ' RETURNING id'
+
+        # Reemplazar ? por %s para psycopg2
+        clean_sql = clean_sql.replace('?', '%s')
+        return clean_sql, should_add_returning
+
+    def execute(self, sql, params=None):
+        adapted_sql, has_returning = self._adapt_sql(sql)
+        if params is not None:
+            # psycopg2 requiere tupla o lista
+            self._cur.execute(adapted_sql, tuple(params))
+        else:
+            self._cur.execute(adapted_sql)
+
+        if has_returning:
+            try:
+                row = self._cur.fetchone()
+                if row:
+                    # En RealDictCursor row es dict {'id': ...}, o tupla si es normal
+                    if isinstance(row, dict):
+                        self._last_insert_id = row.get('id')
+                    else:
+                        self._last_insert_id = row[0]
+            except Exception:
+                pass
+        return self
+
+    def fetchone(self):
+        return self._cur.fetchone()
+
+    def fetchall(self):
+        return self._cur.fetchall()
+
+    def close(self):
+        return self._cur.close()
+
+    def __iter__(self):
+        return iter(self._cur)
+
+class PostgresConnectionWrapper:
+    """Wrapper para la conexión psycopg2 que expone la misma interfaz que sqlite3."""
+    def __init__(self, real_conn):
+        self._conn = real_conn
+
+    def cursor(self):
+        return PostgresCursorWrapper(self._conn.cursor())
+
+    def commit(self):
+        return self._conn.commit()
+
+    def rollback(self):
+        return self._conn.rollback()
+
+    def close(self):
+        return self._conn.close()
+
 def get_connection(db_path=None):
-    """Retorna una conexión a la base de datos SQLite con timeout y modo WAL."""
+    """
+    Retorna una conexión a la base de datos:
+    - Si existe DATABASE_URL / POSTGRES_URL y no se especificó un db_path local explícito: conecta a PostgreSQL.
+    - De lo contrario: conecta a SQLite (modo local / pruebas unitarias).
+    """
+    pg_url = get_database_url()
+    if pg_url and not db_path:
+        try:
+            import psycopg2
+            from psycopg2.extras import RealDictCursor
+            conn = psycopg2.connect(pg_url, cursor_factory=RealDictCursor)
+            return PostgresConnectionWrapper(conn)
+        except Exception as e:
+            print(f"[DB] Error conectando a PostgreSQL ({e}), recurriendo a SQLite de respaldo.")
+
     path = db_path or DB_PATH
     conn = sqlite3.connect(path, timeout=10, check_same_thread=False)
     conn.row_factory = sqlite3.Row
@@ -100,174 +219,287 @@ def convert_currency(amount: float, from_curr: str, to_curr: str, rates: dict):
     return round(amount_converted, 2)
 
 def init_db(db_path=None):
-    """Inicializa y migra las tablas en la base de datos SQLite."""
+    """Inicializa y migra las tablas en la base de datos (PostgreSQL o SQLite)."""
     conn = get_connection(db_path)
     cursor = conn.cursor()
 
-    # 1. Tabla de Usuarios
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT UNIQUE NOT NULL,
-            email TEXT UNIQUE,
-            password_hash TEXT NOT NULL,
-            salt TEXT NOT NULL,
-            display_name TEXT NOT NULL,
-            avatar_color TEXT DEFAULT '#4F46E5',
-            created_at TEXT NOT NULL
-        )
-    ''')
+    is_postgres = isinstance(conn, PostgresConnectionWrapper)
 
-    # 2. Tabla de Sesiones (Tokens)
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS sessions (
-            token TEXT PRIMARY KEY,
-            user_id INTEGER NOT NULL,
-            created_at TEXT NOT NULL,
-            expires_at TEXT NOT NULL,
-            FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
-        )
-    ''')
-
-    # 3. Tabla de Amigos / Contactos
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS friends (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id INTEGER NOT NULL,
-            name TEXT NOT NULL,
-            email TEXT DEFAULT '',
-            phone TEXT DEFAULT '',
-            avatar_color TEXT DEFAULT '#10B981',
-            notes TEXT DEFAULT '',
-            created_at TEXT NOT NULL,
-            FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
-        )
-    ''')
-
-    # 4. Tabla de Pagos de Amigos (Reembolsos recibidos)
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS friend_payments (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id INTEGER NOT NULL,
-            friend_id INTEGER NOT NULL,
-            subscription_id INTEGER,
-            amount REAL NOT NULL,
-            payment_date TEXT NOT NULL,
-            notes TEXT DEFAULT '',
-            created_at TEXT NOT NULL,
-            FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
-            FOREIGN KEY (friend_id) REFERENCES friends (id) ON DELETE CASCADE
-        )
-    ''')
-
-    # 5. Tabla de Suscripciones
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS subscriptions (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id INTEGER DEFAULT 1,
-            name TEXT NOT NULL,
-            price REAL NOT NULL,
-            currency TEXT NOT NULL DEFAULT 'USD',
-            billing_cycle TEXT NOT NULL DEFAULT 'monthly',
-            next_billing_date TEXT NOT NULL,
-            category TEXT NOT NULL DEFAULT 'Otros',
-            payment_method TEXT DEFAULT 'Tarjeta de Crédito',
-            status TEXT NOT NULL DEFAULT 'active',
-            notes TEXT DEFAULT '',
-            url TEXT DEFAULT '',
-            icon TEXT DEFAULT '',
-            color TEXT DEFAULT '',
-            created_at TEXT NOT NULL,
-            updated_at TEXT NOT NULL
-        )
-    ''')
-
-    # Migración de columnas en subscriptions
-    cursor.execute("PRAGMA table_info(subscriptions)")
-    sub_columns = [row['name'] for row in cursor.fetchall()]
-
-    new_sub_columns = [
-        ('user_id', 'INTEGER DEFAULT 1'),
-        ('is_trial', 'INTEGER DEFAULT 0'),
-        ('trial_end_date', 'TEXT'),
-        ('is_shared', 'INTEGER DEFAULT 0'),
-        ('shared_with_count', 'INTEGER DEFAULT 1'),
-        ('my_share_price', 'REAL'),
-        ('original_currency', "TEXT DEFAULT 'USD'"),
-        ('shared_friend_ids', "TEXT DEFAULT ''")
-    ]
-
-    for col_name, col_type in new_sub_columns:
-        if col_name not in sub_columns:
-            cursor.execute(f"ALTER TABLE subscriptions ADD COLUMN {col_name} {col_type}")
-
-    # 6. Tabla de Historial de Pagos
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS payment_history (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id INTEGER DEFAULT 1,
-            subscription_id INTEGER NOT NULL,
-            subscription_name TEXT NOT NULL,
-            amount REAL NOT NULL,
-            currency TEXT NOT NULL DEFAULT 'USD',
-            payment_date TEXT NOT NULL,
-            payment_method TEXT DEFAULT 'Tarjeta de Crédito',
-            notes TEXT DEFAULT '',
-            created_at TEXT NOT NULL,
-            FOREIGN KEY (subscription_id) REFERENCES subscriptions (id) ON DELETE CASCADE
-        )
-    ''')
-
-    cursor.execute("PRAGMA table_info(payment_history)")
-    pay_columns = [row['name'] for row in cursor.fetchall()]
-    if 'user_id' not in pay_columns:
-        cursor.execute("ALTER TABLE payment_history ADD COLUMN user_id INTEGER DEFAULT 1")
-
-    # 7. Tabla de Ajustes — migrar si el esquema antiguo tiene solo 'key' como PK
-    cursor.execute("SELECT sql FROM sqlite_master WHERE type='table' AND name='settings'")
-    settings_sql_row = cursor.fetchone()
-    settings_sql = settings_sql_row[0] if settings_sql_row else ''
-
-    if not settings_sql:
-        # Tabla no existe, crearla con el esquema correcto
+    if is_postgres:
+        # 1. Tabla de Usuarios
         cursor.execute('''
-            CREATE TABLE settings (
+            CREATE TABLE IF NOT EXISTS users (
+                id SERIAL PRIMARY KEY,
+                username VARCHAR(255) UNIQUE NOT NULL,
+                email VARCHAR(255) UNIQUE,
+                password_hash TEXT NOT NULL,
+                salt TEXT NOT NULL,
+                display_name TEXT NOT NULL,
+                avatar_color VARCHAR(50) DEFAULT '#4F46E5',
+                created_at TEXT NOT NULL
+            )
+        ''')
+
+        # 2. Tabla de Sesiones (Tokens)
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS sessions (
+                token VARCHAR(255) PRIMARY KEY,
+                user_id INTEGER NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+                created_at TEXT NOT NULL,
+                expires_at TEXT NOT NULL
+            )
+        ''')
+
+        # 3. Tabla de Amigos / Contactos
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS friends (
+                id SERIAL PRIMARY KEY,
+                user_id INTEGER NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+                name TEXT NOT NULL,
+                email TEXT DEFAULT '',
+                phone TEXT DEFAULT '',
+                avatar_color VARCHAR(50) DEFAULT '#10B981',
+                notes TEXT DEFAULT '',
+                created_at TEXT NOT NULL
+            )
+        ''')
+
+        # 4. Tabla de Pagos de Amigos
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS friend_payments (
+                id SERIAL PRIMARY KEY,
+                user_id INTEGER NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+                friend_id INTEGER NOT NULL REFERENCES friends (id) ON DELETE CASCADE,
+                subscription_id INTEGER,
+                amount DOUBLE PRECISION NOT NULL,
+                payment_date TEXT NOT NULL,
+                notes TEXT DEFAULT '',
+                created_at TEXT NOT NULL
+            )
+        ''')
+
+        # 5. Tabla de Suscripciones
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS subscriptions (
+                id SERIAL PRIMARY KEY,
                 user_id INTEGER DEFAULT 1,
-                key TEXT NOT NULL,
+                name TEXT NOT NULL,
+                price DOUBLE PRECISION NOT NULL,
+                currency VARCHAR(10) NOT NULL DEFAULT 'USD',
+                billing_cycle VARCHAR(50) NOT NULL DEFAULT 'monthly',
+                next_billing_date TEXT NOT NULL,
+                category TEXT NOT NULL DEFAULT 'Otros',
+                payment_method TEXT DEFAULT 'Tarjeta de Crédito',
+                status VARCHAR(50) NOT NULL DEFAULT 'active',
+                notes TEXT DEFAULT '',
+                url TEXT DEFAULT '',
+                icon TEXT DEFAULT '',
+                color TEXT DEFAULT '',
+                is_trial INTEGER DEFAULT 0,
+                trial_end_date TEXT,
+                is_shared INTEGER DEFAULT 0,
+                shared_with_count INTEGER DEFAULT 1,
+                my_share_price DOUBLE PRECISION,
+                original_currency VARCHAR(10) DEFAULT 'USD',
+                shared_friend_ids TEXT DEFAULT '',
+                created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL
+            )
+        ''')
+
+        # 6. Tabla de Historial de Pagos
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS payment_history (
+                id SERIAL PRIMARY KEY,
+                user_id INTEGER DEFAULT 1,
+                subscription_id INTEGER NOT NULL REFERENCES subscriptions (id) ON DELETE CASCADE,
+                subscription_name TEXT NOT NULL,
+                amount DOUBLE PRECISION NOT NULL,
+                currency VARCHAR(10) NOT NULL DEFAULT 'USD',
+                payment_date TEXT NOT NULL,
+                payment_method TEXT DEFAULT 'Tarjeta de Crédito',
+                notes TEXT DEFAULT '',
+                created_at TEXT NOT NULL
+            )
+        ''')
+
+        # 7. Tabla de Ajustes
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS settings (
+                user_id INTEGER DEFAULT 1,
+                key VARCHAR(255) NOT NULL,
                 value TEXT NOT NULL,
                 PRIMARY KEY (user_id, key)
             )
         ''')
-    elif 'user_id, key' not in settings_sql and '(user_id,' not in settings_sql:
-        # Esquema viejo con 'key TEXT PRIMARY KEY' — migrar sin perder datos
-        cursor.execute("SELECT * FROM settings")
-        old_rows = cursor.fetchall()
-        cursor.execute("ALTER TABLE settings RENAME TO settings_old")
-        cursor.execute('''
-            CREATE TABLE settings (
-                user_id INTEGER DEFAULT 1,
-                key TEXT NOT NULL,
-                value TEXT NOT NULL,
-                PRIMARY KEY (user_id, key)
-            )
-        ''')
-        for r in old_rows:
-            uid = r['user_id'] if 'user_id' in r.keys() else 1
-            cursor.execute(
-                "INSERT OR IGNORE INTO settings (user_id, key, value) VALUES (?, ?, ?)",
-                (uid or 1, r['key'], r['value'])
-            )
-        cursor.execute("DROP TABLE settings_old")
     else:
-        # Esquema ya correcto; solo agregar user_id si falta
-        cursor.execute("PRAGMA table_info(settings)")
-        settings_cols = [row['name'] for row in cursor.fetchall()]
-        if 'user_id' not in settings_cols:
-            cursor.execute("ALTER TABLE settings ADD COLUMN user_id INTEGER DEFAULT 1")
+        # Inicialización y migraciones SQLite existentes
+        # 1. Tabla de Usuarios
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS users (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                username TEXT UNIQUE NOT NULL,
+                email TEXT UNIQUE,
+                password_hash TEXT NOT NULL,
+                salt TEXT NOT NULL,
+                display_name TEXT NOT NULL,
+                avatar_color TEXT DEFAULT '#4F46E5',
+                created_at TEXT NOT NULL
+            )
+        ''')
+
+        # 2. Tabla de Sesiones (Tokens)
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS sessions (
+                token TEXT PRIMARY KEY,
+                user_id INTEGER NOT NULL,
+                created_at TEXT NOT NULL,
+                expires_at TEXT NOT NULL,
+                FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+            )
+        ''')
+
+        # 3. Tabla de Amigos / Contactos
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS friends (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                name TEXT NOT NULL,
+                email TEXT DEFAULT '',
+                phone TEXT DEFAULT '',
+                avatar_color TEXT DEFAULT '#10B981',
+                notes TEXT DEFAULT '',
+                created_at TEXT NOT NULL,
+                FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+            )
+        ''')
+
+        # 4. Tabla de Pagos de Amigos (Reembolsos recibidos)
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS friend_payments (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                friend_id INTEGER NOT NULL,
+                subscription_id INTEGER,
+                amount REAL NOT NULL,
+                payment_date TEXT NOT NULL,
+                notes TEXT DEFAULT '',
+                created_at TEXT NOT NULL,
+                FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+                FOREIGN KEY (friend_id) REFERENCES friends (id) ON DELETE CASCADE
+            )
+        ''')
+
+        # 5. Tabla de Suscripciones
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS subscriptions (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER DEFAULT 1,
+                name TEXT NOT NULL,
+                price REAL NOT NULL,
+                currency TEXT NOT NULL DEFAULT 'USD',
+                billing_cycle TEXT NOT NULL DEFAULT 'monthly',
+                next_billing_date TEXT NOT NULL,
+                category TEXT NOT NULL DEFAULT 'Otros',
+                payment_method TEXT DEFAULT 'Tarjeta de Crédito',
+                status TEXT NOT NULL DEFAULT 'active',
+                notes TEXT DEFAULT '',
+                url TEXT DEFAULT '',
+                icon TEXT DEFAULT '',
+                color TEXT DEFAULT '',
+                created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL
+            )
+        ''')
+
+        # Migración de columnas en subscriptions
+        cursor.execute("PRAGMA table_info(subscriptions)")
+        sub_columns = [row['name'] for row in cursor.fetchall()]
+
+        new_sub_columns = [
+            ('user_id', 'INTEGER DEFAULT 1'),
+            ('is_trial', 'INTEGER DEFAULT 0'),
+            ('trial_end_date', 'TEXT'),
+            ('is_shared', 'INTEGER DEFAULT 0'),
+            ('shared_with_count', 'INTEGER DEFAULT 1'),
+            ('my_share_price', 'REAL'),
+            ('original_currency', "TEXT DEFAULT 'USD'"),
+            ('shared_friend_ids', "TEXT DEFAULT ''")
+        ]
+
+        for col_name, col_type in new_sub_columns:
+            if col_name not in sub_columns:
+                cursor.execute(f"ALTER TABLE subscriptions ADD COLUMN {col_name} {col_type}")
+
+        # 6. Tabla de Historial de Pagos
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS payment_history (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER DEFAULT 1,
+                subscription_id INTEGER NOT NULL,
+                subscription_name TEXT NOT NULL,
+                amount REAL NOT NULL,
+                currency TEXT NOT NULL DEFAULT 'USD',
+                payment_date TEXT NOT NULL,
+                payment_method TEXT DEFAULT 'Tarjeta de Crédito',
+                notes TEXT DEFAULT '',
+                created_at TEXT NOT NULL,
+                FOREIGN KEY (subscription_id) REFERENCES subscriptions (id) ON DELETE CASCADE
+            )
+        ''')
+
+        cursor.execute("PRAGMA table_info(payment_history)")
+        pay_columns = [row['name'] for row in cursor.fetchall()]
+        if 'user_id' not in pay_columns:
+            cursor.execute("ALTER TABLE payment_history ADD COLUMN user_id INTEGER DEFAULT 1")
+
+        # 7. Tabla de Ajustes — migrar si el esquema antiguo tiene solo 'key' como PK
+        cursor.execute("SELECT sql FROM sqlite_master WHERE type='table' AND name='settings'")
+        settings_sql_row = cursor.fetchone()
+        settings_sql = settings_sql_row[0] if settings_sql_row else ''
+
+        if not settings_sql:
+            # Tabla no existe, crearla con el esquema correcto
+            cursor.execute('''
+                CREATE TABLE settings (
+                    user_id INTEGER DEFAULT 1,
+                    key TEXT NOT NULL,
+                    value TEXT NOT NULL,
+                    PRIMARY KEY (user_id, key)
+                )
+            ''')
+        elif 'user_id, key' not in settings_sql and '(user_id,' not in settings_sql:
+            # Esquema viejo con 'key TEXT PRIMARY KEY' — migrar sin perder datos
+            cursor.execute("SELECT * FROM settings")
+            old_rows = cursor.fetchall()
+            cursor.execute("ALTER TABLE settings RENAME TO settings_old")
+            cursor.execute('''
+                CREATE TABLE settings (
+                    user_id INTEGER DEFAULT 1,
+                    key TEXT NOT NULL,
+                    value TEXT NOT NULL,
+                    PRIMARY KEY (user_id, key)
+                )
+            ''')
+            for r in old_rows:
+                uid = r['user_id'] if 'user_id' in r.keys() else 1
+                cursor.execute(
+                    "INSERT OR IGNORE INTO settings (user_id, key, value) VALUES (?, ?, ?)",
+                    (uid or 1, r['key'], r['value'])
+                )
+            cursor.execute("DROP TABLE settings_old")
+        else:
+            # Esquema ya correcto; solo agregar user_id si falta
+            cursor.execute("PRAGMA table_info(settings)")
+            settings_cols = [row['name'] for row in cursor.fetchall()]
+            if 'user_id' not in settings_cols:
+                cursor.execute("ALTER TABLE settings ADD COLUMN user_id INTEGER DEFAULT 1")
 
     # Crear usuario administrador por defecto si la tabla users está vacía
     cursor.execute("SELECT COUNT(*) as count FROM users")
-    if cursor.fetchone()['count'] == 0:
+    count_row = cursor.fetchone()
+    count_val = count_row['count'] if isinstance(count_row, dict) else count_row[0]
+    if count_val == 0:
         pwd_hash, salt = hash_password('admin123')
         now_str = datetime.now().isoformat()
         cursor.execute('''
