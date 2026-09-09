@@ -74,7 +74,8 @@ class PostgresCursorWrapper:
 
         should_add_returning = False
         if is_insert and 'RETURNING' not in clean_sql.upper():
-            tbls_with_id = ['users', 'sessions', 'friends', 'friend_payments', 'subscriptions', 'payment_history']
+            # Tablas que tienen columna 'id' autonumérica
+            tbls_with_id = ['users', 'friends', 'friend_payments', 'subscriptions', 'payment_history']
             for tbl in tbls_with_id:
                 if f'INSERT INTO {tbl}' in clean_sql:
                     should_add_returning = True
