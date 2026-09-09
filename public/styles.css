@@ -32,13 +32,26 @@
   --md-sys-color-secondary-container: #4a4458;
   --md-sys-color-on-secondary-container: #e8def8;
 
-  /* Tertiary Tonal Palette */
+  /* Tertiary Tonal Palette (Rosa/Coral suave Google M3) */
   --md-sys-color-tertiary: #efb8c8;
-  --md-sys-color-tertiary-container: #633b48;
+  --md-sys-color-tertiary-container: #492532;
   --md-sys-color-on-tertiary-container: #ffd8e4;
 
-  /* Error Tonal */
+  /* Success / Positive Tonal Palette (M3 Verde Menta Tonal - Sin Neón) */
+  --md-sys-color-success: #a8d5b5;
+  --md-sys-color-on-success: #133821;
+  --md-sys-color-success-container: #2b5037;
+  --md-sys-color-on-success-container: #c4ebd0;
+
+  /* Warning / Caution Tonal Palette (M3 Ámbar Dorado Tonal) */
+  --md-sys-color-warning: #f2c18d;
+  --md-sys-color-on-warning: #482905;
+  --md-sys-color-warning-container: #643f14;
+  --md-sys-color-on-warning-container: #ffddb8;
+
+  /* Error Tonal Palette */
   --md-sys-color-error: #f2b8b5;
+  --md-sys-color-on-error: #601410;
   --md-sys-color-error-container: #8c1d18;
   --md-sys-color-on-error-container: #f9dedc;
 
@@ -170,7 +183,7 @@ h1, h2, h3, h4, .font-google-sans {
   transform: scale(0.96);
 }
 
-/* Botón primario relleno Google M3 (Como el botón "Get started" de material.io) */
+/* Botón primario relleno Google M3 (Filled Button) */
 .m3-btn-filled {
   display: inline-flex;
   align-items: center;
@@ -180,45 +193,52 @@ h1, h2, h3, h4, .font-google-sans {
   color: var(--md-sys-color-on-primary);
   font-family: 'Google Sans', 'Google Sans Text', sans-serif;
   font-weight: 600;
-  font-size: 0.9375rem;
-  padding: 12px 28px;
+  font-size: 0.875rem;
+  padding: 10px 24px;
   border-radius: var(--md-shape-full);
   border: none;
   cursor: pointer;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
   transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+  letter-spacing: 0.01em;
+  user-select: none;
 }
 .m3-btn-filled:hover {
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
-  filter: brightness(1.05);
-  transform: translateY(-1px);
+  box-shadow: 0 2px 6px 1px rgba(0, 0, 0, 0.35);
+  background-color: #dfd2ff;
 }
 .m3-btn-filled:active {
-  transform: translateY(1px);
+  transform: scale(0.98);
 }
 
-/* Botón tonal / tonal button */
+/* Botón tonal Google M3 (Filled Tonal Button) */
 .m3-btn-tonal {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 8px;
   background-color: var(--md-sys-color-secondary-container);
   color: var(--md-sys-color-on-secondary-container);
-  font-weight: 600;
+  font-family: 'Google Sans Text', sans-serif;
+  font-weight: 500;
   font-size: 0.8125rem;
-  padding: 8px 16px;
+  padding: 8px 18px;
   border-radius: var(--md-shape-full);
   border: none;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+  letter-spacing: 0.01em;
+  user-select: none;
 }
 .m3-btn-tonal:hover {
-  background-color: rgba(204, 194, 220, 0.25);
+  background-color: rgba(74, 68, 88, 0.8);
   color: #fff;
 }
+.m3-btn-tonal:active {
+  transform: scale(0.98);
+}
 
-/* Botón outline Google M3 */
+/* Botón outline Google M3 (Outlined Button) */
 .m3-btn-outline {
   display: inline-flex;
   align-items: center;
@@ -226,17 +246,85 @@ h1, h2, h3, h4, .font-google-sans {
   gap: 6px;
   background-color: transparent;
   color: var(--md-sys-color-on-surface);
-  border: 1px solid var(--md-sys-color-outline);
-  font-weight: 600;
+  border: 1px solid var(--md-sys-color-outline-variant);
+  font-family: 'Google Sans Text', sans-serif;
+  font-weight: 500;
   font-size: 0.8125rem;
-  padding: 7px 16px;
+  padding: 7px 18px;
   border-radius: var(--md-shape-full);
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+  user-select: none;
 }
 .m3-btn-outline:hover {
   background-color: rgba(230, 224, 233, 0.08);
-  border-color: var(--md-sys-color-primary);
+  border-color: var(--md-sys-color-outline);
+}
+.m3-btn-outline:active {
+  transform: scale(0.98);
+}
+
+/* Botón de texto Google M3 (Text Button) */
+.m3-btn-text {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: transparent;
+  border: none;
+  color: var(--md-sys-color-primary);
+  font-family: 'Google Sans Text', sans-serif;
+  font-weight: 500;
+  font-size: 0.8125rem;
+  padding: 6px 12px;
+  border-radius: var(--md-shape-full);
+  cursor: pointer;
+  transition: background-color 0.2s cubic-bezier(0.2, 0, 0, 1);
+}
+.m3-btn-text:hover {
+  background-color: rgba(208, 188, 255, 0.08);
+}
+
+/* Badges tonales oficiales M3 */
+.m3-badge-primary {
+  background-color: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-on-primary-container);
+  border-radius: var(--md-shape-full);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  padding: 2px 8px;
+}
+.m3-badge-secondary {
+  background-color: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-on-secondary-container);
+  border-radius: var(--md-shape-full);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  padding: 2px 8px;
+}
+.m3-badge-success {
+  background-color: var(--md-sys-color-success-container);
+  color: var(--md-sys-color-on-success-container);
+  border-radius: var(--md-shape-full);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  padding: 2px 8px;
+}
+.m3-badge-warning {
+  background-color: var(--md-sys-color-warning-container);
+  color: var(--md-sys-color-on-warning-container);
+  border-radius: var(--md-shape-full);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  padding: 2px 8px;
+}
+.m3-badge-error {
+  background-color: var(--md-sys-color-error-container);
+  color: var(--md-sys-color-on-error-container);
+  border-radius: var(--md-shape-full);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  padding: 2px 8px;
 }
 
 /* Tarjetas M3 Google (Grandes radios de curvatura como en material.io 28-32px) */

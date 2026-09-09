@@ -88,7 +88,7 @@
         <button id="railBtnFriends" class="m3-rail-item group" title="Amigos & Cuentas Compartidas">
           <div class="m3-rail-pill relative">
             <i data-lucide="users" class="w-5 h-5 transition-transform group-hover:scale-110"></i>
-            <span id="railFriendsBadge" class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[#48ffb3] text-[#003822] font-bold text-[9px] flex items-center justify-center">0</span>
+            <span id="railFriendsBadge" class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[#a8d5b5] text-[#133821] font-bold text-[9px] flex items-center justify-center">0</span>
           </div>
           <span class="m3-rail-label">Amigos</span>
         </button>
@@ -215,7 +215,7 @@
       <button id="tabBtnFriends" class="m3-nav-pill whitespace-nowrap cursor-pointer">
         <i data-lucide="users" class="w-3.5 h-3.5"></i>
         <span>Amigos</span>
-        <span id="friendsBadgeCount" class="text-[10px] px-1.5 py-0.2 rounded-full bg-[#48ffb3] text-[#003822] font-bold">0</span>
+        <span id="friendsBadgeCount" class="text-[10px] px-1.5 py-0.2 rounded-full bg-[#a8d5b5] text-[#133821] font-bold">0</span>
       </button>
     </div>
 
@@ -232,30 +232,30 @@
       <div class="m3-card p-5">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-2.5">
           <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
+            <div class="w-10 h-10 rounded-2xl bg-[#4a4458]/50 border border-[#49454f]/50 flex items-center justify-center text-[#e8def8]">
               <i data-lucide="target" class="w-5 h-5"></i>
             </div>
             <div>
-              <h3 class="text-xs sm:text-sm font-bold text-white flex items-center gap-2">
+              <h3 class="text-xs sm:text-sm font-bold text-white flex items-center gap-2 font-google-sans">
                 Presupuesto Mensual de Suscripciones
-                <span id="budgetAlertPill" class="text-[10px] px-2.5 py-0.5 rounded-full font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">En Presupuesto</span>
+                <span id="budgetAlertPill" class="m3-badge-success">En Presupuesto</span>
               </h3>
-              <p class="text-[11px] text-slate-400" id="budgetSubtitle">Calculando límites y consumo actual...</p>
+              <p class="text-[11px] text-[#cac4d0]" id="budgetSubtitle">Calculando límites y consumo actual...</p>
             </div>
           </div>
 
           <div class="text-left sm:text-right flex items-center sm:block gap-3">
-            <div class="text-xs text-slate-400">
-              Consumido: <span id="budgetSpentAmount" class="font-bold text-white">$0.00</span> / <span id="budgetLimitAmount" class="font-bold text-slate-300">$150.00</span>
+            <div class="text-xs text-[#cac4d0]">
+              Consumido: <span id="budgetSpentAmount" class="font-bold text-white font-mono">$0.00</span> / <span id="budgetLimitAmount" class="font-bold text-[#cac4d0] font-mono">$150.00</span>
             </div>
-            <button id="btnQuickEditBudget" class="text-[11px] text-indigo-400 hover:text-indigo-300 underline decoration-dotted">
+            <button id="btnQuickEditBudget" class="m3-btn-text text-[11px] py-0 px-1 mt-0.5">
               Modificar presupuesto
             </button>
           </div>
         </div>
 
-        <div class="w-full bg-slate-900 rounded-full h-3 overflow-hidden p-0.5 border border-slate-700/60">
-          <div id="budgetProgressBar" class="h-full rounded-full transition-all duration-500 bg-emerald-500" style="width: 0%"></div>
+        <div class="w-full bg-[#141218] rounded-full h-2.5 overflow-hidden p-0.5 border border-[#49454f]/50">
+          <div id="budgetProgressBar" class="h-full rounded-full transition-all duration-500 bg-[#a8d5b5]" style="width: 0%"></div>
         </div>
       </div>
 
@@ -267,64 +267,60 @@
         
         <!-- KPI 1: Gasto Mensual -->
         <div class="m3-card p-5 relative overflow-hidden">
-          <div class="absolute -right-4 -bottom-4 w-24 h-24 bg-indigo-500/10 rounded-full blur-xl pointer-events-none"></div>
           <div class="flex items-center justify-between">
-            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Gasto Mensual Total</span>
-            <div class="w-9 h-9 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
+            <span class="text-xs font-semibold text-[#cac4d0] uppercase tracking-wider">Gasto Mensual Total</span>
+            <div class="w-9 h-9 rounded-xl bg-[#4a4458]/40 border border-[#49454f]/50 flex items-center justify-center text-[#d0bcff]">
               <i data-lucide="calendar" class="w-4 h-4"></i>
             </div>
           </div>
           <div class="mt-3">
             <div class="text-2xl sm:text-3xl font-bold text-white tracking-tight font-mono" id="kpiMonthlyCost">$0.00</div>
-            <p class="text-xs text-slate-400 mt-1" id="kpiMonthlySubtitle">Total recurrente activo</p>
+            <p class="text-xs text-[#cac4d0] mt-1" id="kpiMonthlySubtitle">Total recurrente activo</p>
           </div>
         </div>
 
         <!-- KPI 2: Gasto Anual Proyectado -->
-        <div class="m3-card p-5 relative overflow-hidden border-indigo-500/30">
-          <div class="absolute -right-4 -bottom-4 w-24 h-24 bg-purple-500/10 rounded-full blur-xl pointer-events-none"></div>
+        <div class="m3-card p-5 relative overflow-hidden">
           <div class="flex items-center justify-between">
-            <span class="text-xs font-semibold text-indigo-300 uppercase tracking-wider flex items-center gap-1.5">
-              <i data-lucide="sparkles" class="w-3.5 h-3.5 text-indigo-400"></i>
+            <span class="text-xs font-semibold text-[#cac4d0] uppercase tracking-wider flex items-center gap-1.5">
+              <i data-lucide="sparkles" class="w-3.5 h-3.5 text-[#d0bcff]"></i>
               Costo Anual Proyectado
             </span>
-            <div class="w-9 h-9 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400">
+            <div class="w-9 h-9 rounded-xl bg-[#4f378b]/40 border border-[#49454f]/50 flex items-center justify-center text-[#d0bcff]">
               <i data-lucide="trending-up" class="w-4 h-4"></i>
             </div>
           </div>
           <div class="mt-3">
-            <div class="text-2xl sm:text-3xl font-bold text-indigo-100 tracking-tight font-mono" id="kpiAnnualCost">$0.00</div>
-            <p class="text-xs text-indigo-300/80 mt-1" id="kpiSavingsTip">Impacto acumulado en 12 meses</p>
+            <div class="text-2xl sm:text-3xl font-bold text-white tracking-tight font-mono" id="kpiAnnualCost">$0.00</div>
+            <p class="text-xs text-[#cac4d0] mt-1" id="kpiSavingsTip">Impacto acumulado en 12 meses</p>
           </div>
         </div>
 
         <!-- KPI 3: Próximos Cortes (7 días) -->
         <div class="m3-card p-5 relative overflow-hidden">
-          <div class="absolute -right-4 -bottom-4 w-24 h-24 bg-amber-500/10 rounded-full blur-xl pointer-events-none"></div>
           <div class="flex items-center justify-between">
-            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Cortes en 7 Días</span>
-            <div class="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
+            <span class="text-xs font-semibold text-[#cac4d0] uppercase tracking-wider">Cortes en 7 Días</span>
+            <div class="w-9 h-9 rounded-xl bg-[#643f14]/40 border border-[#49454f]/50 flex items-center justify-center text-[#f2c18d]">
               <i data-lucide="bell" class="w-4 h-4"></i>
             </div>
           </div>
           <div class="mt-3">
             <div class="text-2xl sm:text-3xl font-bold text-white tracking-tight font-mono" id="kpiUpcomingCount">0</div>
-            <p class="text-xs text-amber-400/90 mt-1 font-medium" id="kpiUpcomingSubtitle">Sin cobros inmediatos</p>
+            <p class="text-xs text-[#f2c18d] mt-1 font-medium" id="kpiUpcomingSubtitle">Sin cobros inmediatos</p>
           </div>
         </div>
 
         <!-- KPI 4: Ahorro por Cuentas Compartidas -->
         <div class="m3-card p-5 relative overflow-hidden">
-          <div class="absolute -right-4 -bottom-4 w-24 h-24 bg-emerald-500/10 rounded-full blur-xl pointer-events-none"></div>
           <div class="flex items-center justify-between">
-            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Ahorro Compartido</span>
-            <div class="w-9 h-9 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+            <span class="text-xs font-semibold text-[#cac4d0] uppercase tracking-wider">Ahorro Compartido</span>
+            <div class="w-9 h-9 rounded-xl bg-[#2b5037]/50 border border-[#49454f]/50 flex items-center justify-center text-[#a8d5b5]">
               <i data-lucide="users" class="w-4 h-4"></i>
             </div>
           </div>
           <div class="mt-3">
-            <div class="text-2xl sm:text-3xl font-bold text-emerald-400 tracking-tight font-mono" id="kpiSharedSavings">$0.00</div>
-            <p class="text-xs text-slate-400 mt-1" id="kpiSharedSubtitle">Total aportado por amigos</p>
+            <div class="text-2xl sm:text-3xl font-bold text-[#a8d5b5] tracking-tight font-mono" id="kpiSharedSavings">$0.00</div>
+            <p class="text-xs text-[#cac4d0] mt-1" id="kpiSharedSubtitle">Total aportado por amigos</p>
           </div>
         </div>
       </div>
@@ -430,9 +426,9 @@
 
         <div id="subscriptionsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
 
-        <div id="subscriptionsTableContainer" class="hidden overflow-x-auto rounded-xl border border-slate-700/60">
+        <div id="subscriptionsTableContainer" class="hidden overflow-x-auto rounded-2xl border border-[#49454f]/40">
           <table class="w-full text-left text-xs sm:text-sm">
-            <thead class="bg-slate-900/80 text-slate-400 border-b border-slate-700/60 uppercase tracking-wider text-[11px]">
+            <thead class="bg-[#141218] text-[#cac4d0] border-b border-[#49454f]/40 uppercase tracking-wider text-[11px]">
               <tr>
                 <th scope="col" class="px-4 py-3.5">Servicio</th>
                 <th scope="col" class="px-4 py-3.5">Categoría</th>
@@ -443,19 +439,19 @@
                 <th scope="col" class="px-4 py-3.5 text-right">Acciones</th>
               </tr>
             </thead>
-            <tbody id="subscriptionsTableBody" class="divide-y divide-slate-800 text-slate-200"></tbody>
+            <tbody id="subscriptionsTableBody" class="divide-y divide-[#49454f]/30 text-[#e6e0e9]"></tbody>
           </table>
         </div>
 
         <div id="emptyState" class="hidden py-16 text-center">
-          <div class="w-16 h-16 rounded-2xl bg-slate-800 border border-slate-700 mx-auto flex items-center justify-center text-slate-500 mb-4">
+          <div class="w-16 h-16 rounded-2xl bg-[#211f26] border border-[#49454f]/50 mx-auto flex items-center justify-center text-[#cac4d0] mb-4">
             <i data-lucide="folder-search" class="w-8 h-8"></i>
           </div>
-          <h3 class="text-base font-semibold text-white">No se encontraron suscripciones</h3>
-          <p class="text-xs text-slate-400 max-w-sm mx-auto mt-1">
+          <h3 class="text-base font-semibold text-white font-google-sans">No se encontraron suscripciones</h3>
+          <p class="text-xs text-[#cac4d0] max-w-sm mx-auto mt-1">
             Agrega una nueva suscripción para comenzar a monitorear tus cobros.
           </p>
-          <button id="btnEmptyAdd" class="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white transition">
+          <button id="btnEmptyAdd" class="mt-4 m3-btn-filled">
             <i data-lucide="plus" class="w-4 h-4"></i> Crear Suscripción
           </button>
         </div>
@@ -477,7 +473,7 @@
             </p>
           </div>
           <button id="btnOpenManualPaymentModal" class="m3-btn-tonal">
-            <i data-lucide="plus-circle" class="w-4 h-4 text-[#48ffb3]"></i>
+            <i data-lucide="plus-circle" class="w-4 h-4 text-[#a8d5b5]"></i>
             <span>Registrar Pago Manual</span>
           </button>
         </div>
@@ -507,12 +503,12 @@
         <div class="m3-card p-5">
           <div class="flex items-center justify-between">
             <span class="text-xs font-semibold uppercase tracking-wider text-[#cac4d0]">Total por Cobrar a Amigos (Mes)</span>
-            <div class="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
+            <div class="w-9 h-9 rounded-xl bg-[#2b5037]/50 text-[#a8d5b5] flex items-center justify-center">
               <i data-lucide="hand-coins" class="w-4 h-4"></i>
             </div>
           </div>
           <div class="mt-3">
-            <div class="text-3xl font-extrabold text-[#48ffb3] tracking-tight font-mono" id="friendsTotalOwed">$0.00</div>
+            <div class="text-3xl font-extrabold text-[#a8d5b5] tracking-tight font-mono" id="friendsTotalOwed">$0.00</div>
             <p class="text-xs text-[#cac4d0] mt-1">Suma de las cuotas mensuales que te corresponden recuperar</p>
           </div>
         </div>
@@ -534,7 +530,7 @@
       <div class="m3-card p-5 sm:p-6 space-y-4">
         <div>
           <h3 class="text-sm font-bold text-white flex items-center gap-2 font-google-sans">
-            <i data-lucide="badge-dollar-sign" class="w-4 h-4 text-[#48ffb3]"></i>
+            <i data-lucide="badge-dollar-sign" class="w-4 h-4 text-[#a8d5b5]"></i>
             Estado de Cobros por Amigo (Cuentas Compartidas)
           </h3>
           <p class="text-xs text-[#cac4d0] mt-0.5">Controla quién te ha transferido su parte de las suscripciones este mes.</p>
@@ -607,7 +603,7 @@
             <div class="h-6 w-px bg-[#49454f]/40"></div>
             <div>
               <span class="text-[10px] text-[#cac4d0] uppercase tracking-wider block">Gasto Estimado</span>
-              <span id="calendarTotalExpense" class="font-bold text-[#48ffb3] text-sm">$0.00</span>
+              <span id="calendarTotalExpense" class="font-bold text-[#a8d5b5] text-sm">$0.00</span>
             </div>
           </div>
         </div>
@@ -673,26 +669,26 @@
       </div>
 
       <div class="text-center py-2 space-y-3">
-        <div id="modalProfileAvatar" class="w-16 h-16 mx-auto rounded-full flex items-center justify-center text-2xl font-black text-white shadow-xl ring-4 ring-indigo-500/20" style="background-color: #4F46E5">
+        <div id="modalProfileAvatar" class="w-16 h-16 mx-auto rounded-full flex items-center justify-center text-2xl font-black shadow-xl ring-4 ring-[#d0bcff]/20" style="background-color: var(--md-sys-color-primary-container); color: var(--md-sys-color-on-primary-container)">
           -
         </div>
         <div>
-          <h4 id="modalProfileDisplayName" class="text-lg font-bold text-white">Usuario</h4>
-          <p id="modalProfileUsername" class="text-xs text-indigo-400 font-mono">@usuario</p>
-          <p id="modalProfileEmail" class="text-xs text-slate-400 mt-1">usuario@ejemplo.com</p>
+          <h4 id="modalProfileDisplayName" class="text-lg font-bold text-white font-google-sans">Usuario</h4>
+          <p id="modalProfileUsername" class="text-xs text-[#d0bcff] font-mono">@usuario</p>
+          <p id="modalProfileEmail" class="text-xs text-[#cac4d0] mt-1">usuario@ejemplo.com</p>
         </div>
-        <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[11px] font-medium">
-          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+        <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full m3-badge-success text-[11px] font-medium">
+          <span class="w-1.5 h-1.5 rounded-full bg-[#a8d5b5] animate-pulse"></span>
           Sesión Activa
         </div>
       </div>
 
-      <div class="pt-3 border-t border-slate-800 flex flex-col gap-2">
-        <button type="button" id="btnLogoutFromProfileModal" class="w-full py-2.5 px-4 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-semibold text-xs transition flex items-center justify-center gap-2 shadow-lg shadow-rose-600/20 active:scale-95">
+      <div class="pt-3 border-t border-[#49454f]/40 flex flex-col gap-2">
+        <button type="button" id="btnLogoutFromProfileModal" class="m3-btn-outline text-[#f2b8b5] border-[#f2b8b5]/40 hover:bg-[#8c1d18]/20 w-full py-2.5 px-4 font-semibold text-xs transition flex items-center justify-center gap-2">
           <i data-lucide="log-out" class="w-4 h-4"></i>
           <span>Cerrar Sesión</span>
         </button>
-        <button type="button" id="btnCancelProfileModal" class="w-full py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium transition">
+        <button type="button" id="btnCancelProfileModal" class="m3-btn-outline w-full py-2 text-xs font-medium">
           Cerrar Ventana
         </button>
       </div>
@@ -717,9 +713,9 @@
         </button>
       </div>
 
-      <!-- Selector de Modo: Login vs Register -->
-      <div class="grid grid-cols-2 p-1 bg-[#141218] rounded-full text-xs font-semibold border border-[#49454f]/40">
-        <button type="button" id="tabAuthLogin" class="py-2 rounded-full bg-[#d0bcff] text-[#381e72] transition">
+      <!-- Pestañas M3 Login / Registro -->
+      <div class="grid grid-cols-2 gap-1 p-1 bg-[#141218] rounded-full text-xs font-semibold text-center border border-[#49454f]/40">
+        <button type="button" id="tabAuthLogin" class="py-2 rounded-full bg-[#d0bcff] text-[#381e72] font-semibold transition">
           Iniciar Sesión
         </button>
         <button type="button" id="tabAuthRegister" class="py-2 rounded-full text-[#cac4d0] hover:text-white transition">
@@ -729,39 +725,39 @@
 
       <form id="authForm" class="space-y-3.5 text-xs">
         <div>
-          <label class="block text-slate-300 font-medium mb-1">Nombre de Usuario *</label>
+          <label class="block text-[#cac4d0] font-medium mb-1">Nombre de Usuario *</label>
           <input type="text" id="authUsername" required placeholder="Ej: alex, maria, carlos..."
-            class="w-full px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-indigo-500">
+            class="m3-text-field">
         </div>
 
         <div id="authRegisterExtraFields" class="hidden space-y-3.5">
           <div>
-            <label class="block text-slate-300 font-medium mb-1">Nombre Completo / Apodo</label>
+            <label class="block text-[#cac4d0] font-medium mb-1">Nombre Completo / Apodo</label>
             <input type="text" id="authDisplayName" placeholder="Ej: Carlos Gómez"
-              class="w-full px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-indigo-500">
+              class="m3-text-field">
           </div>
           <div>
-            <label class="block text-slate-300 font-medium mb-1">Correo Electrónico (opcional)</label>
+            <label class="block text-[#cac4d0] font-medium mb-1">Correo Electrónico (opcional)</label>
             <input type="email" id="authEmail" placeholder="correo@ejemplo.com"
-              class="w-full px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-indigo-500">
+              class="m3-text-field">
           </div>
         </div>
 
         <div>
-          <label class="block text-slate-300 font-medium mb-1">Contraseña *</label>
+          <label class="block text-[#cac4d0] font-medium mb-1">Contraseña *</label>
           <input type="password" id="authPassword" required placeholder="••••••••"
-            class="w-full px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-indigo-500">
+            class="m3-text-field">
         </div>
 
-        <div id="authRememberContainer" class="flex items-center justify-between text-xs text-slate-400 pt-0.5">
-          <label class="flex items-center gap-2 cursor-pointer hover:text-slate-300 select-none">
-            <input type="checkbox" id="authRememberMe" class="rounded bg-slate-800 border-slate-700 text-indigo-600 focus:ring-indigo-500">
+        <div id="authRememberContainer" class="flex items-center justify-between text-xs text-[#cac4d0] pt-0.5">
+          <label class="flex items-center gap-2 cursor-pointer hover:text-white select-none">
+            <input type="checkbox" id="authRememberMe" class="rounded bg-[#211f26] border-[#49454f] text-[#d0bcff] focus:ring-[#d0bcff]">
             <span>Mantener sesión iniciada en este equipo</span>
           </label>
         </div>
 
         <div class="pt-2">
-          <button type="submit" id="btnSubmitAuth" class="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-sm font-bold text-white shadow-lg shadow-indigo-600/30 transition active:scale-98">
+          <button type="submit" id="btnSubmitAuth" class="m3-btn-filled w-full py-2.5 font-bold">
             Entrar a mi Cuenta
           </button>
         </div>
@@ -774,7 +770,7 @@
     <div class="relative w-full max-w-md m3-dialog p-6 space-y-4 animate-scale-up">
       <div class="flex items-center justify-between border-b border-[#49454f]/40 pb-3">
         <h3 id="friendModalTitle" class="text-base font-bold text-white flex items-center gap-2 font-google-sans">
-          <i data-lucide="user-plus" class="w-5 h-5 text-[#48ffb3]"></i>
+          <i data-lucide="user-plus" class="w-5 h-5 text-[#a8d5b5]"></i>
           Agregar Amigo
         </h3>
         <button id="btnCloseFriendModal" class="text-[#cac4d0] hover:text-white p-1 rounded-full hover:bg-[#2b2930]">
@@ -802,7 +798,7 @@
         </div>
         <div class="flex items-center gap-3">
           <label class="block text-[#cac4d0]">Color de Avatar:</label>
-          <input type="color" id="friendAvatarColor" value="#10B981" class="w-9 h-8 rounded-lg bg-[#211f26] border border-[#49454f] p-0.5 cursor-pointer">
+          <input type="color" id="friendAvatarColor" value="#a8d5b5" class="w-9 h-8 rounded-lg bg-[#211f26] border border-[#49454f] p-0.5 cursor-pointer">
         </div>
         <div>
           <label class="block text-[#cac4d0] mb-1">Notas</label>
@@ -839,19 +835,19 @@
         <input type="hidden" id="subId">
 
         <!-- Catálogo M3 de Servicios Populares con Precios del Día -->
-        <div id="templatesContainer" class="p-3.5 bg-slate-900/90 border border-slate-700/80 rounded-2xl space-y-3">
+        <div id="templatesContainer" class="p-3.5 bg-[#141218] border border-[#49454f]/40 rounded-2xl space-y-3">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
-              <span class="text-xs font-bold text-white flex items-center gap-1.5">
-                <i data-lucide="sparkles" class="w-3.5 h-3.5 text-indigo-400"></i> Catálogo de Servicios (Precios del Día)
+              <span class="text-xs font-bold text-white flex items-center gap-1.5 font-google-sans">
+                <i data-lucide="sparkles" class="w-3.5 h-3.5 text-[#d0bcff]"></i> Catálogo de Servicios (Precios del Día)
               </span>
-              <p class="text-[10px] text-slate-400">Selecciona un servicio para autocompletar con sus planes y precios oficiales al día.</p>
+              <p class="text-[10px] text-[#cac4d0]">Selecciona un servicio para autocompletar con sus planes y precios oficiales al día.</p>
             </div>
             <!-- Buscador en Catálogo -->
             <div class="relative w-full sm:w-48">
-              <i data-lucide="search" class="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
+              <i data-lucide="search" class="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-[#cac4d0]"></i>
               <input type="text" id="presetSearchInput" placeholder="Buscar servicio..."
-                class="w-full pl-8 pr-2.5 py-1.5 bg-slate-800 border border-slate-700 rounded-full text-xs text-white placeholder-slate-400 focus:outline-none focus:border-indigo-500">
+                class="w-full pl-8 pr-2.5 py-1.5 bg-[#211f26] border border-[#49454f] rounded-full text-xs text-white placeholder-[#cac4d0] focus:outline-none focus:border-[#d0bcff]">
             </div>
           </div>
 
@@ -874,20 +870,20 @@
         <!-- Campos Principales -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div class="sm:col-span-3">
-            <label class="block text-xs font-medium text-slate-300 mb-1" for="subName">Nombre del Servicio *</label>
+            <label class="block text-xs font-medium text-[#cac4d0] mb-1" for="subName">Nombre del Servicio *</label>
             <input type="text" id="subName" required placeholder="Ej: Netflix, Spotify, Gimnasio..."
-              class="w-full px-3.5 py-2 bg-slate-800/80 border border-slate-700 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500">
+              class="m3-text-field">
           </div>
 
           <div>
-            <label class="block text-xs font-medium text-slate-300 mb-1" for="subPrice">Precio / Costo *</label>
+            <label class="block text-xs font-medium text-[#cac4d0] mb-1" for="subPrice">Precio / Costo *</label>
             <input type="number" id="subPrice" step="0.01" min="0" required placeholder="0.00"
-              class="w-full px-3 py-2 bg-slate-800/80 border border-slate-700 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 font-mono">
+              class="m3-text-field font-mono">
           </div>
 
           <div>
-            <label class="block text-xs font-medium text-slate-300 mb-1" for="subCurrency">Moneda</label>
-            <select id="subCurrency" class="w-full px-3 py-2 bg-slate-800/80 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-indigo-500 cursor-pointer">
+            <label class="block text-xs font-medium text-[#cac4d0] mb-1" for="subCurrency">Moneda</label>
+            <select id="subCurrency" class="m3-text-field cursor-pointer">
               <option value="USD">USD ($)</option>
               <option value="DOP">DOP (RD$)</option>
               <option value="EUR">EUR (€)</option>
@@ -900,8 +896,8 @@
           </div>
 
           <div>
-            <label class="block text-xs font-medium text-slate-300 mb-1" for="subBillingCycle">Ciclo de Cobro *</label>
-            <select id="subBillingCycle" class="w-full px-3 py-2 bg-slate-800/80 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-indigo-500 cursor-pointer">
+            <label class="block text-xs font-medium text-[#cac4d0] mb-1" for="subBillingCycle">Ciclo de Cobro *</label>
+            <select id="subBillingCycle" class="m3-text-field cursor-pointer">
               <option value="monthly">Mensual (12/año)</option>
               <option value="annual">Anual (1/año)</option>
               <option value="weekly">Semanal (52/año)</option>
@@ -912,55 +908,55 @@
         </div>
 
         <!-- MODO PRUEBA GRATUITA -->
-        <div class="p-3.5 bg-slate-800/50 border border-slate-700 rounded-xl space-y-2">
+        <div class="p-3.5 bg-[#211f26] border border-[#49454f]/40 rounded-2xl space-y-2">
           <div class="flex items-center justify-between">
             <label class="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" id="subIsTrial" class="w-4 h-4 text-indigo-600 rounded bg-slate-700 border-slate-600 focus:ring-indigo-500">
-              <span class="text-xs font-semibold text-rose-300 flex items-center gap-1">
-                <i data-lucide="timer" class="w-3.5 h-3.5 text-rose-400"></i>
+              <input type="checkbox" id="subIsTrial" class="w-4 h-4 text-[#d0bcff] rounded bg-[#1d1b20] border-[#49454f] focus:ring-[#d0bcff]">
+              <span class="text-xs font-semibold text-[#f2b8b5] flex items-center gap-1">
+                <i data-lucide="timer" class="w-3.5 h-3.5 text-[#f2b8b5]"></i>
                 ¿Es periodo de prueba gratis? (Free Trial)
               </span>
             </label>
-            <span class="text-[10px] text-slate-400">Alarma de cancelación preventiva</span>
+            <span class="text-[10px] text-[#cac4d0]">Alarma de cancelación preventiva</span>
           </div>
 
-          <div id="trialFieldsContainer" class="hidden pt-2 border-t border-slate-700/60">
-            <label class="block text-xs font-medium text-rose-200 mb-1" for="subTrialEndDate">
+          <div id="trialFieldsContainer" class="hidden pt-2 border-t border-[#49454f]/40">
+            <label class="block text-xs font-medium text-[#f2b8b5] mb-1" for="subTrialEndDate">
               Fecha límite para cancelar la prueba gratuita:
             </label>
-            <input type="date" id="subTrialEndDate" class="w-full px-3 py-2 bg-slate-900 border border-rose-500/40 rounded-lg text-xs text-white">
+            <input type="date" id="subTrialEndDate" class="m3-text-field">
           </div>
         </div>
 
         <!-- SUSCRIPCIÓN COMPARTIDA (SPLIT COST & SELECCIÓN DE AMIGOS) -->
-        <div class="p-3.5 bg-slate-800/50 border border-slate-700 rounded-xl space-y-3">
+        <div class="p-3.5 bg-[#211f26] border border-[#49454f]/40 rounded-2xl space-y-3">
           <div class="flex items-center justify-between">
             <label class="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" id="subIsShared" class="w-4 h-4 text-indigo-600 rounded bg-slate-700 border-slate-600 focus:ring-indigo-500">
-              <span class="text-xs font-semibold text-emerald-300 flex items-center gap-1">
-                <i data-lucide="users" class="w-3.5 h-3.5 text-emerald-400"></i>
+              <input type="checkbox" id="subIsShared" class="w-4 h-4 text-[#d0bcff] rounded bg-[#1d1b20] border-[#49454f] focus:ring-[#d0bcff]">
+              <span class="text-xs font-semibold text-[#a8d5b5] flex items-center gap-1">
+                <i data-lucide="users" class="w-3.5 h-3.5 text-[#a8d5b5]"></i>
                 ¿Es suscripción compartida? (Plan familiar / amigos)
               </span>
             </label>
-            <span class="text-[10px] text-slate-400">Divide el costo entre contactos</span>
+            <span class="text-[10px] text-[#cac4d0]">Divide el costo entre contactos</span>
           </div>
 
-          <div id="sharedFieldsContainer" class="hidden pt-2 border-t border-slate-700/60 space-y-3">
+          <div id="sharedFieldsContainer" class="hidden pt-2 border-t border-[#49454f]/40 space-y-3">
             <div class="grid grid-cols-2 gap-3">
               <div>
-                <label class="block text-[11px] text-slate-300 mb-1" for="subSharedCount">Total de integrantes (tú + amigos):</label>
-                <input type="number" id="subSharedCount" min="1" max="50" value="2" class="w-full px-3 py-1.5 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white">
+                <label class="block text-[11px] text-[#cac4d0] mb-1" for="subSharedCount">Total de integrantes (tú + amigos):</label>
+                <input type="number" id="subSharedCount" min="1" max="50" value="2" class="m3-text-field font-mono">
               </div>
               <div>
-                <label class="block text-[11px] text-slate-300 mb-1" for="subMySharePrice">Tu parte personal:</label>
-                <input type="number" id="subMySharePrice" step="0.01" placeholder="Auto-calculado" class="w-full px-3 py-1.5 bg-slate-900 border border-emerald-500/40 rounded-lg text-xs text-white font-mono">
+                <label class="block text-[11px] text-[#cac4d0] mb-1" for="subMySharePrice">Tu parte personal:</label>
+                <input type="number" id="subMySharePrice" step="0.01" placeholder="Auto-calculado" class="m3-text-field font-mono">
               </div>
             </div>
 
             <!-- Selector de Amigos Etiquetados -->
             <div>
-              <label class="block text-[11px] text-slate-300 mb-1">Etiquetar amigos de tu lista que comparten esta cuenta:</label>
-              <div id="sharedFriendsCheckboxList" class="flex flex-wrap gap-2 max-h-28 overflow-y-auto p-2 bg-slate-900 rounded-lg border border-slate-700/80 text-xs">
+              <label class="block text-[11px] text-[#cac4d0] mb-1">Etiquetar amigos de tu lista que comparten esta cuenta:</label>
+              <div id="sharedFriendsCheckboxList" class="flex flex-wrap gap-2 max-h-28 overflow-y-auto p-2 bg-[#141218] rounded-xl border border-[#49454f]/40 text-xs">
                 <!-- Inyectado por app.js -->
               </div>
             </div>
@@ -968,31 +964,31 @@
         </div>
 
         <!-- TARJETA DE CÁLCULO EN TIEMPO REAL -->
-        <div class="bg-indigo-950/40 border border-indigo-500/30 rounded-xl p-3 flex items-center justify-between">
+        <div class="bg-[#2b2930] border border-[#49454f]/60 rounded-2xl p-3.5 flex items-center justify-between">
           <div>
-            <span class="text-[11px] font-semibold tracking-wider uppercase text-indigo-300 flex items-center gap-1">
+            <span class="text-[11px] font-semibold tracking-wider uppercase text-[#d0bcff] flex items-center gap-1 font-google-sans">
               <i data-lucide="calculator" class="w-3.5 h-3.5"></i> Cálculo Instantáneo
             </span>
-            <div class="text-xs text-indigo-200/80 mt-0.5">
+            <div class="text-xs text-[#cac4d0] mt-0.5">
               Equivalente mensual: <span id="formCalcMonthly" class="font-bold text-white">$0.00 / mes</span>
             </div>
           </div>
           <div class="text-right">
-            <span class="text-[11px] text-slate-400 block">Costo Anual Resultante:</span>
-            <span id="formCalcAnnual" class="text-sm font-extrabold text-indigo-300 tracking-tight">$0.00 / año</span>
+            <span class="text-[11px] text-[#cac4d0] block">Costo Anual Resultante:</span>
+            <span id="formCalcAnnual" class="text-sm font-extrabold text-[#d0bcff] tracking-tight font-mono">$0.00 / año</span>
           </div>
         </div>
 
         <!-- Campos secundarios -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs font-medium text-slate-300 mb-1" for="subNextBillingDate">Próximo Corte / Cobro *</label>
-            <input type="date" id="subNextBillingDate" required class="w-full px-3 py-2 bg-slate-800/80 border border-slate-700 rounded-xl text-sm text-white">
+            <label class="block text-xs font-medium text-[#cac4d0] mb-1" for="subNextBillingDate">Próximo Corte / Cobro *</label>
+            <input type="date" id="subNextBillingDate" required class="m3-text-field">
           </div>
 
           <div>
-            <label class="block text-xs font-medium text-slate-300 mb-1" for="subCategory">Categoría</label>
-            <select id="subCategory" class="w-full px-3 py-2 bg-slate-800/80 border border-slate-700 rounded-xl text-sm text-white">
+            <label class="block text-xs font-medium text-[#cac4d0] mb-1" for="subCategory">Categoría</label>
+            <select id="subCategory" class="m3-text-field">
               <option value="Streaming">Streaming</option>
               <option value="Software">Software & Herramientas</option>
               <option value="Servicios">Servicios & Utilidades</option>
@@ -1004,13 +1000,13 @@
           </div>
 
           <div>
-            <label class="block text-xs font-medium text-slate-300 mb-1" for="subPaymentMethod">Método de Pago</label>
-            <input type="text" id="subPaymentMethod" placeholder="Ej: Visa, PayPal..." class="w-full px-3 py-2 bg-slate-800/80 border border-slate-700 rounded-xl text-sm text-white">
+            <label class="block text-xs font-medium text-[#cac4d0] mb-1" for="subPaymentMethod">Método de Pago</label>
+            <input type="text" id="subPaymentMethod" placeholder="Ej: Visa, PayPal..." class="m3-text-field">
           </div>
 
           <div>
-            <label class="block text-xs font-medium text-slate-300 mb-1" for="subStatus">Estado</label>
-            <select id="subStatus" class="w-full px-3 py-2 bg-slate-800/80 border border-slate-700 rounded-xl text-sm text-white">
+            <label class="block text-xs font-medium text-[#cac4d0] mb-1" for="subStatus">Estado</label>
+            <select id="subStatus" class="m3-text-field">
               <option value="active">Activa</option>
               <option value="paused">Pausada</option>
               <option value="canceled">Cancelada</option>
@@ -1018,24 +1014,24 @@
           </div>
 
           <div class="sm:col-span-2 flex items-center gap-3">
-            <input type="color" id="subColor" value="#4F46E5" class="w-9 h-9 rounded-lg cursor-pointer bg-slate-800 border border-slate-700 p-0.5">
-            <span class="text-xs text-slate-400">Color distintivo para la tarjeta y gráficas.</span>
+            <input type="color" id="subColor" value="#d0bcff" class="w-9 h-9 rounded-lg cursor-pointer bg-[#211f26] border border-[#49454f] p-0.5">
+            <span class="text-xs text-[#cac4d0]">Color distintivo para la tarjeta y gráficas.</span>
           </div>
 
           <div class="sm:col-span-2">
-            <label class="block text-xs font-medium text-slate-300 mb-1" for="subUrl">Enlace de Gestión o Cancelación</label>
-            <input type="url" id="subUrl" placeholder="https://mi-cuenta.com/billing" class="w-full px-3 py-2 bg-slate-800/80 border border-slate-700 rounded-xl text-sm text-white">
+            <label class="block text-xs font-medium text-[#cac4d0] mb-1" for="subUrl">Enlace de Gestión o Cancelación</label>
+            <input type="url" id="subUrl" placeholder="https://mi-cuenta.com/billing" class="m3-text-field">
           </div>
 
           <div class="sm:col-span-2">
-            <label class="block text-xs font-medium text-slate-300 mb-1" for="subNotes">Notas</label>
-            <textarea id="subNotes" rows="2" placeholder="Detalles o miembros de la cuenta..." class="w-full px-3 py-2 bg-slate-800/80 border border-slate-700 rounded-xl text-sm text-white"></textarea>
+            <label class="block text-xs font-medium text-[#cac4d0] mb-1" for="subNotes">Notas</label>
+            <textarea id="subNotes" rows="2" placeholder="Detalles o miembros de la cuenta..." class="m3-text-field"></textarea>
           </div>
         </div>
 
-        <div class="pt-3 border-t border-slate-800 flex items-center justify-end gap-3 shrink-0">
-          <button type="button" id="btnCancelModal" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-300">Cancelar</button>
-          <button type="submit" id="btnSubmitSub" class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white shadow-lg shadow-indigo-600/30 flex items-center gap-1.5">
+        <div class="pt-3 border-t border-[#49454f]/40 flex items-center justify-end gap-3 shrink-0">
+          <button type="button" id="btnCancelModal" class="m3-btn-outline">Cancelar</button>
+          <button type="submit" id="btnSubmitSub" class="m3-btn-filled py-2 px-5 text-xs">
             <i data-lucide="check" class="w-4 h-4"></i>
             <span id="btnSubmitText">Guardar Suscripción</span>
           </button>
@@ -1114,7 +1110,7 @@
     <div class="relative w-full max-w-md m3-dialog p-6 space-y-4 animate-scale-up">
       <div class="flex items-center justify-between border-b border-[#49454f]/40 pb-3">
         <h3 class="text-base font-bold text-white flex items-center gap-2 font-google-sans">
-          <i data-lucide="receipt" class="w-5 h-5 text-[#48ffb3]"></i> Registrar Pago Real
+          <i data-lucide="receipt" class="w-5 h-5 text-[#a8d5b5]"></i> Registrar Pago Real
         </h3>
         <button id="btnClosePaymentModal" class="text-[#cac4d0] hover:text-white p-1 rounded-full hover:bg-[#2b2930]">
           <i data-lucide="x" class="w-5 h-5"></i>

@@ -605,16 +605,16 @@ function openAuthModal(mode = 'login') {
   if (mode === 'login') {
     if (title) title.textContent = 'Iniciar Sesión';
     if (subtitle) subtitle.textContent = 'Identifícate para entrar a tu panel';
-    if (tabLogin) tabLogin.className = 'py-2 rounded-lg bg-indigo-600 text-white transition';
-    if (tabReg) tabReg.className = 'py-2 rounded-lg text-slate-400 hover:text-white transition';
+    if (tabLogin) tabLogin.className = 'py-2 rounded-full bg-[#d0bcff] text-[#381e72] font-semibold transition';
+    if (tabReg) tabReg.className = 'py-2 rounded-full text-[#cac4d0] hover:text-white transition';
     extraFields?.classList.add('hidden');
     rememberContainer?.classList.remove('hidden');
     if (submitBtn) submitBtn.textContent = 'Entrar a mi Cuenta';
   } else {
     if (title) title.textContent = 'Crear Nueva Cuenta';
     if (subtitle) subtitle.textContent = 'Crea tu espacio personal y privado';
-    if (tabReg) tabReg.className = 'py-2 rounded-lg bg-indigo-600 text-white transition';
-    if (tabLogin) tabLogin.className = 'py-2 rounded-lg text-slate-400 hover:text-white transition';
+    if (tabReg) tabReg.className = 'py-2 rounded-full bg-[#d0bcff] text-[#381e72] font-semibold transition';
+    if (tabLogin) tabLogin.className = 'py-2 rounded-full text-[#cac4d0] hover:text-white transition';
     extraFields?.classList.remove('hidden');
     rememberContainer?.classList.add('hidden');
     if (submitBtn) submitBtn.textContent = 'Registrarme';
@@ -1008,20 +1008,20 @@ function renderFriendsList() {
   }
 
   grid.innerHTML = state.friends.map(f => `
-    <div class="p-3.5 bg-slate-900/90 border border-slate-800 rounded-xl flex items-center justify-between hover:border-slate-700 transition">
+    <div class="p-3.5 bg-[#211f26] border border-[#49454f]/40 rounded-2xl flex items-center justify-between hover:border-[#d0bcff]/40 transition">
       <div class="flex items-center gap-3">
-        <div class="w-9 h-9 rounded-full flex items-center justify-center text-white font-bold text-xs shadow" style="background-color: ${f.avatar_color || '#10B981'}">
+        <div class="w-9 h-9 rounded-full flex items-center justify-center font-bold text-xs shadow" style="background-color: ${f.avatar_color || '#a8d5b5'}; color: #133821">
           ${escapeHtml(f.name.charAt(0).toUpperCase())}
         </div>
         <div>
-          <h4 class="text-xs font-bold text-white">${escapeHtml(f.name)}</h4>
-          <div class="text-[11px] text-slate-400">${escapeHtml(f.phone || f.email || 'Sin contacto')}</div>
-          ${f.notes ? `<div class="text-[10px] text-slate-500 italic mt-0.5 truncate max-w-[130px]">${escapeHtml(f.notes)}</div>` : ''}
+          <h4 class="text-xs font-bold text-white font-google-sans">${escapeHtml(f.name)}</h4>
+          <div class="text-[11px] text-[#cac4d0]">${escapeHtml(f.phone || f.email || 'Sin contacto')}</div>
+          ${f.notes ? `<div class="text-[10px] text-[#938f99] italic mt-0.5 truncate max-w-[130px]">${escapeHtml(f.notes)}</div>` : ''}
         </div>
       </div>
-      <div class="flex items-center gap-1 text-slate-400">
-        <button onclick="editFriend(${f.id})" title="Editar" class="p-1 hover:text-white rounded"><i data-lucide="edit-2" class="w-3.5 h-3.5"></i></button>
-        <button onclick="deleteFriend(${f.id}, '${escapeHtml(f.name)}')" title="Eliminar" class="p-1 hover:text-red-400 rounded"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+      <div class="flex items-center gap-1 text-[#cac4d0]">
+        <button onclick="editFriend(${f.id})" title="Editar" class="p-1.5 hover:text-white hover:bg-[#2b2930] rounded-full transition"><i data-lucide="edit-2" class="w-3.5 h-3.5"></i></button>
+        <button onclick="deleteFriend(${f.id}, '${escapeHtml(f.name)}')" title="Eliminar" class="p-1.5 hover:text-[#f2b8b5] hover:bg-[#2b2930] rounded-full transition"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
       </div>
     </div>
   `).join('');
@@ -1039,7 +1039,7 @@ function renderFriendBalances() {
 
   if (balances.length === 0) {
     container.innerHTML = `
-      <div class="col-span-full py-8 text-center text-slate-500 text-xs">
+      <div class="col-span-full py-8 text-center text-[#cac4d0] text-xs">
         Ningún amigo tiene suscripciones compartidas asignadas aún.
       </div>
     `;
@@ -1056,12 +1056,12 @@ function renderFriendBalances() {
       const isDiff = s.currency && s.currency !== state.baseCurrencyCode;
       const shareConv = s.friend_share_converted !== undefined ? s.friend_share_converted : convertCurrency(s.friend_share, s.currency, state.baseCurrencyCode);
       const shareText = isDiff
-        ? `${state.currency}${formatNumber(shareConv)}/m <span class="text-[10px] text-slate-400 font-normal">(${CURRENCY_SYMBOLS[s.currency] || s.currency}${formatNumber(s.friend_share)})</span>`
+        ? `${state.currency}${formatNumber(shareConv)}/m <span class="text-[10px] text-[#cac4d0] font-normal">(${CURRENCY_SYMBOLS[s.currency] || s.currency}${formatNumber(s.friend_share)})</span>`
         : `${state.currency}${formatNumber(s.friend_share)}/mes`;
       return `
-      <div class="flex items-center justify-between text-[11px] bg-slate-900/90 px-2.5 py-1.5 rounded-lg border border-slate-800">
-        <span class="text-slate-300 font-medium">${escapeHtml(s.name)}</span>
-        <span class="font-mono font-bold text-emerald-400">${shareText}</span>
+      <div class="flex items-center justify-between text-[11px] bg-[#141218] px-2.5 py-1.5 rounded-xl border border-[#49454f]/30">
+        <span class="text-[#e6e0e9] font-medium">${escapeHtml(s.name)}</span>
+        <span class="font-mono font-bold text-[#a8d5b5]">${shareText}</span>
       </div>
     `;
     }).join('');
@@ -1072,36 +1072,36 @@ function renderFriendBalances() {
     const waUrl = f.phone ? `https://wa.me/${f.phone.replace(/[^0-9]/g, '')}?text=${waText}` : `https://wa.me/?text=${waText}`;
 
     return `
-      <div class="p-4 bg-slate-900/90 border border-slate-800 rounded-2xl flex flex-col justify-between space-y-3">
+      <div class="p-4 bg-[#211f26] border border-[#49454f]/40 rounded-2xl flex flex-col justify-between space-y-3">
         <div>
           <div class="flex items-start justify-between">
             <div class="flex items-center gap-2.5">
-              <div class="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-xs shadow" style="background-color: ${f.avatar_color || '#10B981'}">
+              <div class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs shadow" style="background-color: ${f.avatar_color || '#a8d5b5'}; color: #133821">
                 ${f.name.charAt(0).toUpperCase()}
               </div>
               <div>
-                <h4 class="text-xs font-bold text-white">${escapeHtml(f.name)}</h4>
-                <span class="text-[10px] text-slate-400">${subsList.length} ${subsList.length === 1 ? 'servicio compartido' : 'servicios compartidos'}</span>
+                <h4 class="text-xs font-bold text-white font-google-sans">${escapeHtml(f.name)}</h4>
+                <span class="text-[10px] text-[#cac4d0]">${subsList.length} ${subsList.length === 1 ? 'servicio compartido' : 'servicios compartidos'}</span>
               </div>
             </div>
             <div class="text-right">
-              <span class="text-[10px] uppercase font-bold tracking-wider text-slate-400 block">Cuota mensual</span>
-              <span class="text-sm font-extrabold text-emerald-400 font-mono">${state.currency}${formatNumber(b.monthly_total_owed)}</span>
+              <span class="text-[10px] uppercase font-bold tracking-wider text-[#cac4d0] block">Cuota mensual</span>
+              <span class="text-sm font-extrabold text-[#a8d5b5] font-mono">${state.currency}${formatNumber(b.monthly_total_owed)}</span>
             </div>
           </div>
 
           <div class="mt-3 space-y-1.5">
-            ${subsBadgesHtml || '<span class="text-[11px] text-slate-500">Sin servicios activos</span>'}
+            ${subsBadgesHtml || '<span class="text-[11px] text-[#938f99]">Sin servicios activos</span>'}
           </div>
         </div>
 
-        <div class="pt-3 border-t border-slate-800 flex items-center gap-2">
-          <a href="${waUrl}" target="_blank" rel="noopener" class="flex-1 py-1.5 rounded-lg bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/30 text-xs font-semibold flex items-center justify-center gap-1.5 transition">
+        <div class="pt-3 border-t border-[#49454f]/30 flex items-center gap-2">
+          <a href="${waUrl}" target="_blank" rel="noopener" class="flex-1 py-1.5 rounded-full bg-[#2b5037] hover:bg-[#2b5037]/80 text-[#a8d5b5] text-xs font-semibold flex items-center justify-center gap-1.5 transition">
             <i data-lucide="message-circle" class="w-3.5 h-3.5"></i>
             <span>Cobrar WhatsApp</span>
           </a>
-          <button onclick="recordFriendPaymentPrompt(${f.id}, '${escapeHtml(f.name)}', ${b.monthly_total_owed})" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-semibold flex items-center gap-1 transition" title="Registrar que ya te pagó este mes">
-            <i data-lucide="check" class="w-3.5 h-3.5 text-emerald-400"></i>
+          <button onclick="recordFriendPaymentPrompt(${f.id}, '${escapeHtml(f.name)}', ${b.monthly_total_owed})" class="m3-btn-outline text-xs py-1.5 px-3 flex items-center gap-1" title="Registrar que ya te pagó este mes">
+            <i data-lucide="check" class="w-3.5 h-3.5 text-[#a8d5b5]"></i>
             <span>Saldado</span>
           </button>
         </div>
@@ -1362,25 +1362,25 @@ function renderTrialAlerts() {
     const isDiffTrial = tCurr !== state.baseCurrencyCode;
     const convPriceTrial = t.converted_price !== undefined ? t.converted_price : convertCurrency(t.price, tCurr, state.baseCurrencyCode);
     const priceStrTrial = isDiffTrial
-      ? `${tSymbol}${formatNumber(t.price)} <span class="text-indigo-300 font-bold">(≈ ${state.currency}${formatNumber(convPriceTrial)})</span>`
+      ? `${tSymbol}${formatNumber(t.price)} <span class="text-[#d0bcff] font-bold">(≈ ${state.currency}${formatNumber(convPriceTrial)})</span>`
       : `${state.currency}${formatNumber(t.price)}`;
 
     return `
-      <div class="flex items-center justify-between bg-slate-900/80 rounded-xl p-3 border border-rose-500/30">
+      <div class="flex items-center justify-between bg-[#1d1b20] rounded-2xl p-3.5 border border-[#f2b8b5]/30">
         <div>
-          <div class="font-bold text-white text-xs flex items-center gap-1.5">
+          <div class="font-bold text-white text-xs flex items-center gap-1.5 font-google-sans">
             <span>${escapeHtml(t.name)}</span>
-            <span class="text-[10px] px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/40 font-bold animate-pulse">
+            <span class="m3-badge-error animate-pulse">
               ${urgency}
             </span>
           </div>
-          <div class="text-[11px] text-rose-200/80 mt-0.5">
+          <div class="text-[11px] text-[#f2b8b5]/80 mt-0.5">
             Límite: <strong>${formatDateFriendly(t.trial_end_date)}</strong> &bull; Cobro: ${priceStrTrial}
           </div>
         </div>
         <div class="flex items-center gap-2">
-          ${t.url ? `<a href="${escapeHtml(t.url)}" target="_blank" class="px-2.5 py-1 text-[11px] rounded-lg bg-slate-800 hover:bg-slate-700 text-rose-300 border border-rose-500/30 flex items-center gap-1"><i data-lucide="external-link" class="w-3 h-3"></i> Cancelar</a>` : ''}
-          <button onclick="editSubscription(${t.id})" class="px-2.5 py-1 text-[11px] rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-semibold transition">Gestionar</button>
+          ${t.url ? `<a href="${escapeHtml(t.url)}" target="_blank" class="m3-btn-outline text-[11px] py-1 px-3 text-[#f2b8b5] border-[#f2b8b5]/30 hover:bg-[#8c1d18]/20 flex items-center gap-1"><i data-lucide="external-link" class="w-3 h-3"></i> Cancelar</a>` : ''}
+          <button onclick="editSubscription(${t.id})" class="m3-btn-tonal text-[11px] py-1 px-3">Gestionar</button>
         </div>
       </div>
     `;
@@ -1441,8 +1441,8 @@ function renderUpcomingAlerts() {
             </div>
           </div>
         </div>
-        <button onclick="markAsPaidAndAdvance(${sub.id})" title="Registrar pago y avanzar corte al siguiente ciclo" class="px-2.5 py-1 text-[11px] font-medium rounded-lg bg-indigo-600/30 hover:bg-indigo-600 text-indigo-200 hover:text-white border border-indigo-500/30 transition flex items-center gap-1">
-          <i data-lucide="receipt" class="w-3 h-3"></i> <span>Pagado</span>
+        <button onclick="markAsPaidAndAdvance(${sub.id})" title="Registrar pago y avanzar corte al siguiente ciclo" class="m3-btn-tonal text-xs py-1 px-3 flex items-center gap-1">
+          <i data-lucide="receipt" class="w-3.5 h-3.5"></i> <span>Pagado</span>
         </button>
       </div>
     `;
@@ -1512,28 +1512,28 @@ function createCardHtml(sub) {
   const convertedMonthly = sub.converted_monthly_cost !== undefined ? sub.converted_monthly_cost : convertCurrency(sub.monthly_cost, subCurr, baseCurr);
   const convertedAnnual = sub.converted_annual_cost !== undefined ? sub.converted_annual_cost : convertCurrency(sub.annual_cost, subCurr, baseCurr);
 
-  let trialBadge = sub.is_trial ? `<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/30 flex items-center gap-1"><i data-lucide="timer" class="w-3 h-3"></i> Trial</span>` : '';
-  let sharedBadge = sub.is_shared ? `<span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1"><i data-lucide="users" class="w-3 h-3"></i> Dividido /${sub.shared_with_count || 2}</span>` : '';
+  let trialBadge = sub.is_trial ? `<span class="m3-badge-error flex items-center gap-1"><i data-lucide="timer" class="w-3 h-3"></i> Trial</span>` : '';
+  let sharedBadge = sub.is_shared ? `<span class="m3-badge-success flex items-center gap-1"><i data-lucide="users" class="w-3 h-3"></i> Dividido /${sub.shared_with_count || 2}</span>` : '';
 
   const iconHtml = getServiceOfficialIcon(sub.name, sub.color);
 
   return `
     <div class="m3-card p-5 relative overflow-hidden flex flex-col justify-between m3-elevation-1">
-      <div class="absolute top-0 left-0 right-0 h-1.5" style="background-color: ${sub.color || '#4F46E5'}"></div>
+      <div class="absolute top-0 left-0 right-0 h-1.5" style="background-color: ${sub.color || 'var(--md-sys-color-primary)'}"></div>
 
       <div>
         <div class="flex items-start justify-between gap-3">
           <div class="flex items-center gap-3">
-            <div class="m3-brand-icon-box" style="background: linear-gradient(135deg, ${sub.color || '#4F46E5'}22, ${sub.color || '#4F46E5'}55); border: 1px solid ${sub.color || '#4F46E5'}66">
+            <div class="m3-brand-icon-box" style="background: linear-gradient(135deg, ${sub.color || '#d0bcff'}22, ${sub.color || '#d0bcff'}44); border: 1px solid ${sub.color || '#d0bcff'}55">
               ${iconHtml}
             </div>
             <div>
-              <h4 class="text-sm font-bold text-white tracking-tight flex items-center gap-1.5">
+              <h4 class="text-sm font-bold text-white tracking-tight flex items-center gap-1.5 font-google-sans">
                 ${escapeHtml(sub.name)}
-                ${sub.url ? `<a href="${escapeHtml(sub.url)}" target="_blank" rel="noopener" class="text-slate-500 hover:text-indigo-400 transition"><i data-lucide="external-link" class="w-3 h-3"></i></a>` : ''}
+                ${sub.url ? `<a href="${escapeHtml(sub.url)}" target="_blank" rel="noopener" class="text-[#cac4d0] hover:text-[#d0bcff] transition"><i data-lucide="external-link" class="w-3 h-3"></i></a>` : ''}
               </h4>
-              <div class="flex flex-wrap items-center gap-1.5 mt-0.5">
-                <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
+              <div class="flex flex-wrap items-center gap-1.5 mt-1">
+                <span class="m3-badge-secondary">
                   ${escapeHtml(sub.category)}
                 </span>
                 ${trialBadge}
@@ -1543,68 +1543,68 @@ function createCardHtml(sub) {
             </div>
           </div>
 
-          <div class="flex items-center gap-1 text-slate-400">
-            <button onclick="editSubscription(${sub.id})" title="Editar" class="p-1.5 hover:text-white hover:bg-slate-800 rounded-lg transition"><i data-lucide="edit-3" class="w-3.5 h-3.5"></i></button>
-            <button onclick="deleteSubscription(${sub.id}, '${escapeHtml(sub.name)}')" title="Eliminar" class="p-1.5 hover:text-red-400 hover:bg-slate-800 rounded-lg transition"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+          <div class="flex items-center gap-1 text-[#cac4d0]">
+            <button onclick="editSubscription(${sub.id})" title="Editar" class="p-1.5 hover:text-white hover:bg-[#2b2930] rounded-full transition"><i data-lucide="edit-3" class="w-3.5 h-3.5"></i></button>
+            <button onclick="deleteSubscription(${sub.id}, '${escapeHtml(sub.name)}')" title="Eliminar" class="p-1.5 hover:text-[#f2b8b5] hover:bg-[#2b2930] rounded-full transition"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
           </div>
         </div>
 
-        <div class="mt-4 p-3 bg-slate-800/40 rounded-xl border border-slate-800 flex items-center justify-between">
+        <div class="mt-4 p-3 bg-[#1d1b20] rounded-2xl border border-[#49454f]/30 flex items-center justify-between">
           <div>
-            <span class="text-[10px] uppercase tracking-wider font-semibold text-slate-400 flex items-center gap-1">
-              <i data-lucide="calendar" class="w-3 h-3 text-slate-400"></i> Fecha de Corte
+            <span class="text-[10px] uppercase tracking-wider font-semibold text-[#cac4d0] flex items-center gap-1">
+              <i data-lucide="calendar" class="w-3 h-3 text-[#cac4d0]"></i> Fecha de Corte
             </span>
-            <div class="text-xs font-semibold text-slate-200 mt-0.5">${formatDateFriendly(sub.next_billing_date)}</div>
+            <div class="text-xs font-semibold text-[#e6e0e9] mt-0.5">${formatDateFriendly(sub.next_billing_date)}</div>
           </div>
           <div class="text-right">
-            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${badgeClass}">${daysText}</span>
-            <button onclick="markAsPaidAndAdvance(${sub.id})" class="block text-[10px] text-indigo-400 hover:text-indigo-300 mt-1 font-semibold underline decoration-dotted">Marcar Pagado</button>
+            <span class="${badgeClass}">${daysText}</span>
+            <button onclick="markAsPaidAndAdvance(${sub.id})" class="block text-[11px] text-[#d0bcff] hover:underline mt-1 font-semibold">Marcar Pagado</button>
           </div>
         </div>
 
-        <div class="mt-3.5 grid grid-cols-2 gap-2 bg-indigo-950/20 border border-indigo-500/20 rounded-xl p-3">
+        <div class="mt-3.5 grid grid-cols-2 gap-2 bg-[#211f26] border border-[#49454f]/40 rounded-2xl p-3">
           <div>
-            <span class="text-[10px] uppercase font-semibold tracking-wider text-slate-400 block">Cobro Recurrente</span>
+            <span class="text-[10px] uppercase font-semibold tracking-wider text-[#cac4d0] block">Cobro Recurrente</span>
             ${isDifferentCurrency ? `
-              <span class="text-xs font-bold text-white">${baseSymbol}${formatNumber(convertedPrice)} <span class="text-[10px] font-normal text-slate-400">/${cycleLabel.toLowerCase()}</span></span>
-              <span class="block text-[11px] font-medium text-indigo-300">orig. ${subSymbol}${formatNumber(sub.price)} ${subCurr}</span>
-              ${sub.is_shared ? `<span class="block text-[10px] text-emerald-400 font-medium mt-0.5">Tu parte: ${baseSymbol}${formatNumber(convertedMonthly)}/m</span>` : ''}
+              <span class="text-xs font-bold text-white font-mono">${baseSymbol}${formatNumber(convertedPrice)} <span class="text-[10px] font-normal text-[#cac4d0]">/${cycleLabel.toLowerCase()}</span></span>
+              <span class="block text-[11px] font-medium text-[#d0bcff]">orig. ${subSymbol}${formatNumber(sub.price)} ${subCurr}</span>
+              ${sub.is_shared ? `<span class="block text-[10px] text-[#a8d5b5] font-medium mt-0.5">Tu parte: ${baseSymbol}${formatNumber(convertedMonthly)}/m</span>` : ''}
             ` : `
-              <span class="text-xs font-bold text-white">${baseSymbol}${formatNumber(sub.price)} <span class="text-[10px] font-normal text-slate-400">/${cycleLabel.toLowerCase()}</span></span>
-              ${sub.is_shared ? `<span class="block text-[10px] text-emerald-400 font-medium mt-0.5">Tu parte: ${baseSymbol}${formatNumber(sub.monthly_cost)}/m</span>` : ''}
+              <span class="text-xs font-bold text-white font-mono">${baseSymbol}${formatNumber(sub.price)} <span class="text-[10px] font-normal text-[#cac4d0]">/${cycleLabel.toLowerCase()}</span></span>
+              ${sub.is_shared ? `<span class="block text-[10px] text-[#a8d5b5] font-medium mt-0.5">Tu parte: ${baseSymbol}${formatNumber(sub.monthly_cost)}/m</span>` : ''}
             `}
           </div>
 
           <div class="text-right">
-            <span class="text-[10px] uppercase font-bold tracking-wider text-indigo-300 block flex items-center justify-end gap-0.5">
+            <span class="text-[10px] uppercase font-bold tracking-wider text-[#d0bcff] block flex items-center justify-end gap-0.5 font-google-sans">
               <i data-lucide="sparkles" class="w-2.5 h-2.5"></i> Costo Anual
             </span>
-            <span class="text-sm font-extrabold text-indigo-200 tracking-tight block">
-              ${baseSymbol}${formatNumber(convertedAnnual)} <span class="text-[10px] font-medium text-indigo-300/80">/año</span>
+            <span class="text-sm font-extrabold text-[#e8def8] tracking-tight block font-mono">
+              ${baseSymbol}${formatNumber(convertedAnnual)} <span class="text-[10px] font-medium text-[#cac4d0]">/año</span>
             </span>
             ${isDifferentCurrency ? `
-              <span class="text-[10px] text-slate-400 block font-mono">(${subSymbol}${formatNumber(sub.annual_cost)} ${subCurr})</span>
+              <span class="text-[10px] text-[#cac4d0] block font-mono">(${subSymbol}${formatNumber(sub.annual_cost)} ${subCurr})</span>
             ` : `
-              <span class="text-[10px] text-indigo-300/70 block font-mono">(${baseSymbol}${formatNumber(convertedMonthly)}/mes)</span>
+              <span class="text-[10px] text-[#cac4d0] block font-mono">(${baseSymbol}${formatNumber(convertedMonthly)}/mes)</span>
             `}
           </div>
         </div>
 
-        <div class="mt-3 text-[11px] text-slate-400 flex items-center justify-between border-t border-slate-800/80 pt-2.5">
-          <span class="flex items-center gap-1 text-slate-400">
-            <i data-lucide="credit-card" class="w-3 h-3 text-slate-500"></i>
+        <div class="mt-3 text-[11px] text-[#cac4d0] flex items-center justify-between border-t border-[#49454f]/30 pt-2.5">
+          <span class="flex items-center gap-1 text-[#cac4d0]">
+            <i data-lucide="credit-card" class="w-3 h-3 text-[#cac4d0]"></i>
             ${escapeHtml(sub.payment_method || 'Sin método')}
           </span>
-          ${sub.notes ? `<span class="truncate max-w-[140px] italic text-slate-400" title="${escapeHtml(sub.notes)}">"${escapeHtml(sub.notes)}"</span>` : ''}
+          ${sub.notes ? `<span class="truncate max-w-[140px] italic text-[#938f99]" title="${escapeHtml(sub.notes)}">"${escapeHtml(sub.notes)}"</span>` : ''}
         </div>
       </div>
 
-      <div class="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs">
-        <button onclick="toggleSubscriptionStatus(${sub.id}, '${sub.status}')" class="text-xs font-medium text-slate-400 hover:text-slate-200 flex items-center gap-1.5 transition">
+      <div class="mt-4 pt-3 border-t border-[#49454f]/30 flex items-center justify-between text-xs">
+        <button onclick="toggleSubscriptionStatus(${sub.id}, '${sub.status}')" class="text-xs font-medium text-[#cac4d0] hover:text-white flex items-center gap-1.5 transition">
           <i data-lucide="${sub.status === 'active' ? 'pause-circle' : 'play-circle'}" class="w-3.5 h-3.5"></i>
           <span>${sub.status === 'active' ? 'Pausar' : 'Reactivar'}</span>
         </button>
-        <span class="text-[11px] text-slate-500 font-mono">#${sub.id}</span>
+        <span class="text-[11px] text-[#938f99] font-mono">#${sub.id}</span>
       </div>
     </div>
   `;
@@ -1627,51 +1627,51 @@ function createTableRowHtml(sub) {
   const iconHtml = getServiceOfficialIcon(sub.name, sub.color, 'w-3.5 h-3.5');
 
   return `
-    <tr class="hover:bg-slate-800/40 transition">
+    <tr class="hover:bg-[#211f26] transition">
       <td class="px-4 py-3.5">
         <div class="flex items-center gap-2.5">
-          <div class="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 shadow-sm" style="background: linear-gradient(135deg, ${sub.color || '#4F46E5'}22, ${sub.color || '#4F46E5'}55); border: 1px solid ${sub.color || '#4F46E5'}66">
+          <div class="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 shadow-sm" style="background: linear-gradient(135deg, ${sub.color || '#d0bcff'}22, ${sub.color || '#d0bcff'}44); border: 1px solid ${sub.color || '#d0bcff'}55">
             ${iconHtml}
           </div>
           <div>
-            <div class="font-bold text-white flex items-center gap-1">
+            <div class="font-bold text-white flex items-center gap-1.5 font-google-sans">
               ${escapeHtml(sub.name)}
-              ${sub.is_trial ? `<span class="text-[9px] font-bold px-1.5 rounded bg-rose-500/20 text-rose-300">TRIAL</span>` : ''}
-              ${sub.is_shared ? `<span class="text-[9px] font-bold px-1.5 rounded bg-emerald-500/20 text-emerald-300">SPLIT</span>` : ''}
+              ${sub.is_trial ? `<span class="m3-badge-error text-[9px]">TRIAL</span>` : ''}
+              ${sub.is_shared ? `<span class="m3-badge-success text-[9px]">SPLIT</span>` : ''}
             </div>
-            <div class="text-[11px] text-slate-400">${escapeHtml(sub.payment_method || 'Tarjeta')}</div>
+            <div class="text-[11px] text-[#cac4d0]">${escapeHtml(sub.payment_method || 'Tarjeta')}</div>
           </div>
         </div>
       </td>
       <td class="px-4 py-3.5">
-        <span class="text-xs px-2 py-0.5 rounded-md bg-slate-800 text-slate-300 border border-slate-700">
+        <span class="m3-badge-secondary">
           ${escapeHtml(sub.category)}
         </span>
       </td>
       <td class="px-4 py-3.5">
-        <div class="font-medium text-slate-200">${formatDateFriendly(sub.next_billing_date)}</div>
-        <span class="text-[10px] font-bold px-1.5 py-0.2 rounded ${badgeClass}">${daysText}</span>
+        <div class="font-medium text-[#e6e0e9]">${formatDateFriendly(sub.next_billing_date)}</div>
+        <span class="${badgeClass}">${daysText}</span>
       </td>
       <td class="px-4 py-3.5 font-mono">
         ${isDifferentCurrency ? `
-          <div class="font-bold text-white">${baseSymbol}${formatNumber(convertedPrice)} <span class="text-[11px] text-slate-400 font-normal">/${cycleLabel.toLowerCase()}</span></div>
-          <div class="text-[11px] text-indigo-300 font-semibold">orig. ${subSymbol}${formatNumber(sub.price)} ${subCurr}</div>
+          <div class="font-bold text-white">${baseSymbol}${formatNumber(convertedPrice)} <span class="text-[11px] text-[#cac4d0] font-normal">/${cycleLabel.toLowerCase()}</span></div>
+          <div class="text-[11px] text-[#d0bcff] font-semibold">orig. ${subSymbol}${formatNumber(sub.price)} ${subCurr}</div>
         ` : `
           <div class="font-bold text-white">${baseSymbol}${formatNumber(sub.price)}</div>
-          <div class="text-[11px] text-slate-400">${cycleLabel}</div>
+          <div class="text-[11px] text-[#cac4d0]">${cycleLabel}</div>
         `}
       </td>
       <td class="px-4 py-3.5 font-mono">
-        <div class="font-extrabold text-indigo-300">${baseSymbol}${formatNumber(convertedAnnual)} / año</div>
-        <div class="text-[10px] text-slate-400">
+        <div class="font-extrabold text-[#d0bcff]">${baseSymbol}${formatNumber(convertedAnnual)} / año</div>
+        <div class="text-[10px] text-[#cac4d0]">
           (${baseSymbol}${formatNumber(convertedMonthly)} / mes${isDifferentCurrency ? ` &bull; orig. ${subSymbol}${formatNumber(sub.annual_cost)}` : ''})
         </div>
       </td>
       <td class="px-4 py-3.5">${statusBadge}</td>
       <td class="px-4 py-3.5 text-right space-x-1">
-        <button onclick="markAsPaidAndAdvance(${sub.id})" title="Marcar como pagado" class="p-1.5 hover:bg-slate-800 rounded text-slate-400 hover:text-emerald-400"><i data-lucide="receipt" class="w-4 h-4"></i></button>
-        <button onclick="editSubscription(${sub.id})" title="Editar" class="p-1.5 hover:bg-slate-800 rounded text-slate-400 hover:text-white"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
-        <button onclick="deleteSubscription(${sub.id}, '${escapeHtml(sub.name)}')" title="Eliminar" class="p-1.5 hover:bg-slate-800 rounded text-slate-400 hover:text-red-400"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+        <button onclick="markAsPaidAndAdvance(${sub.id})" title="Marcar como pagado" class="p-1.5 hover:bg-[#2b2930] rounded-full text-[#cac4d0] hover:text-[#a8d5b5] transition"><i data-lucide="receipt" class="w-4 h-4"></i></button>
+        <button onclick="editSubscription(${sub.id})" title="Editar" class="p-1.5 hover:bg-[#2b2930] rounded-full text-[#cac4d0] hover:text-white transition"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
+        <button onclick="deleteSubscription(${sub.id}, '${escapeHtml(sub.name)}')" title="Eliminar" class="p-1.5 hover:bg-[#2b2930] rounded-full text-[#cac4d0] hover:text-[#f2b8b5] transition"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
       </td>
     </tr>
   `;
@@ -1862,17 +1862,33 @@ function renderTopExpensiveChart() {
 
 function setChartMode(mode) {
   state.chartMode = mode;
-  document.getElementById('btnChartModeAnnual')?.classList.toggle('bg-indigo-600', mode === 'annual');
-  document.getElementById('btnChartModeAnnual')?.classList.toggle('text-white', mode === 'annual');
-  document.getElementById('btnChartModeMonthly')?.classList.toggle('bg-indigo-600', mode === 'monthly');
-  document.getElementById('btnChartModeMonthly')?.classList.toggle('text-white', mode === 'monthly');
+  const btnA = document.getElementById('btnChartModeAnnual');
+  const btnM = document.getElementById('btnChartModeMonthly');
+  if (btnA && btnM) {
+    if (mode === 'annual') {
+      btnA.className = 'px-3 py-1 rounded-full font-medium bg-[#d0bcff] text-[#381e72] transition';
+      btnM.className = 'px-3 py-1 rounded-full font-medium text-[#cac4d0] hover:text-white transition';
+    } else {
+      btnM.className = 'px-3 py-1 rounded-full font-medium bg-[#d0bcff] text-[#381e72] transition';
+      btnA.className = 'px-3 py-1 rounded-full font-medium text-[#cac4d0] hover:text-white transition';
+    }
+  }
   renderCharts();
 }
 
 function setViewMode(mode) {
   state.viewMode = mode;
-  document.getElementById('viewModeGrid')?.classList.toggle('bg-indigo-600', mode === 'grid');
-  document.getElementById('viewModeTable')?.classList.toggle('bg-indigo-600', mode === 'table');
+  const btnG = document.getElementById('viewModeGrid');
+  const btnT = document.getElementById('viewModeTable');
+  if (btnG && btnT) {
+    if (mode === 'grid') {
+      btnG.className = 'p-1.5 rounded-full bg-[#d0bcff] text-[#381e72] transition';
+      btnT.className = 'p-1.5 rounded-full text-[#cac4d0] hover:text-white transition';
+    } else {
+      btnT.className = 'p-1.5 rounded-full bg-[#d0bcff] text-[#381e72] transition';
+      btnG.className = 'p-1.5 rounded-full text-[#cac4d0] hover:text-white transition';
+    }
+  }
   renderSubscriptions();
 }
 
@@ -2082,8 +2098,8 @@ function renderCalendar() {
     const hasCuts = dayCuts.length > 0;
 
     let cellBorder = isSelected
-      ? 'is-selected border-indigo-500'
-      : (isToday ? 'is-today border-amber-500/80 bg-amber-500/5' : 'border-slate-800 bg-slate-900/70 hover:border-slate-700');
+      ? 'is-selected border-[#d0bcff]'
+      : (isToday ? 'is-today border-[#f2c18d] bg-[#643f14]/20' : 'border-[#49454f]/40 bg-[#1d1b20] hover:border-[#49454f]');
 
     let chipsHtml = '';
     if (hasCuts) {
@@ -2093,9 +2109,9 @@ function renderCalendar() {
       const remainingCount = dayCuts.length - maxChips;
 
       chipsHtml = visibleCuts.map(cut => {
-        const bgCol = cut.color || '#4F46E5';
+        const bgCol = cut.color || '#d0bcff';
         return `
-          <div class="calendar-badge-chip px-1.5 py-0.5 rounded text-[10px] font-semibold text-white truncate flex items-center gap-1 shadow-sm"
+          <div class="calendar-badge-chip px-1.5 py-0.5 rounded-full text-[10px] font-semibold text-white truncate flex items-center gap-1 shadow-sm"
                style="background-color: ${bgCol};"
                title="${escapeHtml(cut.name)}: ${curSymbol}${formatNumber(cut.converted_price_calculated)}">
             <span class="truncate">${escapeHtml(cut.name)}</span>
@@ -2105,7 +2121,7 @@ function renderCalendar() {
 
       if (remainingCount > 0) {
         chipsHtml += `
-          <div class="text-[9px] font-bold text-indigo-300 bg-indigo-950/60 border border-indigo-500/30 px-1 py-0.2 rounded text-center">
+          <div class="text-[9px] font-bold text-[#e8def8] bg-[#4a4458] px-1.5 py-0.2 rounded-full text-center">
             +${remainingCount} más
           </div>
         `;
@@ -2114,14 +2130,14 @@ function renderCalendar() {
 
     html += `
       <div onclick="selectCalendarDate('${dateStr}')"
-           class="calendar-day-cell rounded-xl p-1.5 sm:p-2 border ${cellBorder} flex flex-col justify-between cursor-pointer transition relative group">
+           class="calendar-day-cell rounded-2xl p-1.5 sm:p-2 border ${cellBorder} flex flex-col justify-between cursor-pointer transition relative group">
         
         <div class="flex items-center justify-between">
-          <span class="text-xs font-mono font-bold ${isToday ? 'text-amber-400 font-extrabold ring-1 ring-amber-400/40 rounded px-1' : (isSelected ? 'text-indigo-300' : 'text-slate-300')}">
+          <span class="text-xs font-mono font-bold ${isToday ? 'text-[#f2c18d] font-extrabold ring-1 ring-[#f2c18d]/40 rounded px-1' : (isSelected ? 'text-[#d0bcff]' : 'text-[#cac4d0]')}">
             ${day}
           </span>
           ${hasCuts ? `
-            <span class="w-2 h-2 rounded-full bg-indigo-400 shrink-0 ${isToday ? 'animate-ping' : ''}"></span>
+            <span class="w-2 h-2 rounded-full bg-[#d0bcff] shrink-0 ${isToday ? 'animate-ping' : ''}"></span>
           ` : ''}
         </div>
 
@@ -2130,7 +2146,7 @@ function renderCalendar() {
         </div>
 
         ${hasCuts ? `
-          <div class="mt-1 pt-0.5 border-t border-slate-800 text-[10px] font-mono text-emerald-400 font-bold text-right hidden sm:block">
+          <div class="mt-1 pt-0.5 border-t border-[#49454f]/30 text-[10px] font-mono text-[#a8d5b5] font-bold text-right hidden sm:block">
             ${curSymbol}${formatNumber(dayCuts.reduce((acc, c) => acc + c.converted_price_calculated, 0))}
           </div>
         ` : ''}
@@ -2196,7 +2212,7 @@ function renderCalendarDayDetails(cutsForSelectedDay) {
 
   const totalDayExpense = cutsForSelectedDay.reduce((acc, c) => acc + c.converted_price_calculated, 0);
   badge.textContent = `${cutsForSelectedDay.length} ${cutsForSelectedDay.length === 1 ? 'corte' : 'cortes'} (${curSymbol}${formatNumber(totalDayExpense)})`;
-  badge.className = 'text-xs px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 font-mono font-bold border border-indigo-500/30';
+  badge.className = 'm3-badge-primary font-mono font-bold';
 
   list.innerHTML = cutsForSelectedDay.map(sub => {
     const isDiff = sub.currency && sub.currency !== baseCurr;
@@ -2204,8 +2220,8 @@ function renderCalendarDayDetails(cutsForSelectedDay) {
     const cycleLabel = CYCLE_LABELS[sub.billing_cycle] || sub.billing_cycle;
 
     return `
-      <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-4 flex flex-col justify-between space-y-3 relative overflow-hidden group hover:border-slate-700 transition">
-        <div class="absolute top-0 left-0 right-0 h-1" style="background-color: ${sub.color || '#4F46E5'}"></div>
+      <div class="m3-card p-4 flex flex-col justify-between space-y-3 relative overflow-hidden group">
+        <div class="absolute top-0 left-0 right-0 h-1" style="background-color: ${sub.color || 'var(--md-sys-color-primary)'}"></div>
 
         <div class="flex items-start justify-between gap-2">
           <div class="flex items-center gap-2.5">
@@ -2223,29 +2239,29 @@ function renderCalendarDayDetails(cutsForSelectedDay) {
           </div>
         </div>
 
-        <div class="bg-slate-800/60 rounded-lg p-2.5 flex items-center justify-between">
+        <div class="bg-[#141218] rounded-2xl p-3 flex items-center justify-between border border-[#49454f]/30">
           <div>
-            <span class="text-[10px] text-slate-400 uppercase tracking-wider block font-medium">Cobro del Día</span>
-            <span class="text-sm font-bold text-white">${curSymbol}${formatNumber(sub.converted_price_calculated)}</span>
+            <span class="text-[10px] text-[#cac4d0] uppercase tracking-wider block font-medium">Cobro del Día</span>
+            <span class="text-sm font-bold text-white font-mono">${curSymbol}${formatNumber(sub.converted_price_calculated)}</span>
           </div>
           ${isDiff ? `
             <div class="text-right">
-              <span class="text-[10px] text-slate-400 uppercase tracking-wider block font-medium">Original</span>
-              <span class="text-xs font-semibold text-indigo-300">${origSymbol}${formatNumber(sub.price)} ${sub.currency}</span>
+              <span class="text-[10px] text-[#cac4d0] uppercase tracking-wider block font-medium">Original</span>
+              <span class="text-xs font-semibold text-[#d0bcff] font-mono">${origSymbol}${formatNumber(sub.price)} ${sub.currency}</span>
             </div>
           ` : ''}
         </div>
 
         <div class="flex items-center justify-between pt-1 text-xs">
-          <span class="text-[11px] text-slate-400 flex items-center gap-1">
-            <i data-lucide="credit-card" class="w-3 h-3 text-slate-500"></i>
+          <span class="text-[11px] text-[#cac4d0] flex items-center gap-1">
+            <i data-lucide="credit-card" class="w-3 h-3 text-[#cac4d0]"></i>
             ${escapeHtml(sub.payment_method || 'Tarjeta')}
           </span>
           <div class="flex items-center gap-1.5">
-            <button onclick="markAsPaidAndAdvance(${sub.id})" title="Marcar como pagado y avanzar fecha" class="px-2.5 py-1 rounded-lg bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/30 text-[11px] font-semibold transition flex items-center gap-1">
-              <i data-lucide="receipt" class="w-3 h-3"></i> Pagado
+            <button onclick="markAsPaidAndAdvance(${sub.id})" title="Marcar como pagado y avanzar fecha" class="m3-btn-tonal text-xs py-1 px-3 flex items-center gap-1">
+              <i data-lucide="receipt" class="w-3.5 h-3.5"></i> Pagado
             </button>
-            <button onclick="editSubscription(${sub.id})" title="Editar suscripción" class="p-1 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition">
+            <button onclick="editSubscription(${sub.id})" title="Editar suscripción" class="p-1.5 rounded-full hover:bg-[#2b2930] text-[#cac4d0] hover:text-white transition">
               <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
             </button>
           </div>
@@ -2314,7 +2330,7 @@ function openModal(sub = null) {
   let selectedFriendIds = [];
 
   if (sub) {
-    modalTitle.innerHTML = `<i data-lucide="edit-3" class="w-5 h-5 text-indigo-400"></i> Editar Suscripción`;
+    modalTitle.innerHTML = `<i data-lucide="edit-3" class="w-5 h-5 text-[#d0bcff]"></i> Editar Suscripción`;
     btnSubmitText.textContent = 'Actualizar Suscripción';
     if (tplContainer) tplContainer.classList.add('hidden');
 
@@ -2327,7 +2343,7 @@ function openModal(sub = null) {
     document.getElementById('subCategory').value = sub.category;
     document.getElementById('subPaymentMethod').value = sub.payment_method || '';
     document.getElementById('subStatus').value = sub.status;
-    document.getElementById('subColor').value = sub.color || '#4F46E5';
+    document.getElementById('subColor').value = sub.color || '#d0bcff';
     document.getElementById('subUrl').value = sub.url || '';
     document.getElementById('subNotes').value = sub.notes || '';
 
@@ -2345,14 +2361,14 @@ function openModal(sub = null) {
       selectedFriendIds = (sub.shared_friend_ids || '').split(',').filter(Boolean);
     }
   } else {
-    modalTitle.innerHTML = `<i data-lucide="plus-circle" class="w-5 h-5 text-indigo-400"></i> Nueva Suscripción`;
+    modalTitle.innerHTML = `<i data-lucide="plus-circle" class="w-5 h-5 text-[#d0bcff]"></i> Nueva Suscripción`;
     btnSubmitText.textContent = 'Guardar Suscripción';
     if (tplContainer) tplContainer.classList.remove('hidden');
 
     document.getElementById('subId').value = '';
     document.getElementById('subCurrency').value = state.baseCurrencyCode || 'USD';
     document.getElementById('subNextBillingDate').value = defaultDateStr;
-    document.getElementById('subColor').value = '#4F46E5';
+    document.getElementById('subColor').value = '#d0bcff';
 
     // Renderizar catálogo actualizado a la divisa del usuario
     renderPresetCatalog();
@@ -2406,10 +2422,10 @@ function renderPresetCatalog(filterCategory = 'all', searchQuery = '') {
           <div class="text-xs font-bold text-white truncate flex items-center gap-1">
             <span>${escapeHtml(service.name)}</span>
           </div>
-          <div class="text-[11px] font-mono font-semibold text-indigo-300 truncate">
+          <div class="text-[11px] font-mono font-semibold text-[#d0bcff] truncate">
             ${baseSymbol}${formatNumber(converted)}${cycleLabel}
           </div>
-          ${isDiffCurr ? `<div class="text-[9px] text-slate-400 font-mono truncate">($${formatNumber(plan.priceUsd)} USD)</div>` : ''}
+          ${isDiffCurr ? `<div class="text-[9px] text-[#cac4d0] font-mono truncate">($${formatNumber(plan.priceUsd)} USD)</div>` : ''}
         </div>
       </div>
     `;
@@ -2493,8 +2509,8 @@ function updateModalLiveCalculation() {
   } else {
     const monthlyConv = convertCurrency(monthly, subCurr, baseCurr);
     const annualConv = convertCurrency(annual, subCurr, baseCurr);
-    if (calcM) calcM.innerHTML = `${subSymbol}${formatNumber(monthly)} <span class="text-indigo-400 font-bold text-[11px]">(≈ ${baseSymbol}${formatNumber(monthlyConv)} ${baseCurr})</span> / mes`;
-    if (calcA) calcA.innerHTML = `${subSymbol}${formatNumber(annual)} <span class="text-indigo-400 font-bold text-[11px]">(≈ ${baseSymbol}${formatNumber(annualConv)} ${baseCurr})</span> / año`;
+    if (calcM) calcM.innerHTML = `${subSymbol}${formatNumber(monthly)} <span class="text-[#d0bcff] font-bold text-[11px] font-mono">(≈ ${baseSymbol}${formatNumber(monthlyConv)} ${baseCurr})</span> / mes`;
+    if (calcA) calcA.innerHTML = `${subSymbol}${formatNumber(annual)} <span class="text-[#d0bcff] font-bold text-[11px] font-mono">(≈ ${baseSymbol}${formatNumber(annualConv)} ${baseCurr})</span> / año`;
   }
 }
 
@@ -2847,18 +2863,18 @@ function formatDateFriendly(dateStr) {
 }
 
 function getCutOffBadgeInfo(days) {
-  if (days === null || days === undefined) return { text: 'Pendiente', badgeClass: 'bg-slate-800 text-slate-400' };
-  if (days < 0) return { text: `Vencido hace ${Math.abs(days)}d`, badgeClass: 'bg-red-500/20 text-red-300 border border-red-500/30' };
-  if (days === 0) return { text: '¡Hoy!', badgeClass: 'bg-red-500/20 text-red-300 border border-red-500/40 animate-pulse' };
-  if (days === 1) return { text: 'Mañana', badgeClass: 'bg-amber-500/20 text-amber-300 border border-amber-500/30' };
-  if (days <= 7) return { text: `En ${days} días`, badgeClass: 'bg-amber-500/20 text-amber-200 border border-amber-500/20' };
-  return { text: `En ${days} días`, badgeClass: 'bg-slate-800 text-slate-300 border border-slate-700' };
+  if (days === null || days === undefined) return { text: 'Pendiente', badgeClass: 'm3-badge-secondary' };
+  if (days < 0) return { text: `Vencido hace ${Math.abs(days)}d`, badgeClass: 'm3-badge-error' };
+  if (days === 0) return { text: '¡Hoy!', badgeClass: 'm3-badge-error animate-pulse' };
+  if (days === 1) return { text: 'Mañana', badgeClass: 'm3-badge-warning' };
+  if (days <= 7) return { text: `En ${days} días`, badgeClass: 'm3-badge-warning' };
+  return { text: `En ${days} días`, badgeClass: 'm3-badge-secondary' };
 }
 
 function getStatusBadge(status) {
-  if (status === 'active') return `<span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Activa</span>`;
-  if (status === 'paused') return `<span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">Pausada</span>`;
-  return `<span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-800 text-slate-500 border border-slate-700">Cancelada</span>`;
+  if (status === 'active') return `<span class="m3-badge-success">Activa</span>`;
+  if (status === 'paused') return `<span class="m3-badge-warning">Pausada</span>`;
+  return `<span class="m3-badge-secondary">Cancelada</span>`;
 }
 
 function escapeHtml(str) {
@@ -2881,11 +2897,15 @@ function showToast(message, type = 'info') {
   if (!toast || !msgElem) return;
 
   msgElem.textContent = message;
-  let iconHtml = type === 'success' ? '<i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-400"></i>' : (type === 'error' ? '<i data-lucide="alert-circle" class="w-4 h-4 text-rose-400"></i>' : '<i data-lucide="info" class="w-4 h-4 text-indigo-400"></i>');
-  let colorClasses = type === 'success' ? 'bg-slate-900/95 border-emerald-500/40 text-slate-100 shadow-emerald-500/10' : (type === 'error' ? 'bg-slate-900/95 border-rose-500/40 text-slate-100 shadow-rose-500/10' : 'bg-slate-900/95 border-indigo-500/40 text-slate-100 shadow-indigo-500/10');
+  let iconHtml = type === 'success' ? '<i data-lucide="check-circle-2" class="w-4 h-4 text-[#a8d5b5]"></i>' : (type === 'error' ? '<i data-lucide="alert-circle" class="w-4 h-4 text-[#f2b8b5]"></i>' : '<i data-lucide="info" class="w-4 h-4 text-[#d0bcff]"></i>');
+  let colorClasses = type === 'success' 
+    ? 'bg-[#141218] border-[#a8d5b5]/40 text-[#e6e0e9] shadow-[#2b5037]/20' 
+    : (type === 'error' 
+      ? 'bg-[#141218] border-[#f2b8b5]/40 text-[#e6e0e9] shadow-[#8c1d18]/20' 
+      : 'bg-[#141218] border-[#d0bcff]/40 text-[#e6e0e9] shadow-[#4f378b]/20');
 
   iconElem.innerHTML = iconHtml;
-  toast.className = `fixed bottom-6 right-6 z-50 flex items-center gap-3 px-4 py-3 rounded-xl shadow-2xl text-xs sm:text-sm font-medium border transition-all duration-300 ease-out ${colorClasses}`;
+  toast.className = `fixed bottom-6 right-6 z-50 flex items-center gap-3 px-4 py-3 rounded-full shadow-2xl text-xs sm:text-sm font-medium border transition-all duration-300 ease-out font-google-sans ${colorClasses}`;
   initIcons();
 
   toast.classList.remove('translate-y-20', 'opacity-0', 'pointer-events-none');
