@@ -641,6 +641,8 @@ function openAuthModal(mode = 'login') {
   }
   state.authMode = mode;
   const modal = document.getElementById('authModal');
+  const authFormView = document.getElementById('authFormView');
+  const authRecoveryView = document.getElementById('authRecoveryView');
   const title = document.getElementById('authModalTitle');
   const subtitle = document.getElementById('authModalSubtitle');
   const tabLogin = document.getElementById('tabAuthLogin');
@@ -651,24 +653,32 @@ function openAuthModal(mode = 'login') {
   const pwdHelp = document.getElementById('passwordHelpText');
   const closeBtn = document.getElementById('btnCloseAuthModal');
 
-  if (mode === 'login') {
-    if (title) title.textContent = 'Iniciar Sesión';
-    if (subtitle) subtitle.textContent = 'Identifícate para entrar a tu panel personal';
-    if (tabLogin) tabLogin.className = 'py-2 rounded-full bg-[#d0bcff] text-[#381e72] font-semibold transition shadow-sm';
-    if (tabReg) tabReg.className = 'py-2 rounded-full text-[#cac4d0] hover:text-white transition';
-    extraFields?.classList.add('hidden');
-    rememberContainer?.classList.remove('hidden');
-    pwdHelp?.classList.add('hidden');
-    if (submitText) submitText.textContent = 'Entrar a mi Cuenta';
+  if (mode === 'recovery') {
+    authFormView?.classList.add('hidden');
+    authRecoveryView?.classList.remove('hidden');
   } else {
-    if (title) title.textContent = 'Crear Nueva Cuenta';
-    if (subtitle) subtitle.textContent = 'Crea tu espacio personal, privado y libre';
-    if (tabReg) tabReg.className = 'py-2 rounded-full bg-[#d0bcff] text-[#381e72] font-semibold transition shadow-sm';
-    if (tabLogin) tabLogin.className = 'py-2 rounded-full text-[#cac4d0] hover:text-white transition';
-    extraFields?.classList.remove('hidden');
-    rememberContainer?.classList.add('hidden');
-    pwdHelp?.classList.remove('hidden');
-    if (submitText) submitText.textContent = 'Crear mi Cuenta';
+    authRecoveryView?.classList.add('hidden');
+    authFormView?.classList.remove('hidden');
+
+    if (mode === 'login') {
+      if (title) title.textContent = 'Iniciar Sesión';
+      if (subtitle) subtitle.textContent = 'Identifícate para entrar a tu panel personal';
+      if (tabLogin) tabLogin.className = 'py-2 rounded-full bg-[#d0bcff] text-[#381e72] font-semibold transition shadow-sm';
+      if (tabReg) tabReg.className = 'py-2 rounded-full text-[#cac4d0] hover:text-white transition';
+      extraFields?.classList.add('hidden');
+      rememberContainer?.classList.remove('hidden');
+      pwdHelp?.classList.add('hidden');
+      if (submitText) submitText.textContent = 'Entrar a mi Cuenta';
+    } else {
+      if (title) title.textContent = 'Crear Nueva Cuenta';
+      if (subtitle) subtitle.textContent = 'Crea tu espacio personal, privado y libre';
+      if (tabReg) tabReg.className = 'py-2 rounded-full bg-[#d0bcff] text-[#381e72] font-semibold transition shadow-sm';
+      if (tabLogin) tabLogin.className = 'py-2 rounded-full text-[#cac4d0] hover:text-white transition';
+      extraFields?.classList.remove('hidden');
+      rememberContainer?.classList.add('hidden');
+      pwdHelp?.classList.remove('hidden');
+      if (submitText) submitText.textContent = 'Crear mi Cuenta';
+    }
   }
 
   // Si no está autenticado, permitir cerrar para volver a la landing
@@ -693,6 +703,134 @@ function toggleAuthPasswordVisibility() {
     eyeIcon?.setAttribute('data-lucide', 'eye');
   }
   initIcons();
+}
+
+function toggleRecoveryPasswordVisibility() {
+  const pwdInput = document.getElementById('recoveryNewPassword');
+  const eyeIcon = document.getElementById('eyeIconRecoveryPassword');
+  if (!pwdInput) return;
+
+  if (pwdInput.type === 'password') {
+    pwdInput.type = 'text';
+    eyeIcon?.setAttribute('data-lucide', 'eye-off');
+  } else {
+    pwdInput.type = 'password';
+    eyeIcon?.setAttribute('data-lucide', 'eye');
+  }
+  initIcons();
+}
+
+function toggleProfileNewPasswordVisibility() {
+  const pwdInput = document.getElementById('newPasswordInput');
+  const eyeIcon = document.getElementById('eyeIconNewPasswordProfile');
+  if (!pwdInput) return;
+
+  if (pwdInput.type === 'password') {
+    pwdInput.type = 'text';
+    eyeIcon?.setAttribute('data-lucide', 'eye-off');
+  } else {
+    pwdInput.type = 'password';
+    eyeIcon?.setAttribute('data-lucide', 'eye');
+  }
+  initIcons();
+}
+
+function toggleChangePasswordForm() {
+  const form = document.getElementById('changePasswordForm');
+  const chevron = document.getElementById('iconChangePasswordChevron');
+  if (!form) return;
+
+  const isHidden = form.classList.contains('hidden');
+  if (isHidden) {
+    form.classList.remove('hidden');
+    chevron?.classList.add('rotate-180');
+  } else {
+    form.classList.add('hidden');
+    chevron?.classList.remove('rotate-180');
+    form.reset();
+  }
+  initIcons();
+}
+
+async function handleRecoverySubmit(e) {
+  e.preventDefault();
+  const identifier = document.getElementById('recoveryIdentifier')?.value.trim();
+  const newPassword = document.getElementById('recoveryNewPassword')?.value;
+  const confirmPassword = document.getElementById('recoveryConfirmPassword')?.value;
+
+  if (!identifier) {
+    showToast('Ingresa tu nombre de usuario o correo', 'error');
+    return;
+  }
+  if (!newPassword || newPassword.length < 4) {
+    showToast('La nueva contraseña debe tener al menos 4 caracteres', 'error');
+    return;
+  }
+  if (newPassword !== confirmPassword) {
+    showToast('Las contraseñas no coinciden', 'error');
+    return;
+  }
+
+  try {
+    const res = await fetch('/api/auth/reset-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ identifier, new_password: newPassword })
+    });
+    const result = await res.json();
+    if (result.success) {
+      showToast(result.message || 'Contraseña restablecida correctamente', 'success');
+      document.getElementById('recoveryForm')?.reset();
+      openAuthModal('login');
+      // Prellenar el usuario en el formulario de login para conveniencia
+      const userInput = document.getElementById('authUsername');
+      if (userInput) userInput.value = identifier;
+    } else {
+      showToast(result.error || 'No se pudo restablecer la contraseña', 'error');
+    }
+  } catch (err) {
+    console.error('Error al restablecer contraseña:', err);
+    showToast(`Error de conexión: ${err.message || err}`, 'error');
+  }
+}
+
+async function handleChangePasswordSubmit(e) {
+  e.preventDefault();
+  const currentPassword = document.getElementById('currentPasswordInput')?.value;
+  const newPassword = document.getElementById('newPasswordInput')?.value;
+  const confirmPassword = document.getElementById('confirmNewPasswordInput')?.value;
+
+  if (!currentPassword) {
+    showToast('Ingresa tu contraseña actual', 'error');
+    return;
+  }
+  if (!newPassword || newPassword.length < 4) {
+    showToast('La nueva contraseña debe tener al menos 4 caracteres', 'error');
+    return;
+  }
+  if (newPassword !== confirmPassword) {
+    showToast('Las contraseñas nuevas no coinciden', 'error');
+    return;
+  }
+
+  try {
+    const res = await fetch('/api/auth/change-password', {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ current_password: currentPassword, new_password: newPassword })
+    });
+    const result = await res.json();
+    if (result.success) {
+      showToast('¡Contraseña cambiada con éxito!', 'success');
+      document.getElementById('changePasswordForm')?.reset();
+      toggleChangePasswordForm();
+    } else {
+      showToast(result.error || 'No se pudo actualizar la contraseña', 'error');
+    }
+  } catch (err) {
+    console.error('Error al cambiar contraseña:', err);
+    showToast(`Error de conexión: ${err.message || err}`, 'error');
+  }
 }
 
 function closeAuthModal() {
@@ -845,6 +983,19 @@ function initEventListeners() {
   document.getElementById('tabAuthRegister')?.addEventListener('click', () => openAuthModal('register'));
   document.getElementById('btnTogglePassword')?.addEventListener('click', toggleAuthPasswordVisibility);
   document.getElementById('authForm')?.addEventListener('submit', handleAuthSubmit);
+
+  // Restablecer / Recuperar Contraseña (desde Login)
+  document.getElementById('btnForgotAuthPassword')?.addEventListener('click', () => openAuthModal('recovery'));
+  document.getElementById('btnBackToLoginFromRecovery')?.addEventListener('click', () => openAuthModal('login'));
+  document.getElementById('btnCancelRecovery')?.addEventListener('click', () => openAuthModal('login'));
+  document.getElementById('btnToggleRecoveryPassword')?.addEventListener('click', toggleRecoveryPasswordVisibility);
+  document.getElementById('recoveryForm')?.addEventListener('submit', handleRecoverySubmit);
+
+  // Cambiar Contraseña (dentro de Mi Perfil / Cuenta)
+  document.getElementById('btnToggleChangePassword')?.addEventListener('click', toggleChangePasswordForm);
+  document.getElementById('btnToggleNewPasswordProfile')?.addEventListener('click', toggleProfileNewPasswordVisibility);
+  document.getElementById('btnCancelChangePassword')?.addEventListener('click', toggleChangePasswordForm);
+  document.getElementById('changePasswordForm')?.addEventListener('submit', handleChangePasswordSubmit);
 
   // Botones de Cerrar Sesión (Navbar, Ajustes, Modal de Perfil)
   document.getElementById('btnLogout')?.addEventListener('click', handleLogout);

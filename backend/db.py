@@ -673,6 +673,60 @@ def get_user_by_session(token: str, db_path=None):
     conn.close()
     return dict(row) if row else None
 
+def reset_password_with_recovery(identifier: str, new_password: str, db_path=None):
+    """
+    Restablece la contraseña de un usuario mediante su nombre de usuario o correo.
+    Valida la existencia del usuario y actualiza hash y salt de forma segura.
+    """
+    ident = identifier.strip().lower()
+    if not ident:
+        raise ValueError('Debes ingresar tu nombre de usuario o correo')
+    if len(new_password) < 4:
+        raise ValueError('La nueva contraseña debe tener al menos 4 caracteres')
+
+    conn = get_connection(db_path)
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT id, username FROM users WHERE LOWER(username) = ? OR LOWER(email) = ?", (ident, ident))
+    user = cursor.fetchone()
+    if not user:
+        conn.close()
+        raise ValueError('No se encontró ningún usuario con ese nombre o correo')
+
+    pwd_hash, salt = hash_password(new_password)
+    cursor.execute("UPDATE users SET password_hash = ?, salt = ? WHERE id = ?", (pwd_hash, salt, user['id']))
+    # Revocar sesiones anteriores para exigir login fresco
+    cursor.execute("DELETE FROM sessions WHERE user_id = ?", (user['id'],))
+    conn.commit()
+    conn.close()
+    return {'id': user['id'], 'username': user['username']}
+
+def change_user_password(user_id: int, current_password: str, new_password: str, db_path=None):
+    """
+    Permite a un usuario autenticado cambiar su contraseña validando la contraseña actual.
+    """
+    if len(new_password) < 4:
+        raise ValueError('La nueva contraseña debe tener al menos 4 caracteres')
+
+    conn = get_connection(db_path)
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT id, password_hash, salt FROM users WHERE id = ?", (user_id,))
+    user = cursor.fetchone()
+    if not user:
+        conn.close()
+        raise ValueError('Usuario no encontrado')
+
+    if not verify_password(current_password, user['password_hash'], user['salt']):
+        conn.close()
+        raise ValueError('La contraseña actual es incorrecta')
+
+    pwd_hash, salt = hash_password(new_password)
+    cursor.execute("UPDATE users SET password_hash = ?, salt = ? WHERE id = ?", (pwd_hash, salt, user_id))
+    conn.commit()
+    conn.close()
+    return True
+
 def delete_session(token: str, db_path=None):
     """Cierra la sesión eliminando el token."""
     if not token:

@@ -724,6 +724,58 @@
         </div>
       </div>
 
+      <!-- Sección: Seguridad / Cambiar Contraseña dentro de la cuenta -->
+      <div class="border-t border-[#49454f]/40 pt-3">
+        <button type="button" id="btnToggleChangePassword" class="w-full flex items-center justify-between p-2.5 rounded-2xl bg-[#1d1b20] hover:bg-[#2b2930] border border-[#49454f]/40 text-xs font-semibold text-white transition">
+          <div class="flex items-center gap-2">
+            <i data-lucide="key-round" class="w-4 h-4 text-[#d0bcff]"></i>
+            <span>Cambiar Contraseña</span>
+          </div>
+          <i data-lucide="chevron-down" id="iconChangePasswordChevron" class="w-4 h-4 text-[#cac4d0] transition-transform duration-200"></i>
+        </button>
+
+        <form id="changePasswordForm" class="hidden mt-3 space-y-3 p-3 bg-[#141218] rounded-2xl border border-[#49454f]/40 text-xs">
+          <div>
+            <label class="block text-[#cac4d0] font-medium mb-1" for="currentPasswordInput">Contraseña Actual *</label>
+            <div class="m3-input-wrapper">
+              <i data-lucide="lock" class="w-4 h-4 m3-input-icon"></i>
+              <input type="password" id="currentPasswordInput" required placeholder="Tu contraseña actual"
+                class="m3-text-field m3-input-field">
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-[#cac4d0] font-medium mb-1" for="newPasswordInput">Nueva Contraseña *</label>
+            <div class="m3-input-wrapper">
+              <i data-lucide="key" class="w-4 h-4 m3-input-icon"></i>
+              <input type="password" id="newPasswordInput" required placeholder="Mínimo 4 caracteres"
+                class="m3-text-field m3-input-field">
+              <button type="button" id="btnToggleNewPasswordProfile" class="m3-input-toggle" title="Mostrar u ocultar contraseña">
+                <i data-lucide="eye" class="w-4 h-4" id="eyeIconNewPasswordProfile"></i>
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-[#cac4d0] font-medium mb-1" for="confirmNewPasswordInput">Confirmar Nueva Contraseña *</label>
+            <div class="m3-input-wrapper">
+              <i data-lucide="shield-check" class="w-4 h-4 m3-input-icon"></i>
+              <input type="password" id="confirmNewPasswordInput" required placeholder="Repite la nueva contraseña"
+                class="m3-text-field m3-input-field">
+            </div>
+          </div>
+
+          <div class="pt-1 flex gap-2">
+            <button type="submit" id="btnSubmitChangePassword" class="m3-btn-filled flex-1 py-2 text-xs font-bold shadow">
+              Actualizar Clave
+            </button>
+            <button type="button" id="btnCancelChangePassword" class="m3-btn-outline py-2 px-3 text-xs">
+              Cancelar
+            </button>
+          </div>
+        </form>
+      </div>
+
       <div class="pt-3 border-t border-[#49454f]/40 flex flex-col gap-2">
         <button type="button" id="btnLogoutFromProfileModal" class="m3-btn-outline text-[#f2b8b5] border-[#f2b8b5]/40 hover:bg-[#8c1d18]/20 w-full py-2.5 px-4 font-semibold text-xs transition flex items-center justify-center gap-2">
           <i data-lucide="log-out" class="w-4 h-4"></i>
@@ -1027,14 +1079,81 @@
           <div id="authRememberContainer" class="flex items-center justify-between text-xs text-[#cac4d0] pt-0.5">
             <label class="flex items-center gap-2 cursor-pointer hover:text-white select-none">
               <input type="checkbox" id="authRememberMe" class="rounded bg-[#211f26] border-[#49454f] text-[#d0bcff] focus:ring-[#d0bcff]">
-              <span>Mantener sesión iniciada en este equipo</span>
+              <span>Recordarme</span>
             </label>
+            <button type="button" id="btnForgotAuthPassword" class="text-[11px] text-[#d0bcff] hover:underline font-medium focus:outline-none">
+              ¿Olvidaste tu contraseña?
+            </button>
           </div>
 
           <div class="pt-2">
             <button type="submit" id="btnSubmitAuth" class="m3-btn-filled w-full py-3 text-sm font-bold shadow-md flex items-center justify-center gap-2">
               <i data-lucide="arrow-right" class="w-4 h-4"></i>
               <span id="btnSubmitAuthText">Entrar a mi Cuenta</span>
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- ================= VISTA DE RECUPERACIÓN / RESTABLECER CONTRASEÑA ================= -->
+      <div id="authRecoveryView" class="hidden space-y-5 animate-m3-slide">
+        <div class="flex items-center gap-3 border-b border-[#49454f]/40 pb-3">
+          <button type="button" id="btnBackToLoginFromRecovery" class="p-2 rounded-full text-[#cac4d0] hover:text-white hover:bg-[#2b2930] transition" title="Volver a Iniciar Sesión">
+            <i data-lucide="arrow-left" class="w-4 h-4"></i>
+          </button>
+          <div>
+            <h3 class="text-base sm:text-lg font-bold text-white leading-tight font-google-sans">
+              Restablecer Contraseña
+            </h3>
+            <p class="text-xs text-[#cac4d0]">
+              Recupera el acceso a tu cuenta en SubTracker
+            </p>
+          </div>
+        </div>
+
+        <div class="p-3 rounded-2xl bg-[#d0bcff]/10 border border-[#d0bcff]/20 text-xs text-[#cac4d0] flex items-start gap-2.5">
+          <i data-lucide="info" class="w-4 h-4 text-[#d0bcff] shrink-0 mt-0.5"></i>
+          <span>Ingresa tu nombre de usuario o correo registrado y define tu nueva contraseña segura.</span>
+        </div>
+
+        <form id="recoveryForm" class="space-y-4 text-xs">
+          <div>
+            <label class="block text-[#cac4d0] font-medium mb-1.5" for="recoveryIdentifier">Usuario o Correo Electrónico *</label>
+            <div class="m3-input-wrapper">
+              <i data-lucide="user-check" class="w-4 h-4 m3-input-icon"></i>
+              <input type="text" id="recoveryIdentifier" required placeholder="Ej: alex o correo@ejemplo.com"
+                class="m3-text-field m3-input-field">
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-[#cac4d0] font-medium mb-1.5" for="recoveryNewPassword">Nueva Contraseña *</label>
+            <div class="m3-input-wrapper">
+              <i data-lucide="lock" class="w-4 h-4 m3-input-icon"></i>
+              <input type="password" id="recoveryNewPassword" required placeholder="Mínimo 4 caracteres"
+                class="m3-text-field m3-input-field">
+              <button type="button" id="btnToggleRecoveryPassword" class="m3-input-toggle" title="Mostrar u ocultar contraseña">
+                <i data-lucide="eye" class="w-4 h-4" id="eyeIconRecoveryPassword"></i>
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-[#cac4d0] font-medium mb-1.5" for="recoveryConfirmPassword">Confirmar Nueva Contraseña *</label>
+            <div class="m3-input-wrapper">
+              <i data-lucide="shield-check" class="w-4 h-4 m3-input-icon"></i>
+              <input type="password" id="recoveryConfirmPassword" required placeholder="Repite la contraseña"
+                class="m3-text-field m3-input-field">
+            </div>
+          </div>
+
+          <div class="pt-2 flex flex-col gap-2">
+            <button type="submit" id="btnSubmitRecovery" class="m3-btn-filled w-full py-3 text-sm font-bold shadow-md flex items-center justify-center gap-2">
+              <i data-lucide="key" class="w-4 h-4"></i>
+              <span>Restablecer y Guardar Contraseña</span>
+            </button>
+            <button type="button" id="btnCancelRecovery" class="m3-btn-outline w-full py-2.5 text-xs font-semibold">
+              Cancelar
             </button>
           </div>
         </form>

@@ -371,5 +371,59 @@ class TestServerAPI(unittest.TestCase):
             self.assertIn('my_subscriptions', sh_res['data'])
             self.assertIn('friend_subscriptions', sh_res['data'])
 
+    def test_password_recovery_and_change(self):
+        import time
+        user_test = f"recover_{int(time.time()*1000)}"
+        # 1. Registrar usuario inicial
+        reg_data = json.dumps({
+            'username': user_test,
+            'password': 'initial_pass_123',
+            'display_name': 'Recover Tester',
+            'email': f'{user_test}@example.com'
+        }).encode('utf-8')
+        r_req = urllib.request.Request(f"{self.base_url}/api/auth/register", data=reg_data, headers={"Content-Type": "application/json"}, method="POST")
+        with urllib.request.urlopen(r_req) as resp:
+            reg_res = json.loads(resp.read().decode('utf-8'))
+            token = reg_res['token']
+
+        # 2. Cambiar contraseña desde sesión activa (/api/auth/change-password)
+        ch_data = json.dumps({
+            'current_password': 'initial_pass_123',
+            'new_password': 'new_pass_456'
+        }).encode('utf-8')
+        ch_req = urllib.request.Request(f"{self.base_url}/api/auth/change-password", data=ch_data, headers={"Content-Type": "application/json", "Authorization": f"Bearer {token}"}, method="POST")
+        with urllib.request.urlopen(ch_req) as resp:
+            self.assertEqual(resp.status, 200)
+            ch_res = json.loads(resp.read().decode('utf-8'))
+            self.assertTrue(ch_res['success'])
+
+        # 3. Comprobar que login funciona con la nueva clave
+        log_data = json.dumps({'username': user_test, 'password': 'new_pass_456'}).encode('utf-8')
+        log_req = urllib.request.Request(f"{self.base_url}/api/auth/login", data=log_data, headers={"Content-Type": "application/json"}, method="POST")
+        with urllib.request.urlopen(log_req) as resp:
+            self.assertEqual(resp.status, 200)
+            new_log_res = json.loads(resp.read().decode('utf-8'))
+            self.assertTrue(new_log_res['success'])
+
+        # 4. Restablecer contraseña sin sesión activa (recuperación con correo o username)
+        rec_data = json.dumps({
+            'identifier': f'{user_test}@example.com',
+            'new_password': 'recovered_pass_789'
+        }).encode('utf-8')
+        rec_req = urllib.request.Request(f"{self.base_url}/api/auth/reset-password", data=rec_data, headers={"Content-Type": "application/json"}, method="POST")
+        with urllib.request.urlopen(rec_req) as resp:
+            self.assertEqual(resp.status, 200)
+            rec_res = json.loads(resp.read().decode('utf-8'))
+            self.assertTrue(rec_res['success'])
+
+        # 5. Comprobar login con la contraseña recuperada
+        final_log = json.dumps({'username': user_test, 'password': 'recovered_pass_789'}).encode('utf-8')
+        f_req = urllib.request.Request(f"{self.base_url}/api/auth/login", data=final_log, headers={"Content-Type": "application/json"}, method="POST")
+        with urllib.request.urlopen(f_req) as resp:
+            self.assertEqual(resp.status, 200)
+            f_res = json.loads(resp.read().decode('utf-8'))
+            self.assertTrue(f_res['success'])
+
 if __name__ == '__main__':
     unittest.main()
+

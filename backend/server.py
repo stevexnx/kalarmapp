@@ -236,7 +236,7 @@ class SubscriptionAPIHandler(http.server.SimpleHTTPRequestHandler):
         path = parsed_url.path
 
         # Verificación global de autenticación para endpoints protegidos
-        if path.startswith('/api/') and path not in ['/api/auth/register', '/api/auth/login']:
+        if path.startswith('/api/') and path not in ['/api/auth/register', '/api/auth/login', '/api/auth/reset-password']:
             if not self._get_current_user():
                 self._send_error('No autorizado', status=401)
                 return
@@ -285,7 +285,42 @@ class SubscriptionAPIHandler(http.server.SimpleHTTPRequestHandler):
                 self._send_error(f'Error interno del servidor: {str(e)}', 500)
             return
 
-        # 3. Cierre de Sesión (Logout)
+        # 3. Restablecer Contraseña (Público: desde Login/Bienvenida)
+        elif path == '/api/auth/reset-password':
+            data = self._read_json_body() or {}
+            identifier = data.get('identifier', '').strip()
+            new_password = data.get('new_password', '')
+            try:
+                result = db.reset_password_with_recovery(identifier, new_password)
+                self._send_json({
+                    'success': True,
+                    'message': f'Contraseña restablecida con éxito para {result["username"]}. Ahora puedes iniciar sesión con tu nueva clave.'
+                })
+            except ValueError as e:
+                self._send_error(str(e), 400)
+            except Exception as e:
+                self._send_error(f'Error al restablecer contraseña: {str(e)}', 500)
+            return
+
+        # 4. Cambiar Contraseña (Protegido: dentro de Mi Perfil / Ajustes)
+        elif path == '/api/auth/change-password':
+            user = self._get_current_user()
+            data = self._read_json_body() or {}
+            current_password = data.get('current_password', '')
+            new_password = data.get('new_password', '')
+            try:
+                db.change_user_password(user['id'], current_password, new_password)
+                self._send_json({
+                    'success': True,
+                    'message': 'Contraseña actualizada correctamente'
+                })
+            except ValueError as e:
+                self._send_error(str(e), 400)
+            except Exception as e:
+                self._send_error(f'Error al cambiar contraseña: {str(e)}', 500)
+            return
+
+        # 5. Cierre de Sesión (Logout)
         elif path == '/api/auth/logout':
             token = self._get_auth_token()
             if token:
