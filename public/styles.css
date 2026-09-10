@@ -841,17 +841,17 @@ body.privacy-mode-active .privacy-blur {
 /* ================= GOOGLE MATERIAL 3 LIGHT THEME ================= */
 html.theme-light,
 body.theme-light {
-  /* Google M3 Light Theme - Tonos Lavanda / Warm Purple (Material You 2025) */
-  --md-sys-color-background:              #f6f0ff;
-  --md-sys-color-surface:                 #f6f0ff;
-  --md-sys-color-surface-dim:             #e0d8ee;
-  --md-sys-color-surface-bright:          #fdf7ff;
+  /* Google M3 Light — Blanco limpio con acento púrpura */
+  --md-sys-color-background:               #ffffff;
+  --md-sys-color-surface:                  #ffffff;
+  --md-sys-color-surface-dim:              #e8e8e8;
+  --md-sys-color-surface-bright:           #ffffff;
   
-  --md-sys-color-surface-container-lowest: #fffbff;
-  --md-sys-color-surface-container-low:    #f0e9fc;
-  --md-sys-color-surface-container:        #ece4f8;
-  --md-sys-color-surface-container-high:   #e6ddf3;
-  --md-sys-color-surface-container-highest:#dfd6ec;
+  --md-sys-color-surface-container-lowest: #ffffff;
+  --md-sys-color-surface-container-low:    #f8f8f8;
+  --md-sys-color-surface-container:        #f2f2f2;
+  --md-sys-color-surface-container-high:   #ebebeb;
+  --md-sys-color-surface-container-highest:#e4e4e4;
 
   --md-sys-color-on-surface:             #1d1b20;
   --md-sys-color-on-surface-variant:     #49454f;
@@ -893,118 +893,106 @@ body.theme-light {
   --md-sys-color-on-error-container:     #410002;
 }
 
-/* Base del body en modo claro */
+/* Base — blanco puro con texto muy oscuro (contraste mínimo 7:1) */
 body.theme-light {
-  background: linear-gradient(160deg, #f0e9fc 0%, #f6f0ff 40%, #fdf7ff 100%) !important;
-  background-attachment: fixed !important;
-  color: var(--md-sys-color-on-surface) !important;
+  background-color: #ffffff !important;
+  color: #1d1b20 !important;
 }
 
-/* Navigation Rail — tono medio lavanda */
+/* Navigation Rail — gris muy claro, borde gris definido */
 body.theme-light .m3-nav-rail {
-  background: linear-gradient(180deg, #ede5f9 0%, #e6def5 100%) !important;
-  border-right-color: rgba(103, 80, 164, 0.15) !important;
+  background-color: #f4f4f4 !important;
+  border-right: 1px solid #d6d6d6 !important;
 }
 
-/* Top App Bar — leve tinte lila con glass blur */
+/* Top App Bar — blanco con borde gris nítido */
 body.theme-light .m3-top-app-bar {
-  background: rgba(240, 233, 252, 0.92) !important;
-  backdrop-filter: blur(12px) !important;
-  border-bottom: 1px solid rgba(103, 80, 164, 0.12) !important;
+  background-color: rgba(255, 255, 255, 0.96) !important;
+  backdrop-filter: blur(8px) !important;
+  border-bottom: 1px solid #e0e0e0 !important;
 }
 
-/* Tarjetas M3 — superficies lila tonal suave, no blancas */
+/* Cards — gris muy suave con sombra sutil */
 body.theme-light .m3-card,
 body.theme-light .m3-dialog,
 body.theme-light .command-palette-dialog {
-  background-color: #ede5f8 !important;
-  border: 1px solid rgba(103, 80, 164, 0.14) !important;
-  box-shadow: 0 2px 12px rgba(103, 80, 164, 0.08), 0 1px 3px rgba(0,0,0,0.06) !important;
+  background-color: #f9f9f9 !important;
+  border: 1px solid #e0e0e0 !important;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08), 0 2px 12px rgba(0, 0, 0, 0.05) !important;
 }
-
 body.theme-light .m3-card:hover {
-  background-color: #e8dff6 !important;
-  border-color: rgba(103, 80, 164, 0.28) !important;
-  box-shadow: 0 8px 24px rgba(103, 80, 164, 0.15), 0 2px 6px rgba(0,0,0,0.08) !important;
+  background-color: #f3f3f3 !important;
+  border-color: #c0c0c0 !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1), 0 1px 4px rgba(0, 0, 0, 0.06) !important;
 }
 
-/* Campos de texto — fondo blanco perla con borde lavanda */
+/* Campos de texto — blanco, borde gris oscuro suficiente para contraste */
 body.theme-light .m3-text-field {
-  background-color: #faf7ff !important;
-  border-color: rgba(103, 80, 164, 0.25) !important;
-  color: var(--md-sys-color-on-surface) !important;
+  background-color: #ffffff !important;
+  border-color: #9e9e9e !important;
+  color: #1d1b20 !important;
 }
 body.theme-light .m3-text-field:focus {
-  border-color: var(--md-sys-color-primary) !important;
-  box-shadow: 0 0 0 3px rgba(103, 80, 164, 0.18) !important;
+  border-color: #6750a4 !important;
+  box-shadow: 0 0 0 2px rgba(103, 80, 164, 0.2) !important;
   background-color: #ffffff !important;
 }
 
-/* Celdas del Calendario */
+/* Calendario */
 body.theme-light .calendar-day-cell {
-  background-color: #ede5f8 !important;
-  border-color: rgba(103, 80, 164, 0.12) !important;
+  background-color: #ffffff !important;
+  border-color: #e0e0e0 !important;
 }
 body.theme-light .calendar-day-cell:hover {
-  background-color: #e5d9f5 !important;
+  background-color: #f4f4f4 !important;
+  border-color: #bdbdbd !important;
 }
 body.theme-light .calendar-day-cell.is-selected {
   background-color: #eaddff !important;
-  border-color: var(--md-sys-color-primary) !important;
+  border-color: #6750a4 !important;
 }
 
-/* Hero de bienvenida en modo claro */
+/* Hero de bienvenida */
 body.theme-light .clickup-hero-mesh {
-  background: radial-gradient(circle at 50% 0%, rgba(208, 188, 255, 0.55) 0%, rgba(240, 233, 252, 0.96) 70%),
-              radial-gradient(circle at 10% 20%, rgba(103, 80, 164, 0.18) 0%, transparent 50%),
-              radial-gradient(circle at 90% 25%, rgba(242, 193, 141, 0.18) 0%, transparent 45%) !important;
+  background: radial-gradient(circle at 50% 0%, rgba(208, 188, 255, 0.35) 0%, rgba(255, 255, 255, 0.98) 65%),
+              radial-gradient(circle at 10% 20%, rgba(103, 80, 164, 0.1) 0%, transparent 50%),
+              radial-gradient(circle at 90% 25%, rgba(242, 193, 141, 0.12) 0%, transparent 45%) !important;
 }
 
-/* Botones */
+/* Botones primarios */
 body.theme-light .m3-btn-filled {
-  background-color: var(--md-sys-color-primary) !important;
-  color: var(--md-sys-color-on-primary) !important;
-  box-shadow: 0 2px 8px rgba(103, 80, 164, 0.3) !important;
+  background-color: #6750a4 !important;
+  color: #ffffff !important;
 }
 body.theme-light .m3-btn-filled:hover {
   background-color: #7965b2 !important;
-  box-shadow: 0 4px 14px rgba(103, 80, 164, 0.4) !important;
 }
 body.theme-light .m3-btn-outline {
-  border-color: rgba(103, 80, 164, 0.35) !important;
-  color: var(--md-sys-color-primary) !important;
+  border-color: #6750a4 !important;
+  color: #6750a4 !important;
   background-color: transparent !important;
 }
 body.theme-light .m3-btn-outline:hover {
-  background-color: rgba(103, 80, 164, 0.08) !important;
-  border-color: var(--md-sys-color-primary) !important;
+  background-color: rgba(103, 80, 164, 0.06) !important;
 }
 
 /* Switch */
 body.theme-light .m3-switch-track {
-  background-color: #d4c8e8 !important;
-  border-color: #9e97ae !important;
+  background-color: #e0e0e0 !important;
+  border-color: #9e9e9e !important;
 }
 body.theme-light .m3-switch-thumb {
-  background-color: #79747e !important;
+  background-color: #757575 !important;
 }
 body.theme-light .m3-switch input:checked + .m3-switch-track {
-  background-color: var(--md-sys-color-primary) !important;
-  border-color: var(--md-sys-color-primary) !important;
+  background-color: #6750a4 !important;
+  border-color: #6750a4 !important;
 }
 body.theme-light .m3-switch input:checked + .m3-switch-track .m3-switch-thumb {
   background-color: #ffffff !important;
 }
 
-/* Secciones de KPIs: fondo tonal de color, no blancas */
-body.theme-light [id="kpiMonthlyCost"],
-body.theme-light [id="kpiAnnualCost"],
-body.theme-light [id="kpiUpcomingCount"],
-body.theme-light [id="kpiSharedSavings"] {
-  color: var(--md-sys-color-primary) !important;
-}
-
-/* Texto general — lectura clara sobre fondos lavanda */
+/* Texto principal — negro sobre blanco */
 body.theme-light,
 body.theme-light main,
 body.theme-light #viewDashboard,
@@ -1015,7 +1003,7 @@ body.theme-light #viewSplitPay {
   color: #1d1b20 !important;
 }
 
-/* Adaptar clases de color de texto blanco/claro al oscuro legible */
+/* Texto blanco/claro del tema oscuro → negro legible en modo claro */
 body.theme-light .text-white,
 body.theme-light .text-\[\#e6e0e9\],
 body.theme-light .text-\[\#e8def8\],
@@ -1027,13 +1015,14 @@ body.theme-light [class*="text-slate-300"] {
   color: #1d1b20 !important;
 }
 
+/* Texto secundario — gris oscuro para legibilidad (ratio ≥ 4.5:1 sobre blanco) */
 body.theme-light .text-\[\#cac4d0\],
 body.theme-light [class*="text-[#cac4d0]"],
 body.theme-light [class*="text-slate-400"] {
-  color: #49454f !important;
+  color: #616161 !important;
 }
 
-/* Fondos oscuros → superficies tonal lavanda claro */
+/* Fondos oscuros del tema → blanco/gris claro */
 body.theme-light .bg-\[\#1d1b20\],
 body.theme-light .bg-\[\#211f26\],
 body.theme-light .bg-\[\#28262f\],
@@ -1042,31 +1031,30 @@ body.theme-light [class*="bg-[#1d1b20]"],
 body.theme-light [class*="bg-[#211f26]"],
 body.theme-light [class*="bg-[#28262f]"],
 body.theme-light [class*="bg-[#2b2930]"] {
-  background-color: #ede5f8 !important;
+  background-color: #f4f4f4 !important;
 }
-
 body.theme-light .bg-\[\#141218\],
 body.theme-light [class*="bg-[#141218]"],
 body.theme-light [class*="bg-slate-900"],
 body.theme-light [class*="bg-slate-800"] {
-  background-color: #f0e9fc !important;
+  background-color: #f9f9f9 !important;
 }
 
-/* Bordes sutiles con tinte lavanda */
+/* Bordes — gris neutro visible pero no abrupto */
 body.theme-light .border-\[\#49454f\]\/40,
 body.theme-light .border-\[\#49454f\]\/30,
 body.theme-light .border-\[\#49454f\]\/50,
 body.theme-light .border-\[\#49454f\],
 body.theme-light [class*="border-[#49454f]"] {
-  border-color: rgba(103, 80, 164, 0.18) !important;
+  border-color: #d6d6d6 !important;
 }
 
-/* Nav pills en modo claro */
+/* Nav pills */
 body.theme-light .m3-nav-pill {
   color: #49454f !important;
 }
 body.theme-light .m3-nav-pill:hover {
-  background-color: rgba(103, 80, 164, 0.08) !important;
+  background-color: #f0f0f0 !important;
   color: #1d1b20 !important;
 }
 body.theme-light .m3-nav-pill.active {
@@ -1074,45 +1062,47 @@ body.theme-light .m3-nav-pill.active {
   color: #21005d !important;
 }
 
-/* Nav rail items activos */
+/* Nav rail — active + hover */
 body.theme-light .m3-rail-item.active .m3-rail-pill {
   background-color: #eaddff !important;
   color: #21005d !important;
 }
 body.theme-light .m3-rail-item:hover .m3-rail-pill {
-  background-color: rgba(103, 80, 164, 0.1) !important;
+  background-color: #ebebeb !important;
 }
 
 /* Preset cards en catálogo */
 body.theme-light .m3-preset-card {
-  background-color: #ede5f8 !important;
-  border-color: rgba(103, 80, 164, 0.14) !important;
+  background-color: #f9f9f9 !important;
+  border-color: #e0e0e0 !important;
 }
 body.theme-light .m3-preset-card:hover {
-  background-color: #e4d9f5 !important;
-  border-color: var(--md-sys-color-primary) !important;
-  box-shadow: 0 6px 18px rgba(103, 80, 164, 0.18) !important;
+  background-color: #f2f2f2 !important;
+  border-color: #6750a4 !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1) !important;
 }
 
 /* Search bar */
 body.theme-light .m3-search-bar {
-  background-color: #faf7ff !important;
-  border-color: rgba(103, 80, 164, 0.2) !important;
+  background-color: #f4f4f4 !important;
+  border-color: #d6d6d6 !important;
 }
 body.theme-light .m3-search-bar:focus-within {
-  border-color: var(--md-sys-color-primary) !important;
-  box-shadow: 0 0 0 3px rgba(103, 80, 164, 0.14) !important;
+  border-color: #6750a4 !important;
+  box-shadow: 0 0 0 2px rgba(103, 80, 164, 0.15) !important;
+  background-color: #ffffff !important;
 }
 
 /* Chips */
 body.theme-light .m3-chip {
-  background-color: #ede5f8 !important;
-  border-color: rgba(103, 80, 164, 0.18) !important;
+  background-color: #f4f4f4 !important;
+  border-color: #d6d6d6 !important;
   color: #49454f !important;
 }
 body.theme-light .m3-chip:hover {
-  background-color: #e4d9f5 !important;
+  background-color: #ebebeb !important;
   color: #1d1b20 !important;
+  border-color: #bdbdbd !important;
 }
 body.theme-light .m3-chip.active {
   background-color: #eaddff !important;
@@ -1122,27 +1112,27 @@ body.theme-light .m3-chip.active {
 
 /* Plan chips */
 body.theme-light .m3-plan-chip {
-  background-color: #ede5f8 !important;
-  border-color: rgba(103, 80, 164, 0.2) !important;
+  background-color: #f9f9f9 !important;
+  border-color: #d6d6d6 !important;
   color: #1d1b20 !important;
 }
 body.theme-light .m3-plan-chip:hover {
-  background-color: #e4d9f5 !important;
-  border-color: var(--md-sys-color-primary) !important;
+  background-color: #f0f0f0 !important;
+  border-color: #6750a4 !important;
 }
 body.theme-light .m3-plan-chip.active {
   background-color: #eaddff !important;
   color: #21005d !important;
-  border-color: var(--md-sys-color-primary) !important;
+  border-color: #6750a4 !important;
 }
 
-/* Insight cards en modo claro */
+/* Insight cards */
 body.theme-light .m3-insight-card {
-  background: linear-gradient(135deg, #ede5f8 0%, #e6ddf5 100%) !important;
-  border-color: rgba(103, 80, 164, 0.18) !important;
+  background: #f9f9f9 !important;
+  border-color: #e0e0e0 !important;
 }
 body.theme-light .m3-insight-card:hover {
-  border-color: rgba(103, 80, 164, 0.35) !important;
-  box-shadow: 0 10px 24px rgba(103, 80, 164, 0.14) !important;
+  border-color: #bdbdbd !important;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08) !important;
 }
 
