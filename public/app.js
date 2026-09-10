@@ -557,7 +557,7 @@ function getAuthHeaders() {
 
 // ================= AUTENTICACIÓN =================
 async function checkAuth() {
-  state.token = sessionStorage.getItem('subtracker_token') || localStorage.getItem('subtracker_token') || '';
+  state.token = localStorage.getItem('subtracker_token') || sessionStorage.getItem('subtracker_token') || '';
   if (!state.token) {
     state.user = null;
     renderUserProfile();
@@ -566,18 +566,28 @@ async function checkAuth() {
   }
   try {
     const res = await fetch('/api/auth/me', { headers: getAuthHeaders() });
-    const result = await res.json();
-    if (result.success && result.user) {
-      state.user = result.user;
-    } else {
+    if (res.status === 401) {
+      // Token explícitamente expirado o revocado en el servidor
       state.user = null;
       state.token = '';
       localStorage.removeItem('subtracker_token');
       sessionStorage.removeItem('subtracker_token');
+    } else {
+      const result = await res.json();
+      if (result.success && result.user) {
+        state.user = result.user;
+        // Mantener sincronizado en localStorage para sobrevivir recargas
+        localStorage.setItem('subtracker_token', state.token);
+      } else {
+        state.user = null;
+        state.token = '';
+        localStorage.removeItem('subtracker_token');
+        sessionStorage.removeItem('subtracker_token');
+      }
     }
   } catch (err) {
-    console.error('Error comprobando sesión:', err);
-    state.user = null;
+    console.error('Error comprobando sesión (red/servidor):', err);
+    // En caso de fallo transitorio de red, NO borramos el token de localStorage para no forzar logout
   } finally {
     renderUserProfile();
     if (!state.user) {
@@ -891,13 +901,9 @@ async function handleAuthSubmit(e) {
         state.token = result.token;
         state.user = result.user;
 
-        if (rememberMe) {
-          localStorage.setItem('subtracker_token', result.token);
-          sessionStorage.removeItem('subtracker_token');
-        } else {
-          sessionStorage.setItem('subtracker_token', result.token);
-          localStorage.removeItem('subtracker_token');
-        }
+        // Guardar siempre en localStorage y sessionStorage para garantizar persistencia al recargar
+        localStorage.setItem('subtracker_token', result.token);
+        sessionStorage.setItem('subtracker_token', result.token);
 
         showToast(`¡Bienvenido de nuevo, ${state.user.display_name}!`, 'success');
         document.getElementById('authModal')?.classList.add('hidden');
@@ -924,13 +930,8 @@ async function handleAuthSubmit(e) {
         state.token = result.token;
         state.user = result.user;
 
-        if (rememberMe) {
-          localStorage.setItem('subtracker_token', result.token);
-          sessionStorage.removeItem('subtracker_token');
-        } else {
-          sessionStorage.setItem('subtracker_token', result.token);
-          localStorage.removeItem('subtracker_token');
-        }
+        localStorage.setItem('subtracker_token', result.token);
+        sessionStorage.setItem('subtracker_token', result.token);
 
         showToast(`¡Cuenta creada con éxito!`, 'success');
         document.getElementById('authModal')?.classList.add('hidden');
