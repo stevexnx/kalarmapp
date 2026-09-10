@@ -506,7 +506,7 @@ h1, h2, h3, h4, .font-google-sans {
   border-color: #f59e0b;
 }
 
-/* Animaciones suaves Google Material */
+/* Animaciones suaves Google Material (Material Motion) */
 @keyframes m3FadeScale {
   from {
     opacity: 0;
@@ -517,6 +517,101 @@ h1, h2, h3, h4, .font-google-sans {
     transform: scale(1);
   }
 }
-.animate-scale-up {
-  animation: m3FadeScale 0.22s cubic-bezier(0.2, 0, 0, 1) forwards;
+
+@keyframes m3SlideUpFade {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
+
+@keyframes m3AmbientGlow {
+  0%, 100% {
+    box-shadow: 0 0 25px -5px rgba(208, 188, 255, 0.25), 0 0 50px -15px rgba(103, 80, 164, 0.35);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 35px 0px rgba(208, 188, 255, 0.4), 0 0 65px -10px rgba(103, 80, 164, 0.5);
+    transform: scale(1.02);
+  }
+}
+
+@keyframes m3FloatItem {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+.animate-scale-up {
+  animation: m3FadeScale 0.24s cubic-bezier(0.2, 0, 0, 1) forwards;
+}
+
+.animate-m3-slide {
+  animation: m3SlideUpFade 0.28s cubic-bezier(0.2, 0, 0, 1) forwards;
+}
+
+.m3-glow-logo {
+  animation: m3AmbientGlow 4s ease-in-out infinite;
+}
+
+.m3-feature-item {
+  transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+}
+
+.m3-feature-item:hover {
+  transform: translateY(-2px);
+  border-color: rgba(208, 188, 255, 0.35);
+  background-color: var(--md-sys-color-surface-container);
+}
+
+/* Campos de texto estilizados con iconos para Auth */
+.m3-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.m3-input-wrapper .m3-input-icon {
+  position: absolute;
+  left: 14px;
+  color: var(--md-sys-color-outline);
+  pointer-events: none;
+  transition: color 0.2s ease;
+}
+
+.m3-input-wrapper .m3-input-field {
+  padding-left: 42px;
+  padding-right: 42px;
+}
+
+.m3-input-wrapper:focus-within .m3-input-icon {
+  color: var(--md-sys-color-primary);
+}
+
+.m3-input-wrapper .m3-input-toggle {
+  position: absolute;
+  right: 10px;
+  background: transparent;
+  border: none;
+  color: var(--md-sys-color-outline);
+  cursor: pointer;
+  padding: 6px;
+  border-radius: var(--md-shape-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.m3-input-wrapper .m3-input-toggle:hover {
+  color: var(--md-sys-color-on-surface);
+  background-color: rgba(230, 224, 233, 0.08);
+}
+
