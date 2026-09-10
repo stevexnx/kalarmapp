@@ -535,7 +535,7 @@ async function checkAuth() {
   if (!state.token) {
     state.user = null;
     renderUserProfile();
-    openAuthModal('login');
+    showWelcomeLanding();
     return;
   }
   try {
@@ -555,9 +555,24 @@ async function checkAuth() {
   } finally {
     renderUserProfile();
     if (!state.user) {
-      openAuthModal('welcome');
+      showWelcomeLanding();
+    } else {
+      hideWelcomeLanding();
     }
   }
+}
+
+function showWelcomeLanding() {
+  const landing = document.getElementById('welcomeLandingView');
+  const authModal = document.getElementById('authModal');
+  if (landing) landing.classList.remove('hidden');
+  if (authModal) authModal.classList.add('hidden');
+  initIcons();
+}
+
+function hideWelcomeLanding() {
+  const landing = document.getElementById('welcomeLandingView');
+  if (landing) landing.classList.add('hidden');
 }
 
 function renderUserProfile() {
@@ -583,6 +598,7 @@ function renderUserProfile() {
     loggedInMenu?.classList.remove('hidden');
     openLoginBtn?.classList.add('hidden');
     settingsUserCard?.classList.remove('hidden');
+    hideWelcomeLanding();
 
     const initial = (state.user.display_name || state.user.username || 'A').charAt(0).toUpperCase();
     const bgColor = state.user.avatar_color || '#4F46E5';
@@ -612,16 +628,19 @@ function renderUserProfile() {
     loggedInMenu?.classList.add('hidden');
     openLoginBtn?.classList.remove('hidden');
     settingsUserCard?.classList.add('hidden');
+    showWelcomeLanding();
   }
 
   initIcons();
 }
 
-function openAuthModal(mode = 'welcome') {
+function openAuthModal(mode = 'login') {
+  if (mode === 'welcome') {
+    showWelcomeLanding();
+    return;
+  }
   state.authMode = mode;
   const modal = document.getElementById('authModal');
-  const welcomeView = document.getElementById('authWelcomeView');
-  const formView = document.getElementById('authFormView');
   const title = document.getElementById('authModalTitle');
   const subtitle = document.getElementById('authModalSubtitle');
   const tabLogin = document.getElementById('tabAuthLogin');
@@ -632,42 +651,29 @@ function openAuthModal(mode = 'welcome') {
   const pwdHelp = document.getElementById('passwordHelpText');
   const closeBtn = document.getElementById('btnCloseAuthModal');
 
-  // Control de vistas: Bienvenida vs Formulario
-  if (mode === 'welcome') {
-    welcomeView?.classList.remove('hidden');
-    formView?.classList.add('hidden');
+  if (mode === 'login') {
+    if (title) title.textContent = 'Iniciar Sesión';
+    if (subtitle) subtitle.textContent = 'Identifícate para entrar a tu panel personal';
+    if (tabLogin) tabLogin.className = 'py-2 rounded-full bg-[#d0bcff] text-[#381e72] font-semibold transition shadow-sm';
+    if (tabReg) tabReg.className = 'py-2 rounded-full text-[#cac4d0] hover:text-white transition';
+    extraFields?.classList.add('hidden');
+    rememberContainer?.classList.remove('hidden');
+    pwdHelp?.classList.add('hidden');
+    if (submitText) submitText.textContent = 'Entrar a mi Cuenta';
   } else {
-    welcomeView?.classList.add('hidden');
-    formView?.classList.remove('hidden');
-
-    if (mode === 'login') {
-      if (title) title.textContent = 'Iniciar Sesión';
-      if (subtitle) subtitle.textContent = 'Identifícate para entrar a tu panel personal';
-      if (tabLogin) tabLogin.className = 'py-2 rounded-full bg-[#d0bcff] text-[#381e72] font-semibold transition shadow-sm';
-      if (tabReg) tabReg.className = 'py-2 rounded-full text-[#cac4d0] hover:text-white transition';
-      extraFields?.classList.add('hidden');
-      rememberContainer?.classList.remove('hidden');
-      pwdHelp?.classList.add('hidden');
-      if (submitText) submitText.textContent = 'Entrar a mi Cuenta';
-    } else {
-      if (title) title.textContent = 'Crear Nueva Cuenta';
-      if (subtitle) subtitle.textContent = 'Crea tu espacio personal, privado y libre';
-      if (tabReg) tabReg.className = 'py-2 rounded-full bg-[#d0bcff] text-[#381e72] font-semibold transition shadow-sm';
-      if (tabLogin) tabLogin.className = 'py-2 rounded-full text-[#cac4d0] hover:text-white transition';
-      extraFields?.classList.remove('hidden');
-      rememberContainer?.classList.add('hidden');
-      pwdHelp?.classList.remove('hidden');
-      if (submitText) submitText.textContent = 'Crear mi Cuenta';
-    }
+    if (title) title.textContent = 'Crear Nueva Cuenta';
+    if (subtitle) subtitle.textContent = 'Crea tu espacio personal, privado y libre';
+    if (tabReg) tabReg.className = 'py-2 rounded-full bg-[#d0bcff] text-[#381e72] font-semibold transition shadow-sm';
+    if (tabLogin) tabLogin.className = 'py-2 rounded-full text-[#cac4d0] hover:text-white transition';
+    extraFields?.classList.remove('hidden');
+    rememberContainer?.classList.add('hidden');
+    pwdHelp?.classList.remove('hidden');
+    if (submitText) submitText.textContent = 'Crear mi Cuenta';
   }
 
-  // Si no está autenticado, no permitir cerrar el modal
+  // Si no está autenticado, permitir cerrar para volver a la landing
   if (closeBtn) {
-    if (!state.user) {
-      closeBtn.classList.add('hidden');
-    } else {
-      closeBtn.classList.remove('hidden');
-    }
+    closeBtn.classList.remove('hidden');
   }
 
   modal?.classList.remove('hidden');
@@ -690,11 +696,10 @@ function toggleAuthPasswordVisibility() {
 }
 
 function closeAuthModal() {
-  if (!state.user) {
-    showToast('Debes iniciar sesión o registrarte para acceder a SubTracker', 'info');
-    return;
-  }
   document.getElementById('authModal')?.classList.add('hidden');
+  if (!state.user) {
+    showWelcomeLanding();
+  }
 }
 
 async function handleAuthSubmit(e) {
@@ -825,12 +830,17 @@ function initEventListeners() {
   document.getElementById('btnNextMonth')?.addEventListener('click', () => changeCalendarMonth(1));
   document.getElementById('btnTodayMonth')?.addEventListener('click', () => resetCalendarToToday());
 
-  // Auth UI & Welcome Screen
-  document.getElementById('btnOpenLoginModal')?.addEventListener('click', () => openAuthModal('welcome'));
+  // Auth UI & Welcome Screen (ClickUp-inspired full-screen landing & M3 dialogs)
+  document.getElementById('btnOpenLoginModal')?.addEventListener('click', () => openAuthModal('login'));
+  document.getElementById('btnLandingLogin')?.addEventListener('click', () => openAuthModal('login'));
+  document.getElementById('btnLandingRegister')?.addEventListener('click', () => openAuthModal('register'));
+  document.getElementById('btnHeroRegister')?.addEventListener('click', () => openAuthModal('register'));
+  document.getElementById('btnHeroLogin')?.addEventListener('click', () => openAuthModal('login'));
+  document.getElementById('btnBackToWelcome')?.addEventListener('click', () => {
+    closeAuthModal();
+    showWelcomeLanding();
+  });
   document.getElementById('btnCloseAuthModal')?.addEventListener('click', closeAuthModal);
-  document.getElementById('btnWelcomeRegister')?.addEventListener('click', () => openAuthModal('register'));
-  document.getElementById('btnWelcomeLogin')?.addEventListener('click', () => openAuthModal('login'));
-  document.getElementById('btnBackToWelcome')?.addEventListener('click', () => openAuthModal('welcome'));
   document.getElementById('tabAuthLogin')?.addEventListener('click', () => openAuthModal('login'));
   document.getElementById('tabAuthRegister')?.addEventListener('click', () => openAuthModal('register'));
   document.getElementById('btnTogglePassword')?.addEventListener('click', toggleAuthPasswordVisibility);
