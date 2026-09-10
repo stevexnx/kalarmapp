@@ -312,6 +312,7 @@ def init_db(db_path=None):
                 my_share_price DOUBLE PRECISION,
                 original_currency VARCHAR(10) DEFAULT 'USD',
                 shared_friend_ids TEXT DEFAULT '',
+                alias TEXT DEFAULT '',
                 created_at TEXT NOT NULL,
                 updated_at TEXT NOT NULL
             )
@@ -348,6 +349,7 @@ def init_db(db_path=None):
         cursor.execute("ALTER TABLE subscriptions ADD COLUMN IF NOT EXISTS my_share_price DOUBLE PRECISION")
         cursor.execute("ALTER TABLE subscriptions ADD COLUMN IF NOT EXISTS original_currency VARCHAR(10) DEFAULT 'USD'")
         cursor.execute("ALTER TABLE subscriptions ADD COLUMN IF NOT EXISTS shared_friend_ids TEXT DEFAULT ''")
+        cursor.execute("ALTER TABLE subscriptions ADD COLUMN IF NOT EXISTS alias TEXT DEFAULT ''")
         cursor.execute("ALTER TABLE payment_history ADD COLUMN IF NOT EXISTS user_id INTEGER DEFAULT 1")
     else:
         cursor.execute("""
@@ -450,6 +452,7 @@ def init_db(db_path=None):
                 url TEXT DEFAULT '',
                 icon TEXT DEFAULT '',
                 color TEXT DEFAULT '',
+                alias TEXT DEFAULT '',
                 created_at TEXT NOT NULL,
                 updated_at TEXT NOT NULL
             )
@@ -464,7 +467,8 @@ def init_db(db_path=None):
             ('shared_with_count', 'INTEGER DEFAULT 1'),
             ('my_share_price', 'REAL'),
             ('original_currency', "TEXT DEFAULT 'USD'"),
-            ('shared_friend_ids', "TEXT DEFAULT ''")
+            ('shared_friend_ids', "TEXT DEFAULT ''"),
+            ('alias', "TEXT DEFAULT ''")
         ]
         for col_name, col_type in new_sub_columns:
             if col_name not in sub_columns:
@@ -1404,8 +1408,8 @@ def create_subscription(data: dict, user_id=1, db_path=None):
             user_id, name, price, currency, billing_cycle, next_billing_date,
             category, payment_method, status, notes, url, icon, color,
             is_trial, trial_end_date, is_shared, shared_with_count, my_share_price,
-            original_currency, shared_friend_ids, created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            original_currency, shared_friend_ids, alias, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ''', (
         user_id,
         data.get('name', '').strip(),
@@ -1427,6 +1431,7 @@ def create_subscription(data: dict, user_id=1, db_path=None):
         my_share,
         data.get('currency', 'USD'),
         shared_friend_ids,
+        data.get('alias', '').strip(),
         now_str,
         now_str
     ))
@@ -1448,7 +1453,7 @@ def update_subscription(sub_id: int, data: dict, user_id=None, db_path=None):
         'name', 'price', 'currency', 'billing_cycle', 'next_billing_date',
         'category', 'payment_method', 'status', 'notes', 'url', 'icon', 'color',
         'is_trial', 'trial_end_date', 'is_shared', 'shared_with_count', 'my_share_price',
-        'original_currency', 'shared_friend_ids'
+        'original_currency', 'shared_friend_ids', 'alias'
     ]
 
     for key in allowed_fields:

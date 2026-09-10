@@ -2929,6 +2929,7 @@ function renderUpcomingAlerts() {
           <div>
             <div class="text-xs font-bold text-white flex items-center gap-1.5">
               <span>${escapeHtml(sub.name)}</span>
+              ${sub.alias ? `<span class="text-[9px] font-medium px-1.5 py-0.2 rounded-full bg-[#381e72]/80 border border-[#d0bcff]/40 text-[#d0bcff] font-sans">${escapeHtml(sub.alias)}</span>` : ''}
               <span class="text-[10px] font-normal px-2 py-0.5 rounded-full ${badgeClass}">${badgeText}</span>
             </div>
             <div class="text-[11px] text-slate-400">
@@ -3024,7 +3025,8 @@ function createCardHtml(sub) {
             </div>
             <div>
               <h4 class="text-sm font-bold text-white tracking-tight flex items-center gap-1.5 font-google-sans">
-                ${escapeHtml(sub.name)}
+                <span>${escapeHtml(sub.name)}</span>
+                ${sub.alias ? `<span class="text-[10px] font-medium px-2 py-0.5 rounded-full bg-[#381e72]/80 border border-[#d0bcff]/40 text-[#d0bcff] font-sans" title="Alias: ${escapeHtml(sub.alias)}">${escapeHtml(sub.alias)}</span>` : ''}
                 ${sub.url ? `<a href="${escapeHtml(sub.url)}" target="_blank" rel="noopener" class="text-[#cac4d0] hover:text-[#d0bcff] transition"><i data-lucide="external-link" class="w-3 h-3"></i></a>` : ''}
               </h4>
               <div class="flex flex-wrap items-center gap-1.5 mt-1">
@@ -3130,7 +3132,8 @@ function createTableRowHtml(sub) {
           </div>
           <div>
             <div class="font-bold text-white flex items-center gap-1.5 font-google-sans">
-              ${escapeHtml(sub.name)}
+              <span>${escapeHtml(sub.name)}</span>
+              ${sub.alias ? `<span class="text-[9px] font-medium px-1.5 py-0.2 rounded-full bg-[#381e72]/80 border border-[#d0bcff]/40 text-[#d0bcff] font-sans">${escapeHtml(sub.alias)}</span>` : ''}
               ${sub.is_trial ? `<span class="m3-badge-error text-[9px]">TRIAL</span>` : ''}
               ${sub.is_shared ? `<span class="m3-badge-success text-[9px]">SPLIT</span>` : ''}
             </div>
@@ -3725,7 +3728,8 @@ function renderCalendarDayDetails(cutsForSelectedDay) {
             </div>
             <div>
               <h4 class="text-sm font-bold text-white leading-tight flex items-center gap-1.5">
-                ${escapeHtml(sub.name)}
+                <span>${escapeHtml(sub.name)}</span>
+                ${sub.alias ? `<span class="text-[9px] font-medium px-1.5 py-0.2 rounded-full bg-[#381e72]/80 border border-[#d0bcff]/40 text-[#d0bcff] font-sans">${escapeHtml(sub.alias)}</span>` : ''}
                 ${sub.is_trial ? `<span class="text-[9px] font-bold px-1.5 rounded bg-rose-500/20 text-rose-300">TRIAL</span>` : ''}
                 ${sub.is_shared ? `<span class="text-[9px] font-bold px-1.5 rounded bg-emerald-500/20 text-emerald-300">SPLIT</span>` : ''}
               </h4>
@@ -4155,12 +4159,17 @@ function openCustomSubscription() {
 
   document.getElementById('subId').value = '';
   document.getElementById('subName').value = '';
+  document.getElementById('subAlias').value = '';
   document.getElementById('subPrice').value = '';
   document.getElementById('subCurrency').value = state.baseCurrencyCode || 'USD';
   document.getElementById('subBillingCycle').value = 'monthly';
   document.getElementById('subCategory').value = 'Servicios';
   document.getElementById('subNextBillingDate').value = defaultDateStr;
   document.getElementById('subColor').value = '#d0bcff';
+
+  // Mostrar input editable y ocultar badge fijo
+  document.getElementById('subName')?.classList.remove('hidden');
+  document.getElementById('subPresetBadgeContainer')?.classList.add('hidden');
 
   document.getElementById('trialFieldsContainer')?.classList.add('hidden');
   document.getElementById('sharedFieldsContainer')?.classList.add('hidden');
@@ -4202,6 +4211,7 @@ function openModal(sub = null) {
 
     document.getElementById('subId').value = sub.id;
     document.getElementById('subName').value = sub.name;
+    document.getElementById('subAlias').value = sub.alias || '';
     document.getElementById('subPrice').value = sub.price;
     document.getElementById('subCurrency').value = sub.currency || 'USD';
     document.getElementById('subBillingCycle').value = sub.billing_cycle;
@@ -4212,6 +4222,27 @@ function openModal(sub = null) {
     document.getElementById('subColor').value = sub.color || '#d0bcff';
     document.getElementById('subUrl').value = sub.url || '';
     document.getElementById('subNotes').value = sub.notes || '';
+
+    // Comprobar si el nombre coincide con un Preset oficial
+    const isPreset = PRESET_SERVICES.some(p => p.name.toLowerCase() === sub.name.toLowerCase());
+    const badgeContainer = document.getElementById('subPresetBadgeContainer');
+    const nameInput = document.getElementById('subName');
+    const badgeName = document.getElementById('subPresetBadgeName');
+    const badgeIconBox = document.getElementById('subPresetBadgeIconBox');
+
+    if (isPreset && badgeContainer && nameInput) {
+      nameInput.classList.add('hidden');
+      badgeContainer.classList.remove('hidden');
+      if (badgeName) badgeName.textContent = sub.name;
+      if (badgeIconBox) {
+        badgeIconBox.innerHTML = getServiceOfficialIcon(sub.name, sub.color || '#d0bcff', 'w-4 h-4');
+        badgeIconBox.style.background = `linear-gradient(135deg, ${sub.color || '#d0bcff'}22, ${sub.color || '#d0bcff'}44)`;
+        badgeIconBox.style.border = `1px solid ${sub.color || '#d0bcff'}55`;
+      }
+    } else if (badgeContainer && nameInput) {
+      nameInput.classList.remove('hidden');
+      badgeContainer.classList.add('hidden');
+    }
 
     if (sub.is_trial) {
       document.getElementById('subIsTrial').checked = true;
@@ -4237,6 +4268,7 @@ function openModal(sub = null) {
     btnSubmitText.textContent = 'Guardar Suscripción';
 
     document.getElementById('subId').value = '';
+    document.getElementById('subAlias').value = '';
     document.getElementById('subCurrency').value = state.baseCurrencyCode || 'USD';
     document.getElementById('subNextBillingDate').value = defaultDateStr;
     document.getElementById('subColor').value = '#d0bcff';
@@ -4272,13 +4304,13 @@ function renderPresetCatalog(filterCategory = 'all', searchQuery = '') {
 
   // Tarjeta de Personalizada siempre accesible como primera o destacada opción
   const customCardHtml = `
-    <div class="m3-preset-card border-dashed border-[#d0bcff]/50 bg-[#2b2930]/40 group hover:border-[#d0bcff]" onclick="openCustomSubscription()" title="Crear suscripción propia desde cero">
-      <div class="m3-brand-icon-box bg-[#381e72]/50 border border-[#d0bcff]/40 text-[#d0bcff]">
+    <div class="m3-preset-card border-dashed border-[#49454f]/60 hover:border-[#d0bcff] flex items-center gap-3 group" onclick="openCustomSubscription()" title="Crear suscripción no listada">
+      <div class="w-10 h-10 rounded-xl bg-[#211f26] border border-[#49454f]/40 flex items-center justify-center text-[#d0bcff] group-hover:bg-[#d0bcff] group-hover:text-[#381e72] transition shrink-0">
         <i data-lucide="plus" class="w-5 h-5"></i>
       </div>
-      <div>
-        <div class="text-xs font-bold text-white font-google-sans">Personalizada</div>
-        <div class="text-[11px] text-[#cac4d0]">Desde cero</div>
+      <div class="min-w-0">
+        <div class="text-xs font-bold text-white group-hover:text-[#d0bcff] transition truncate">Personalizada</div>
+        <div class="text-[11px] text-[#cac4d0] truncate">Crea una desde cero</div>
       </div>
     </div>
   `;
@@ -4294,29 +4326,27 @@ function renderPresetCatalog(filterCategory = 'all', searchQuery = '') {
     return;
   }
 
-  const itemsHtml = filtered.map(service => {
-    const sIndex = PRESET_SERVICES.indexOf(service);
+  const itemsHtml = filtered.map((service) => {
+    const sIndex = PRESET_SERVICES.findIndex(s => s.name === service.name);
     const plan = service.plans[0];
     const converted = convertCurrency(plan.priceUsd, 'USD', baseCurr);
-    const cycleLabel = plan.cycle === 'annual' ? '/año' : '/mes';
-    const isDiffCurr = baseCurr !== 'USD';
-    const iconHtml = getServiceOfficialIcon(service.name, service.color);
+    const cycleText = plan.cycle === 'annual' ? '/año' : (plan.cycle === 'weekly' ? '/sem' : '/mes');
+    const officialIcon = getServiceOfficialIcon(service.name, service.color);
 
     return `
       <div class="m3-preset-card group" onclick="selectPresetService(${sIndex})" title="Añadir ${escapeHtml(service.name)} (${plan.name})">
-        <div class="m3-brand-icon-box transition-transform group-hover:scale-105"
-             style="background: linear-gradient(135deg, ${service.color || '#d0bcff'}22, ${service.color || '#d0bcff'}44); border: 1px solid ${service.color || '#d0bcff'}55">
-          ${iconHtml}
+        <div class="m3-brand-icon-box" style="background: linear-gradient(135deg, ${service.color}22, ${service.color}44); border: 1px solid ${service.color}55">
+          ${officialIcon}
         </div>
-        <div class="overflow-hidden flex-1 min-w-0">
-          <div class="text-xs font-bold text-white truncate flex items-center gap-1 font-google-sans">
-            <span>${escapeHtml(service.name)}</span>
-            ${service.trialDays > 0 ? `<span class="text-[9px] font-bold px-1.5 py-0.2 rounded-full bg-[#f2b8b5]/20 text-[#f2b8b5] border border-[#f2b8b5]/40">${service.trialDays}d gratis</span>` : ''}
+        <div class="min-w-0 flex-1">
+          <div class="flex items-center justify-between gap-1">
+            <span class="text-xs font-bold text-white group-hover:text-[#d0bcff] transition truncate">${escapeHtml(service.name)}</span>
+            ${service.trialDays && service.trialDays > 0 ? `<span class="text-[9px] px-1.5 py-0.2 rounded-full bg-rose-500/20 text-rose-300 font-bold border border-rose-500/30">Free Trial</span>` : ''}
           </div>
-          <div class="text-[11px] font-mono font-semibold text-[#d0bcff] truncate">
-            ${baseSymbol}${formatNumber(converted)}${cycleLabel}
+          <div class="text-[11px] text-[#cac4d0] truncate mt-0.5 flex items-center gap-1 font-mono">
+            <span class="text-[#d0bcff] font-semibold">${baseSymbol}${formatNumber(converted)}</span>
+            <span class="text-[10px] opacity-70">${cycleText}</span>
           </div>
-          ${isDiffCurr ? `<div class="text-[9px] text-[#cac4d0] font-mono truncate">($${formatNumber(plan.priceUsd)} USD)</div>` : ''}
         </div>
       </div>
     `;
@@ -4335,6 +4365,7 @@ function selectPresetService(serviceIndex) {
   const convertedPrice = convertCurrency(plan.priceUsd, 'USD', baseCurr);
 
   document.getElementById('subName').value = service.name;
+  document.getElementById('subAlias').value = '';
   document.getElementById('subPrice').value = formatNumber(convertedPrice).replace(/,/g, '');
   document.getElementById('subCurrency').value = baseCurr;
   document.getElementById('subBillingCycle').value = plan.cycle || 'monthly';
@@ -4342,6 +4373,21 @@ function selectPresetService(serviceIndex) {
   document.getElementById('subColor').value = service.color || '#d0bcff';
   if (service.url) {
     document.getElementById('subUrl').value = service.url;
+  }
+
+  // Activar badge bloqueado con icono oficial y ocultar input de nombre editable
+  const nameInput = document.getElementById('subName');
+  const badgeContainer = document.getElementById('subPresetBadgeContainer');
+  const badgeName = document.getElementById('subPresetBadgeName');
+  const badgeIconBox = document.getElementById('subPresetBadgeIconBox');
+
+  if (nameInput) nameInput.classList.add('hidden');
+  if (badgeContainer) badgeContainer.classList.remove('hidden');
+  if (badgeName) badgeName.textContent = service.name;
+  if (badgeIconBox) {
+    badgeIconBox.innerHTML = getServiceOfficialIcon(service.name, service.color, 'w-4 h-4');
+    badgeIconBox.style.background = `linear-gradient(135deg, ${service.color}22, ${service.color}44)`;
+    badgeIconBox.style.border = `1px solid ${service.color}55`;
   }
 
   // Auto-configuración de prueba gratuita si el servicio cuenta con periodo de prueba
@@ -4444,6 +4490,7 @@ async function handleFormSubmit(e) {
 
   const data = {
     name: document.getElementById('subName').value.trim(),
+    alias: (document.getElementById('subAlias')?.value || '').trim(),
     price: parseFloat(document.getElementById('subPrice').value) || 0,
     currency: document.getElementById('subCurrency').value,
     billing_cycle: document.getElementById('subBillingCycle').value,
