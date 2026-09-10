@@ -101,13 +101,8 @@
     <!-- Controles Inferiores del Rail -->
     <div class="flex flex-col items-center gap-2 w-full px-2 pb-2">
       <!-- Botón Ajustes Rail -->
-      <button id="railBtnSettings" class="p-2.5 rounded-full text-[#cac4d0] hover:text-[#e6e0e9] hover:bg-[#2b2930] transition" title="Ajustes y Presupuesto">
+      <button id="railBtnSettings" class="p-2.5 rounded-full text-[#cac4d0] hover:text-[#e6e0e9] hover:bg-[#2b2930] transition" title="Ajustes y Configuración">
         <i data-lucide="settings" class="w-5 h-5"></i>
-      </button>
-
-      <!-- Botón Respaldos Rail -->
-      <button id="railBtnBackup" class="p-2.5 rounded-full text-[#cac4d0] hover:text-[#e6e0e9] hover:bg-[#2b2930] transition" title="Respaldos & Datos">
-        <i data-lucide="database" class="w-5 h-5"></i>
       </button>
     </div>
   </aside>
@@ -145,26 +140,9 @@
             <span id="navBaseCurrencyBadge" class="font-bold text-[#d0bcff]">USD ($)</span>
           </div>
 
-          <!-- Botón Sincronizar Calendario .ICS -->
-          <a href="/api/calendar.ics" download="suscripciones.ics" title="Exportar calendario (.ics)" 
-            class="hidden lg:inline-flex items-center justify-center px-3.5 py-1.5 text-xs font-semibold rounded-full bg-[#211f26] hover:bg-[#2b2930] text-[#e6e0e9] border border-[#49454f]/50 transition">
-            <i data-lucide="calendar-plus" class="w-3.5 h-3.5 mr-1.5 text-[#d0bcff]"></i>
-            <span>.ICS</span>
-          </a>
-
-          <!-- Botón Notificaciones -->
-          <button id="btnEnableNotifications" title="Activar notificaciones" class="hidden sm:inline-flex items-center justify-center p-2 text-xs rounded-full bg-[#211f26] hover:bg-[#2b2930] text-[#e6e0e9] border border-[#49454f]/50 transition">
-            <i data-lucide="bell" class="w-4 h-4 text-amber-300"></i>
-          </button>
-
           <!-- Botón Ajustes (móvil/tablet) -->
-          <button id="btnOpenSettingsModal" title="Ajustes y Presupuesto" class="md:hidden inline-flex items-center justify-center p-2 text-xs rounded-full bg-[#211f26] hover:bg-[#2b2930] text-[#cac4d0] border border-[#49454f]/50 transition">
+          <button id="btnOpenSettingsModal" title="Ajustes y Configuración" class="md:hidden inline-flex items-center justify-center p-2 text-xs rounded-full bg-[#211f26] hover:bg-[#2b2930] text-[#cac4d0] border border-[#49454f]/50 transition">
             <i data-lucide="settings" class="w-4 h-4"></i>
-          </button>
-
-          <!-- Botón Respaldo (móvil/tablet) -->
-          <button id="btnOpenBackupModal" title="Respaldos" class="md:hidden inline-flex items-center justify-center p-2 text-xs rounded-full bg-[#211f26] hover:bg-[#2b2930] text-[#cac4d0] border border-[#49454f]/50 transition">
-            <i data-lucide="database" class="w-4 h-4"></i>
           </button>
 
           <!-- Perfil / Login -->
@@ -1833,48 +1811,6 @@
           <button type="submit" class="m3-btn-filled py-2 px-5 text-xs">Guardar</button>
         </div>
       </form>
-    </div>
-  </div>
-
-  <!-- ================= MODAL: RESPALDO ================= -->
-  <div id="backupModal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-black/70 backdrop-blur-sm p-4 flex items-center justify-center">
-    <div class="relative w-full max-w-md m3-dialog p-6 space-y-4 animate-scale-up">
-      <div class="flex items-center justify-between border-b border-[#49454f]/40 pb-3">
-        <h3 class="text-base font-bold text-white flex items-center gap-2 font-google-sans">
-          <i data-lucide="database" class="w-5 h-5 text-[#d0bcff]"></i> Copias de Seguridad
-        </h3>
-        <button id="btnCloseBackupModal" class="text-[#cac4d0] hover:text-white p-1 rounded-full hover:bg-[#2b2930]">
-          <i data-lucide="x" class="w-5 h-5"></i>
-        </button>
-      </div>
-
-      <div class="space-y-2.5">
-        <div class="p-3.5 bg-[#1d1b20] border border-[#49454f]/40 rounded-2xl flex items-center justify-between">
-          <div>
-            <h4 class="text-xs font-bold text-white font-google-sans">Exportar a JSON</h4>
-            <p class="text-[11px] text-[#cac4d0]">Descarga tu base completa.</p>
-          </div>
-          <button id="btnExportJson" class="m3-btn-filled py-1.5 px-3.5 text-xs">Descargar</button>
-        </div>
-
-        <div class="p-3.5 bg-[#1d1b20] border border-[#49454f]/40 rounded-2xl flex items-center justify-between">
-          <div>
-            <h4 class="text-xs font-bold text-white font-google-sans">Exportar a CSV</h4>
-            <p class="text-[11px] text-[#cac4d0]">Para hojas de cálculo.</p>
-          </div>
-          <button id="btnExportCsv" class="m3-btn-tonal">Exportar</button>
-        </div>
-
-        <div class="p-3.5 bg-[#1d1b20] border border-[#49454f]/40 rounded-2xl space-y-1.5">
-          <h4 class="text-xs font-bold text-white font-google-sans">Importar Respaldo JSON</h4>
-          <input type="file" id="importFileInput" accept=".json" class="block w-full text-xs text-[#cac4d0] file:mr-2 file:py-1 file:px-3 file:rounded-full file:border-0 file:bg-[#2b2930] file:text-white cursor-pointer">
-        </div>
-
-        <div class="pt-2 border-t border-[#49454f]/40 flex items-center justify-between">
-          <span class="text-xs text-[#cac4d0]">Restablecer ejemplos:</span>
-          <button id="btnResetDemo" class="m3-btn-outline text-amber-300 border-amber-500/40 hover:bg-amber-500/10 text-xs">Restablecer Demo</button>
-        </div>
-      </div>
     </div>
   </div>
 

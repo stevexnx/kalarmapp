@@ -1131,15 +1131,6 @@ function initEventListeners() {
   document.getElementById('btnClosePaymentModal')?.addEventListener('click', closePaymentModal);
   document.getElementById('btnCancelPaymentModal')?.addEventListener('click', closePaymentModal);
   document.getElementById('paymentForm')?.addEventListener('submit', handlePaymentSubmit);
-
-  // Compatibilidad con Respaldos y Calendario desde Rail / TopBar
-  document.getElementById('railBtnBackup')?.addEventListener('click', () => openSettingsModal('backups'));
-  document.getElementById('btnOpenBackupModal')?.addEventListener('click', () => openSettingsModal('backups'));
-  document.getElementById('btnCloseBackupModal')?.addEventListener('click', closeBackupModal);
-  document.getElementById('btnExportJson')?.addEventListener('click', exportJson);
-  document.getElementById('btnExportCsv')?.addEventListener('click', exportCsv);
-  document.getElementById('importFileInput')?.addEventListener('change', handleImportJson);
-  document.getElementById('btnResetDemo')?.addEventListener('click', resetDemoData);
 }
 
 // ================= CARGA DE DATOS =================
@@ -3787,12 +3778,11 @@ async function handlePaymentSubmit(e) {
 }
 
 function openBackupModal() {
-  document.getElementById('backupModal')?.classList.remove('hidden');
-  initIcons();
+  openSettingsModal('backups');
 }
 
 function closeBackupModal() {
-  document.getElementById('backupModal')?.classList.add('hidden');
+  closeSettingsModal();
 }
 
 function exportJson() {
