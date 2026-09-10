@@ -4075,6 +4075,14 @@ function showPresetsStep() {
   form?.classList.add('hidden');
   btnBack?.classList.add('hidden');
 
+  // Restaurar la visibilidad del campo "Servicio *" para la próxima selección
+  const badgeContainer = document.getElementById('subPresetBadgeContainer');
+  const nameInput = document.getElementById('subName');
+  const serviceFieldWrapper = badgeContainer?.closest('div[class]')?.parentElement;
+  if (serviceFieldWrapper) serviceFieldWrapper.classList.remove('hidden');
+  if (nameInput) nameInput.classList.remove('hidden');
+  if (badgeContainer) badgeContainer.classList.add('hidden');
+
   if (modalTitle) modalTitle.innerHTML = `<i data-lucide="plus-circle" class="w-5 h-5 text-[#d0bcff]"></i> Nueva Suscripción`;
   if (modalSubtitle) modalSubtitle.textContent = 'Elige un servicio popular o crea una personalizada';
 
@@ -4234,7 +4242,7 @@ function toggleAdvancedOptionsModal(forceState = null) {
   }
 }
 
-function showDetailsForm(titleText = 'Detalles de Suscripción', isEdit = false) {
+function showDetailsForm(titleText = 'Detalles de Suscripción', isEdit = false, serviceIconHtml = '') {
   const tplStep = document.getElementById('templatesStepContainer');
   const form = document.getElementById('subscriptionForm');
   const btnBack = document.getElementById('btnBackToPresets');
@@ -4250,7 +4258,11 @@ function showDetailsForm(titleText = 'Detalles de Suscripción', isEdit = false)
     if (modalSubtitle) modalSubtitle.textContent = 'Modifica los valores y fechas de tu suscripción';
   } else {
     btnBack?.classList.remove('hidden');
-    if (modalTitle) modalTitle.innerHTML = `<i data-lucide="check-circle-2" class="w-5 h-5 text-[#a8d5b5]"></i> ${escapeHtml(titleText)}`;
+    if (serviceIconHtml) {
+      if (modalTitle) modalTitle.innerHTML = `${serviceIconHtml} ${escapeHtml(titleText)}`;
+    } else {
+      if (modalTitle) modalTitle.innerHTML = `<i data-lucide="check-circle-2" class="w-5 h-5 text-[#a8d5b5]"></i> ${escapeHtml(titleText)}`;
+    }
     if (modalSubtitle) modalSubtitle.textContent = 'Configura el plan, fecha de corte y división de gastos';
   }
 
@@ -4280,9 +4292,12 @@ function openCustomSubscription() {
   document.getElementById('subNextBillingDate').value = defaultDateStr;
   document.getElementById('subColor').value = '#d0bcff';
 
-  // Mostrar input editable y ocultar badge fijo
+  // Mostrar input editable y ocultar badge fijo; restaurar contenedor del campo Servicio *
+  const badgeContainerCustom = document.getElementById('subPresetBadgeContainer');
+  const serviceFieldWrapperCustom = badgeContainerCustom?.closest('div[class]')?.parentElement;
   document.getElementById('subName')?.classList.remove('hidden');
-  document.getElementById('subPresetBadgeContainer')?.classList.add('hidden');
+  if (badgeContainerCustom) badgeContainerCustom.classList.add('hidden');
+  if (serviceFieldWrapperCustom) serviceFieldWrapperCustom.classList.remove('hidden');
 
   document.getElementById('trialFieldsContainer')?.classList.add('hidden');
   document.getElementById('sharedFieldsContainer')?.classList.add('hidden');
@@ -4488,20 +4503,15 @@ function selectPresetService(serviceIndex) {
     document.getElementById('subUrl').value = service.url;
   }
 
-  // Activar badge bloqueado con icono oficial y ocultar input de nombre editable
+  // Ocultar tanto el input editable como el badge "Servicio *" — la info está en el título del modal
   const nameInput = document.getElementById('subName');
   const badgeContainer = document.getElementById('subPresetBadgeContainer');
-  const badgeName = document.getElementById('subPresetBadgeName');
-  const badgeIconBox = document.getElementById('subPresetBadgeIconBox');
+  const serviceFieldWrapper = badgeContainer?.closest('div[class]')?.parentElement;
 
   if (nameInput) nameInput.classList.add('hidden');
-  if (badgeContainer) badgeContainer.classList.remove('hidden');
-  if (badgeName) badgeName.textContent = service.name;
-  if (badgeIconBox) {
-    badgeIconBox.innerHTML = getServiceOfficialIcon(service.name, service.color, 'w-4 h-4');
-    badgeIconBox.style.background = `linear-gradient(135deg, ${service.color}22, ${service.color}44)`;
-    badgeIconBox.style.border = `1px solid ${service.color}55`;
-  }
+  if (badgeContainer) badgeContainer.classList.add('hidden');
+  // Ocultar el label "Servicio *" y su contenedor completo
+  if (serviceFieldWrapper) serviceFieldWrapper.classList.add('hidden');
 
   // Auto-configuración de prueba gratuita si el servicio cuenta con periodo de prueba
   const trialCb = document.getElementById('subIsTrial');
@@ -4533,7 +4543,11 @@ function selectPresetService(serviceIndex) {
   // Renderizar chips de planes dinámicos para este servicio (ocultando inputs manuales innecesarios)
   renderPlanSelector(service.name, convertedPrice, plan.cycle);
 
-  showDetailsForm(service.name, false);
+  // Construir HTML del icono del servicio para el título del modal
+  const iconColor = service.color || '#d0bcff';
+  const iconHtml = `<span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,${iconColor}33,${iconColor}55);border:1px solid ${iconColor}66;flex-shrink:0;">${getServiceOfficialIcon(service.name, iconColor, 'w-4 h-4')}</span>`;
+
+  showDetailsForm(service.name, false, iconHtml);
 }
 
 function closeModal() {
