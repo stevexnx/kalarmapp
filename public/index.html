@@ -1875,6 +1875,26 @@
             </div>
           </div>
 
+          <!-- Interruptor de Tema: Modo Claro / Oscuro -->
+          <div class="p-4 rounded-2xl bg-[#1d1b20] border border-[#49454f]/40 flex items-center justify-between">
+            <div class="space-y-1">
+              <div class="flex items-center gap-2 text-white font-semibold font-google-sans">
+                <i data-lucide="sun" id="themeSettingIcon" class="w-4 h-4 text-[#f2c18d]"></i>
+                <span>Tema de la Interfaz</span>
+              </div>
+              <p id="themeSettingDescription" class="text-[11px] text-[#cac4d0]">Cambia entre tema Oscuro y tema Claro (Material Design 3).</p>
+            </div>
+            <div class="flex items-center gap-2.5">
+              <span id="themeSettingLabel" class="text-xs font-semibold text-[#d0bcff]">Oscuro</span>
+              <label class="m3-switch" title="Cambiar tema claro / oscuro">
+                <input type="checkbox" id="settingThemeToggle">
+                <div class="m3-switch-track">
+                  <div class="m3-switch-thumb"></div>
+                </div>
+              </label>
+            </div>
+          </div>
+
           <div class="pt-2 border-t border-[#49454f]/40 flex justify-end gap-2.5">
             <button type="button" class="m3-btn-outline" onclick="closeSettingsModal()">Cerrar</button>
             <button type="submit" class="m3-btn-filled py-2 px-6 text-xs font-bold shadow-md">
@@ -2115,6 +2135,6 @@
     </div>
   </div>
 
-  <script src="/app.js?v=2.5.0"></script>
+  <script src="/app.js?v=2.6.0"></script>
 </body>
 </html>

@@ -837,3 +837,170 @@ body.privacy-mode-active .privacy-blur {
 .m3-switch:hover .m3-switch-track {
   border-color: var(--md-sys-color-primary);
 }
+
+/* ================= GOOGLE MATERIAL 3 LIGHT THEME ================= */
+html.theme-light,
+body.theme-light {
+  /* Google M3 Light Theme Tonal Palette */
+  --md-sys-color-background: #fdf7ff;
+  --md-sys-color-surface: #fdf7ff;
+  --md-sys-color-surface-dim: #ded8e1;
+  --md-sys-color-surface-bright: #fdf7ff;
+  
+  --md-sys-color-surface-container-lowest: #ffffff;
+  --md-sys-color-surface-container-low: #f7f2fa;
+  --md-sys-color-surface-container: #f3edf7;
+  --md-sys-color-surface-container-high: #ece6f0;
+  --md-sys-color-surface-container-highest: #e6e0e9;
+
+  --md-sys-color-on-surface: #1d1b20;
+  --md-sys-color-on-surface-variant: #49454f;
+  --md-sys-color-outline: #79747e;
+  --md-sys-color-outline-variant: #cac4d0;
+
+  /* Google M3 Primary (Púrpura M3) */
+  --md-sys-color-primary: #6750a4;
+  --md-sys-color-on-primary: #ffffff;
+  --md-sys-color-primary-container: #eaddff;
+  --md-sys-color-on-primary-container: #21005d;
+
+  /* Secondary Tonal Palette */
+  --md-sys-color-secondary: #625b71;
+  --md-sys-color-secondary-container: #e8def8;
+  --md-sys-color-on-secondary-container: #1d192b;
+
+  /* Tertiary Tonal Palette */
+  --md-sys-color-tertiary: #7d5260;
+  --md-sys-color-tertiary-container: #ffd8e4;
+  --md-sys-color-on-tertiary-container: #31111d;
+
+  /* Success / Positive Tonal Palette */
+  --md-sys-color-success: #2b5037;
+  --md-sys-color-on-success: #ffffff;
+  --md-sys-color-success-container: #c4ebd0;
+  --md-sys-color-on-success-container: #00210f;
+
+  /* Warning / Caution Tonal Palette */
+  --md-sys-color-warning: #7a4300;
+  --md-sys-color-on-warning: #ffffff;
+  --md-sys-color-warning-container: #feddbd;
+  --md-sys-color-on-warning-container: #2b1700;
+
+  /* Error Tonal Palette */
+  --md-sys-color-error: #ba1a1a;
+  --md-sys-color-on-error: #ffffff;
+  --md-sys-color-error-container: #ffdad6;
+  --md-sys-color-on-error-container: #410002;
+}
+
+body.theme-light {
+  background-color: var(--md-sys-color-background) !important;
+  color: var(--md-sys-color-on-surface) !important;
+}
+
+/* Adaptaciones de componentes específicos en modo claro */
+body.theme-light .m3-nav-rail {
+  background-color: var(--md-sys-color-surface-container) !important;
+  border-right-color: var(--md-sys-color-outline-variant) !important;
+}
+
+body.theme-light .m3-top-app-bar {
+  background-color: rgba(247, 242, 250, 0.95) !important;
+  border-bottom-color: var(--md-sys-color-outline-variant) !important;
+}
+
+body.theme-light .m3-card,
+body.theme-light .m3-dialog,
+body.theme-light .command-palette-dialog {
+  background-color: var(--md-sys-color-surface-container-low) !important;
+  border-color: var(--md-sys-color-outline-variant) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08) !important;
+}
+
+body.theme-light .m3-card:hover {
+  background-color: var(--md-sys-color-surface-container) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12) !important;
+}
+
+body.theme-light .m3-text-field {
+  background-color: #ffffff !important;
+  border-color: var(--md-sys-color-outline-variant) !important;
+  color: var(--md-sys-color-on-surface) !important;
+}
+
+body.theme-light .m3-text-field:focus {
+  border-color: var(--md-sys-color-primary) !important;
+  box-shadow: 0 0 0 2px rgba(103, 80, 164, 0.2) !important;
+}
+
+body.theme-light .calendar-day-cell {
+  background-color: #ffffff !important;
+  border-color: var(--md-sys-color-outline-variant) !important;
+}
+
+body.theme-light .calendar-day-cell.is-selected {
+  background-color: rgba(103, 80, 164, 0.08) !important;
+  border-color: var(--md-sys-color-primary) !important;
+}
+
+body.theme-light .clickup-hero-mesh {
+  background: radial-gradient(circle at 50% 0%, rgba(208, 188, 255, 0.45) 0%, rgba(253, 247, 255, 0.95) 75%),
+              radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.12) 0%, transparent 40%),
+              radial-gradient(circle at 90% 25%, rgba(242, 193, 141, 0.15) 0%, transparent 40%) !important;
+}
+
+body.theme-light .m3-btn-filled {
+  background-color: var(--md-sys-color-primary) !important;
+  color: var(--md-sys-color-on-primary) !important;
+}
+body.theme-light .m3-btn-filled:hover {
+  background-color: #7965b2 !important;
+}
+
+body.theme-light .m3-btn-outline {
+  border-color: var(--md-sys-color-outline-variant) !important;
+  color: var(--md-sys-color-on-surface) !important;
+}
+body.theme-light .m3-btn-outline:hover {
+  background-color: rgba(103, 80, 164, 0.08) !important;
+}
+
+body.theme-light .m3-switch-track {
+  background-color: #e6e0e9 !important;
+  border-color: #79747e !important;
+}
+body.theme-light .m3-switch-thumb {
+  background-color: #79747e !important;
+}
+body.theme-light .m3-switch input:checked + .m3-switch-track {
+  background-color: var(--md-sys-color-primary) !important;
+  border-color: var(--md-sys-color-primary) !important;
+}
+body.theme-light .m3-switch input:checked + .m3-switch-track .m3-switch-thumb {
+  background-color: #ffffff !important;
+}
+
+/* Clases utilitarias oscuras de Tailwind adaptadas a Light */
+body.theme-light [class*="bg-[#141218]"],
+body.theme-light [class*="bg-[#1d1b20]"],
+body.theme-light [class*="bg-[#211f26]"],
+body.theme-light [class*="bg-[#2b2930]"] {
+  background-color: var(--md-sys-color-surface-container-low) !important;
+  border-color: var(--md-sys-color-outline-variant) !important;
+}
+
+body.theme-light .text-white,
+body.theme-light .text-\[\#e6e0e9\] {
+  color: #1d1b20 !important;
+}
+
+body.theme-light .text-\[\#cac4d0\] {
+  color: #49454f !important;
+}
+
+body.theme-light .border-\[\#49454f\]\/40,
+body.theme-light .border-\[\#49454f\]\/30,
+body.theme-light .border-\[\#49454f\]\/50,
+body.theme-light .border-\[\#49454f\] {
+  border-color: #cac4d0 !important;
+}

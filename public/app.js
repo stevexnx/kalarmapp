@@ -516,6 +516,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   initPWA();
+  initThemeMode();
   initPrivacyMode();
   initIcons();
   initEventListeners();
@@ -1210,6 +1211,7 @@ function initEventListeners() {
   document.getElementById('tabSettingsBackups')?.addEventListener('click', () => switchSettingsTab('backups'));
   document.getElementById('tabSettingsNotifications')?.addEventListener('click', () => switchSettingsTab('notifications'));
   document.getElementById('settingsGeneralForm')?.addEventListener('submit', handleSettingsGeneralSubmit);
+  document.getElementById('settingThemeToggle')?.addEventListener('change', toggleThemeMode);
   document.getElementById('settingsNotificationsForm')?.addEventListener('submit', handleSettingsNotificationsSubmit);
   document.getElementById('btnTestWebhook')?.addEventListener('click', testWebhook);
   document.getElementById('btnTestBrowserNotifications')?.addEventListener('click', requestNotificationPermission);
@@ -4705,6 +4707,8 @@ function openSettingsModal(defaultTab = 'general') {
     if (webhookInput) webhookInput.value = state.settings.discord_webhook || '';
   }
   renderUserProfile();
+  const currentTheme = localStorage.getItem('subtracker_theme') || 'dark';
+  syncThemeSettingsUI(currentTheme === 'light');
   switchSettingsTab(defaultTab);
   modal?.classList.remove('hidden');
   initIcons();
@@ -5232,6 +5236,62 @@ function applyPrivacyMode(active) {
   initIcons();
 }
 
+// ================= MODO CLARO / OSCURO (GOOGLE MATERIAL 3) =================
+function initThemeMode() {
+  const savedTheme = localStorage.getItem('subtracker_theme') || 'dark';
+  applyThemeMode(savedTheme);
+}
+
+function toggleThemeMode() {
+  const isLight = document.documentElement.classList.contains('theme-light');
+  const newTheme = isLight ? 'dark' : 'light';
+  localStorage.setItem('subtracker_theme', newTheme);
+  applyThemeMode(newTheme);
+  showToast(newTheme === 'light' ? 'Modo Claro activado' : 'Modo Oscuro activado', 'info');
+}
+
+function applyThemeMode(theme) {
+  const html = document.documentElement;
+  const body = document.body;
+  const isLight = theme === 'light';
+
+  if (isLight) {
+    html.classList.add('theme-light');
+    body.classList.add('theme-light');
+    html.classList.remove('dark');
+  } else {
+    html.classList.remove('theme-light');
+    body.classList.remove('theme-light');
+    html.classList.add('dark');
+  }
+
+  syncThemeSettingsUI(isLight);
+  if (typeof updateChartsTheme === 'function') {
+    updateChartsTheme();
+  }
+  initIcons();
+}
+
+function syncThemeSettingsUI(isLight) {
+  const toggle = document.getElementById('settingThemeToggle');
+  const label = document.getElementById('themeSettingLabel');
+  const icon = document.getElementById('themeSettingIcon');
+  const desc = document.getElementById('themeSettingDescription');
+
+  if (toggle) toggle.checked = isLight;
+  if (label) {
+    label.textContent = isLight ? 'Claro' : 'Oscuro';
+    label.className = `text-xs font-semibold ${isLight ? 'text-[#6750a4]' : 'text-[#d0bcff]'}`;
+  }
+  if (icon) {
+    icon.setAttribute('data-lucide', isLight ? 'sun-medium' : 'moon');
+    icon.className = `w-4 h-4 ${isLight ? 'text-[#7a4300]' : 'text-[#f2c18d]'}`;
+  }
+  if (desc) {
+    desc.textContent = isLight ? 'Tema Claro Google M3 activo.' : 'Tema Oscuro Google M3 activo.';
+  }
+}
+
 // ================= FASE 1: PALETA DE COMANDOS (CTRL + K) =================
 let commandPaletteSelectedIndex = 0;
 let commandPaletteFilteredItems = [];
@@ -5648,4 +5708,6 @@ window.openSplitPayDetailModal = openSplitPayDetailModal;
 window.closeSplitPayDetailModal = closeSplitPayDetailModal;
 window.executeConfirmSplitPay = executeConfirmSplitPay;
 window.cancelSplitPayRequest = cancelSplitPayRequest;
+window.toggleThemeMode = toggleThemeMode;
+window.applyThemeMode = applyThemeMode;
 
