@@ -95,6 +95,15 @@
           </div>
           <span class="m3-rail-label">Amigos</span>
         </button>
+
+        <!-- Destino 5: Pagos en Conjunto (Split Pay) -->
+        <button id="railBtnSplitPay" class="m3-rail-item group" title="Pagos en Conjunto (Split Pay)">
+          <div class="m3-rail-pill relative">
+            <i data-lucide="split" class="w-5 h-5 transition-transform group-hover:scale-110"></i>
+            <span id="railSplitPayBadge" class="hidden absolute -top-1 -right-1 w-4 h-4 rounded-full bg-amber-400 text-amber-950 font-bold text-[9px] flex items-center justify-center">0</span>
+          </div>
+          <span class="m3-rail-label">Split Pay</span>
+        </button>
       </nav>
     </div>
 
@@ -209,6 +218,11 @@
         <i data-lucide="users" class="w-3.5 h-3.5"></i>
         <span>Amigos</span>
         <span id="friendsBadgeCount" class="text-[10px] px-1.5 py-0.2 rounded-full bg-[#a8d5b5] text-[#133821] font-bold">0</span>
+      </button>
+      <button id="tabBtnSplitPay" class="m3-nav-pill whitespace-nowrap cursor-pointer">
+        <i data-lucide="split" class="w-3.5 h-3.5"></i>
+        <span>Split Pay</span>
+        <span id="splitPayBadgeCount" class="hidden text-[10px] px-1.5 py-0.2 rounded-full bg-amber-400 text-amber-950 font-bold">0</span>
       </button>
     </div>
 
@@ -547,33 +561,6 @@
         </div>
       </div>
 
-      <!-- Sección de Solicitudes de Pago en Conjunto (Split Pay) -->
-      <div class="m3-card p-5 sm:p-6 space-y-4">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div>
-            <h3 class="text-sm font-bold text-white flex items-center gap-2 font-google-sans">
-              <i data-lucide="split" class="w-4 h-4 text-[#d0bcff]"></i>
-              Pagos en Conjunto (Split Pay)
-              <span id="splitPayInboxBadge" class="hidden text-[10px] px-2 py-0.5 rounded-full bg-amber-400 text-amber-950 font-bold">0 pendientes</span>
-            </h3>
-            <p class="text-xs text-[#cac4d0] mt-0.5">Solicitudes enviadas y recibidas para dividir pagos de suscripciones con amigos.</p>
-          </div>
-          <!-- Filtro Recibidas / Enviadas -->
-          <div class="flex items-center gap-1 bg-[#141218] p-1 rounded-full border border-[#49454f]/40 text-xs">
-            <button id="btnTabSplitReceived" class="px-3 py-1 rounded-full bg-[#d0bcff] text-[#381e72] font-semibold transition">
-              Recibidas (<span id="countSplitReceived">0</span>)
-            </button>
-            <button id="btnTabSplitSent" class="px-3 py-1 rounded-full text-[#cac4d0] hover:text-white transition">
-              Enviadas (<span id="countSplitSent">0</span>)
-            </button>
-          </div>
-        </div>
-
-        <div id="splitPayRequestsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
-          <!-- Renderizado de Split Pay dinámicamente -->
-        </div>
-      </div>
-
       <!-- Sección Unificada: Contactos, Amigos y Cobros Compartidos -->
       <div class="m3-card p-5 sm:p-6 space-y-4">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -597,6 +584,42 @@
         </div>
       </div>
 
+    </div>
+
+    <!-- ================= SECCIÓN 3.5: VISTA PAGOS EN CONJUNTO (SPLIT PAY) ================= -->
+    <div id="viewSplitPay" class="hidden space-y-6">
+      <!-- Encabezado de Vista Split Pay -->
+      <div class="m3-card p-5 sm:p-6 space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-2xl bg-[#d0bcff]/15 flex items-center justify-center text-[#d0bcff] shrink-0">
+              <i data-lucide="split" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <h3 class="text-base sm:text-lg font-bold text-white flex items-center gap-2 font-google-sans">
+                Pagos en Conjunto (Split Pay)
+                <span id="splitPayInboxBadge" class="hidden text-[10px] px-2 py-0.5 rounded-full bg-amber-400 text-amber-950 font-bold">0 pendientes</span>
+              </h3>
+              <p class="text-xs text-[#cac4d0] mt-0.5">Gestiona solicitudes enviadas y recibidas para dividir pagos de suscripciones compartidas con amigos.</p>
+            </div>
+          </div>
+          <!-- Filtro Recibidas / Enviadas -->
+          <div class="flex items-center gap-1 bg-[#141218] p-1 rounded-full border border-[#49454f]/40 text-xs">
+            <button id="btnTabSplitReceived" class="px-3.5 py-1.5 rounded-full bg-[#d0bcff] text-[#381e72] font-semibold transition flex items-center gap-1.5">
+              <i data-lucide="inbox" class="w-3.5 h-3.5"></i>
+              <span>Recibidas (<span id="countSplitReceived">0</span>)</span>
+            </button>
+            <button id="btnTabSplitSent" class="px-3.5 py-1.5 rounded-full text-[#cac4d0] hover:text-white transition flex items-center gap-1.5">
+              <i data-lucide="send" class="w-3.5 h-3.5"></i>
+              <span>Enviadas (<span id="countSplitSent">0</span>)</span>
+            </button>
+          </div>
+        </div>
+
+        <div id="splitPayRequestsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
+          <!-- Renderizado de Split Pay dinámicamente -->
+        </div>
+      </div>
     </div>
 
     <!-- ================= SECCIÓN 4: VISTA CALENDARIO DE CORTES ================= -->
@@ -1472,8 +1495,8 @@
           </div>
         </div>
 
-        <!-- MODO PRUEBA GRATUITA -->
-        <div class="p-3.5 bg-[#211f26] border border-[#49454f]/40 rounded-2xl space-y-2">
+        <!-- MODO PRUEBA GRATUITA (Visible en personalizadas o cuando se habilite) -->
+        <div id="subTrialSectionContainer" class="p-3.5 bg-[#211f26] border border-[#49454f]/40 rounded-2xl space-y-2">
           <div class="flex items-center justify-between">
             <label class="flex items-center gap-2 cursor-pointer">
               <input type="checkbox" id="subIsTrial" class="w-4 h-4 text-[#d0bcff] rounded bg-[#1d1b20] border-[#49454f] focus:ring-[#d0bcff]">
@@ -1493,20 +1516,30 @@
           </div>
         </div>
 
-        <!-- SUSCRIPCIÓN COMPARTIDA (SPLIT COST & SELECCIÓN DE AMIGOS) -->
+        <!-- SUSCRIPCIÓN COMPARTIDA (INTERRUPTOR M3 & SELECCIÓN DE AMIGOS) -->
         <div class="p-3.5 bg-[#211f26] border border-[#49454f]/40 rounded-2xl space-y-3">
           <div class="flex items-center justify-between">
-            <label class="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" id="subIsShared" class="w-4 h-4 text-[#d0bcff] rounded bg-[#1d1b20] border-[#49454f] focus:ring-[#d0bcff]">
-              <span class="text-xs font-semibold text-[#a8d5b5] flex items-center gap-1">
-                <i data-lucide="users" class="w-3.5 h-3.5 text-[#a8d5b5]"></i>
-                ¿Es suscripción compartida? (Plan familiar / amigos)
+            <div class="flex items-center gap-2.5">
+              <div class="w-8 h-8 rounded-xl bg-[#2b5037]/50 text-[#a8d5b5] flex items-center justify-center shrink-0">
+                <i data-lucide="users" class="w-4 h-4"></i>
+              </div>
+              <div>
+                <span class="text-xs font-bold text-white block font-google-sans">
+                  ¿Es suscripción compartida? (Plan familiar / amigos)
+                </span>
+                <span class="text-[11px] text-[#cac4d0]">Divide el costo entre contactos</span>
+              </div>
+            </div>
+            <!-- Interruptor M3 Switch -->
+            <label class="m3-switch" title="Activar/Desactivar suscripción compartida">
+              <input type="checkbox" id="subIsShared">
+              <span class="m3-switch-track">
+                <span class="m3-switch-thumb"></span>
               </span>
             </label>
-            <span class="text-[10px] text-[#cac4d0]">Divide el costo entre contactos</span>
           </div>
 
-          <div id="sharedFieldsContainer" class="hidden pt-2 border-t border-[#49454f]/40 space-y-3">
+          <div id="sharedFieldsContainer" class="hidden pt-2.5 border-t border-[#49454f]/40 space-y-3">
             <div class="grid grid-cols-2 gap-3">
               <div>
                 <label class="block text-[11px] text-[#cac4d0] mb-1" for="subSharedCount">Total de integrantes (tú + amigos):</label>
@@ -1518,9 +1551,15 @@
               </div>
             </div>
 
-            <!-- Selector de Amigos Etiquetados -->
+            <!-- Selector de Amigos Etiquetados y Botón de Añadir Amigo -->
             <div>
-              <label class="block text-[11px] text-[#cac4d0] mb-1">Etiquetar amigos de tu lista que comparten esta cuenta:</label>
+              <div class="flex items-center justify-between mb-1.5">
+                <label class="block text-[11px] text-[#cac4d0]">Etiquetar amigos que comparten esta cuenta:</label>
+                <button type="button" onclick="openFriendModal()" class="text-[11px] font-semibold text-[#d0bcff] hover:text-[#e8def8] flex items-center gap-1 hover:underline">
+                  <i data-lucide="user-plus" class="w-3.5 h-3.5"></i>
+                  <span>Añadir a un amigo</span>
+                </button>
+              </div>
               <div id="sharedFriendsCheckboxList" class="flex flex-wrap gap-2 max-h-28 overflow-y-auto p-2 bg-[#141218] rounded-xl border border-[#49454f]/40 text-xs">
                 <!-- Inyectado por app.js -->
               </div>
@@ -1551,7 +1590,7 @@
             <input type="date" id="subNextBillingDate" required class="m3-text-field">
           </div>
 
-          <div>
+          <div id="subCategoryContainer">
             <label class="block text-xs font-medium text-[#cac4d0] mb-1" for="subCategory">Categoría</label>
             <select id="subCategory" class="m3-text-field">
               <option value="Streaming">Streaming</option>

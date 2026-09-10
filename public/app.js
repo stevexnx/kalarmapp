@@ -474,9 +474,10 @@ function getServiceOfficialIcon(name, customColor = '#4F46E5', sizeClass = 'w-5 
   if (lower.includes('paramount')) return OFFICIAL_ICONS.paramountplus;
   if (lower.includes('crunchyroll')) return OFFICIAL_ICONS.crunchyroll;
 
-  // Letra inicial por defecto si no es una marca reconocida
-  return `<span class="font-bold text-sm text-white">${name.charAt(0).toUpperCase()}</span>`;
+  // Icono universal de servicio estilizado (nunca letra inicial)
+  return `<i data-lucide="credit-card" class="${sizeClass}" style="color: ${customColor || '#d0bcff'}"></i>`;
 }
+
 
 function convertCurrency(amount, fromCurr, toCurr) {
   if (!amount || isNaN(amount)) return 0;
@@ -988,11 +989,13 @@ function initEventListeners() {
   document.getElementById('tabBtnCalendar')?.addEventListener('click', () => switchTab('calendar'));
   document.getElementById('tabBtnPayments')?.addEventListener('click', () => switchTab('payments'));
   document.getElementById('tabBtnFriends')?.addEventListener('click', () => switchTab('friends'));
+  document.getElementById('tabBtnSplitPay')?.addEventListener('click', () => switchTab('splitpay'));
 
   document.getElementById('railBtnDashboard')?.addEventListener('click', () => switchTab('dashboard'));
   document.getElementById('railBtnCalendar')?.addEventListener('click', () => switchTab('calendar'));
   document.getElementById('railBtnPayments')?.addEventListener('click', () => switchTab('payments'));
   document.getElementById('railBtnFriends')?.addEventListener('click', () => switchTab('friends'));
+  document.getElementById('railBtnSplitPay')?.addEventListener('click', () => switchTab('splitpay'));
   document.getElementById('railBtnSettings')?.addEventListener('click', () => openSettingsModal('general'));
   document.getElementById('railBtnBackup')?.addEventListener('click', () => openSettingsModal('backups'));
 
@@ -1719,6 +1722,18 @@ function renderSplitPayRequests() {
     }
   }
 
+  // Actualizar badges en Navigation Rail y Mobile Nav
+  const railSplitPayBadge = document.getElementById('railSplitPayBadge');
+  const splitPayBadgeCount = document.getElementById('splitPayBadgeCount');
+  if (railSplitPayBadge) {
+    railSplitPayBadge.textContent = pendingReceived.length;
+    railSplitPayBadge.classList.toggle('hidden', pendingReceived.length === 0);
+  }
+  if (splitPayBadgeCount) {
+    splitPayBadgeCount.textContent = pendingReceived.length;
+    splitPayBadgeCount.classList.toggle('hidden', pendingReceived.length === 0);
+  }
+
   const list = state.splitPayTab === 'received' ? received : sent;
 
   if (list.length === 0) {
@@ -1754,16 +1769,23 @@ function renderSplitPayRequests() {
         dueDateFormatted = typeof formatDateFriendly === 'function' ? formatDateFriendly(req.due_date) : req.due_date;
       }
 
+      const iconHtml = getServiceOfficialIcon(subName, req.subscription_color || '#d0bcff', 'w-4 h-4');
+
       return `
         <div onclick="openSplitPayDetailModal(${req.id})" class="p-3.5 bg-[#211f26] border border-[#49454f]/40 hover:border-[#d0bcff]/70 hover:bg-[#28262f] cursor-pointer rounded-2xl flex flex-col justify-between space-y-3 transition shadow-sm group">
           <div>
             <div class="flex items-start justify-between gap-2">
-              <div class="min-w-0">
-                <span class="text-[10px] text-[#cac4d0] uppercase tracking-wider block truncate">
-                  ${isReceived ? `De: ${escapeHtml(otherPerson)}` : `Para: ${escapeHtml(otherPerson)}`}
-                  ${otherUsername ? `<span class="text-[#d0bcff] font-mono lowercase text-[10px]"> (${escapeHtml(otherUsername)})</span>` : ''}
-                </span>
-                <h4 class="text-xs font-bold text-white font-google-sans mt-0.5 group-hover:text-[#d0bcff] transition truncate">${escapeHtml(subName)}</h4>
+              <div class="flex items-center gap-2.5 min-w-0">
+                <div class="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 shadow-sm" style="background: linear-gradient(135deg, ${req.subscription_color || '#d0bcff'}22, ${req.subscription_color || '#d0bcff'}44); border: 1px solid ${req.subscription_color || '#d0bcff'}55">
+                  ${iconHtml}
+                </div>
+                <div class="min-w-0">
+                  <span class="text-[10px] text-[#cac4d0] uppercase tracking-wider block truncate">
+                    ${isReceived ? `De: ${escapeHtml(otherPerson)}` : `Para: ${escapeHtml(otherPerson)}`}
+                    ${otherUsername ? `<span class="text-[#d0bcff] font-mono lowercase text-[10px]"> (${escapeHtml(otherUsername)})</span>` : ''}
+                  </span>
+                  <h4 class="text-xs font-bold text-white font-google-sans mt-0.5 group-hover:text-[#d0bcff] transition truncate">${escapeHtml(subName)}</h4>
+                </div>
               </div>
               <span class="text-[10px] px-2 py-0.5 rounded-full border font-semibold shrink-0 ${st.badge}">
                 ${st.text}
@@ -1863,8 +1885,8 @@ function openSplitPayDetailModal(requestId) {
     <div class="p-3.5 bg-[#1d1b20] border border-[#49454f]/40 rounded-2xl space-y-3">
       <div class="flex items-start justify-between gap-3">
         <div class="flex items-center gap-2.5 min-w-0">
-          <div class="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm shrink-0" style="background-color: ${req.subscription_color || '#d0bcff'}; color: #141218">
-            ${escapeHtml(subName.charAt(0).toUpperCase())}
+          <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-sm" style="background: linear-gradient(135deg, ${req.subscription_color || '#d0bcff'}22, ${req.subscription_color || '#d0bcff'}44); border: 1px solid ${req.subscription_color || '#d0bcff'}55">
+            ${getServiceOfficialIcon(subName, req.subscription_color || '#d0bcff', 'w-5 h-5')}
           </div>
           <div class="min-w-0">
             <h4 class="text-sm font-bold text-white truncate font-google-sans">${escapeHtml(subName)}</h4>
@@ -2403,8 +2425,8 @@ async function viewSharedSubsWithFriend(friendId, friendName, friendUserId = nul
         return `
           <div class="p-3 bg-[#211f26] border border-[#a8d5b5]/30 rounded-xl flex items-center justify-between gap-3 hover:border-[#a8d5b5]/60 transition">
             <div class="flex items-center gap-3 min-w-0">
-              <div class="w-9 h-9 rounded-xl flex items-center justify-center font-bold text-xs shrink-0" style="background-color: ${s.color || '#a8d5b5'}; color: #141218">
-                ${escapeHtml(s.name.charAt(0).toUpperCase())}
+              <div class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 shadow-sm" style="background: linear-gradient(135deg, ${s.color || '#a8d5b5'}22, ${s.color || '#a8d5b5'}44); border: 1px solid ${s.color || '#a8d5b5'}55">
+                ${getServiceOfficialIcon(s.name, s.color || '#a8d5b5', 'w-4 h-4')}
               </div>
               <div class="min-w-0">
                 <div class="flex items-center gap-1.5">
@@ -2450,8 +2472,8 @@ async function viewSharedSubsWithFriend(friendId, friendName, friendUserId = nul
               return `
                 <div class="p-2.5 bg-[#1d1b20] border border-[#49454f]/30 rounded-xl flex items-center justify-between gap-3 hover:border-[#d0bcff]/40 transition">
                   <div class="flex items-center gap-2.5 min-w-0">
-                    <div class="w-7 h-7 rounded-lg flex items-center justify-center font-bold text-[10px] shrink-0" style="background-color: ${s.color || '#d0bcff'}; color: #141218">
-                      ${escapeHtml(s.name.charAt(0).toUpperCase())}
+                    <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-sm" style="background: linear-gradient(135deg, ${s.color || '#d0bcff'}22, ${s.color || '#d0bcff'}44); border: 1px solid ${s.color || '#d0bcff'}55">
+                      ${getServiceOfficialIcon(s.name, s.color || '#d0bcff', 'w-3.5 h-3.5')}
                     </div>
                     <div class="min-w-0">
                       <div class="text-xs font-medium text-white truncate">${escapeHtml(s.name)}</div>
@@ -2504,8 +2526,8 @@ async function viewSharedSubsWithFriend(friendId, friendName, friendUserId = nul
         return `
           <div class="p-3 bg-[#211f26] border border-[#49454f]/40 rounded-xl flex items-center justify-between gap-3">
             <div class="flex items-center gap-3 min-w-0">
-              <div class="w-9 h-9 rounded-xl flex items-center justify-center font-bold text-xs shrink-0" style="background-color: ${fs.color || '#a8d5b5'}; color: #141218">
-                ${escapeHtml(fs.name.charAt(0).toUpperCase())}
+              <div class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 shadow-sm" style="background: linear-gradient(135deg, ${fs.color || '#a8d5b5'}22, ${fs.color || '#a8d5b5'}44); border: 1px solid ${fs.color || '#a8d5b5'}55">
+                ${getServiceOfficialIcon(fs.name, fs.color || '#a8d5b5', 'w-4 h-4')}
               </div>
               <div class="min-w-0">
                 <h5 class="text-xs font-bold text-white truncate font-google-sans">${escapeHtml(fs.name)}</h5>
@@ -2599,6 +2621,8 @@ async function handleFriendSubmit(e) {
       showToast(state.editingFriendId ? 'Amigo actualizado' : 'Amigo agregado con éxito', 'success');
       closeFriendModal();
       await loadFriends();
+      const currentCheckedIds = Array.from(document.querySelectorAll('#sharedFriendsCheckboxList .friend-checkbox:checked')).map(cb => cb.value);
+      populateSharedFriendsCheckboxes(currentCheckedIds);
     } else {
       showToast(result.error || 'Error al guardar amigo', 'error');
     }
@@ -2675,19 +2699,22 @@ function switchTab(tab) {
   const viewCal = document.getElementById('viewCalendar');
   const viewPay = document.getElementById('viewPayments');
   const viewFriends = document.getElementById('viewFriends');
+  const viewSplit = document.getElementById('viewSplitPay');
 
   const tabDash = document.getElementById('tabBtnDashboard');
   const tabCal = document.getElementById('tabBtnCalendar');
   const tabPay = document.getElementById('tabBtnPayments');
   const tabFriends = document.getElementById('tabBtnFriends');
+  const tabSplit = document.getElementById('tabBtnSplitPay');
 
   const railDash = document.getElementById('railBtnDashboard');
   const railCal = document.getElementById('railBtnCalendar');
   const railPay = document.getElementById('railBtnPayments');
   const railFriends = document.getElementById('railBtnFriends');
+  const railSplit = document.getElementById('railBtnSplitPay');
 
-  [viewDash, viewCal, viewPay, viewFriends].forEach(v => v?.classList.add('hidden'));
-  [tabDash, tabCal, tabPay, tabFriends, railDash, railCal, railPay, railFriends].forEach(t => {
+  [viewDash, viewCal, viewPay, viewFriends, viewSplit].forEach(v => v?.classList.add('hidden'));
+  [tabDash, tabCal, tabPay, tabFriends, tabSplit, railDash, railCal, railPay, railFriends, railSplit].forEach(t => {
     t?.classList.remove('active');
   });
 
@@ -2709,6 +2736,11 @@ function switchTab(tab) {
     viewFriends?.classList.remove('hidden');
     tabFriends?.classList.add('active');
     railFriends?.classList.add('active');
+    loadFriends();
+  } else if (tab === 'splitpay') {
+    viewSplit?.classList.remove('hidden');
+    tabSplit?.classList.add('active');
+    railSplit?.classList.add('active');
     loadFriends();
   }
   initIcons();
@@ -3668,8 +3700,8 @@ function renderCalendarDayDetails(cutsForSelectedDay) {
 
         <div class="flex items-start justify-between gap-2">
           <div class="flex items-center gap-2.5">
-            <div class="w-9 h-9 rounded-lg flex items-center justify-center text-white font-bold text-sm shadow shrink-0" style="background: linear-gradient(135deg, ${sub.color || '#4F46E5'}, #1E1B4B)">
-              ${sub.name.charAt(0).toUpperCase()}
+            <div class="w-9 h-9 rounded-xl flex items-center justify-center text-white font-bold text-sm shadow shrink-0" style="background: linear-gradient(135deg, ${sub.color || '#4F46E5'}22, ${sub.color || '#4F46E5'}44); border: 1px solid ${sub.color || '#4F46E5'}55">
+              ${getServiceOfficialIcon(sub.name, sub.color || '#4F46E5', 'w-4 h-4')}
             </div>
             <div>
               <h4 class="text-sm font-bold text-white leading-tight flex items-center gap-1.5">
@@ -3789,7 +3821,7 @@ function renderPlanSelector(serviceName, currentPrice = null, currentCycle = nul
 
   // Buscar servicio en PRESET_SERVICES de forma insensible a mayúsculas
   const service = PRESET_SERVICES.find(s => s.name.toLowerCase() === serviceName.toLowerCase().trim());
-  if (!service || !service.plans || service.plans.length <= 1) {
+  if (!service || !service.plans || (service.plans.length <= 1 && (!service.trialDays || service.trialDays <= 0))) {
     container.classList.add('hidden');
     chipsContainer.innerHTML = '';
     if (manualPricingContainer) manualPricingContainer.classList.remove('hidden');
@@ -3799,7 +3831,24 @@ function renderPlanSelector(serviceName, currentPrice = null, currentCycle = nul
   const baseCurr = state.baseCurrencyCode || 'USD';
   const baseSymbol = state.currency || '$';
 
-  chipsContainer.innerHTML = service.plans.map((plan, idx) => {
+  let chipsHtml = '';
+
+  // Si el servicio cuenta con prueba gratis, agregarla como opción directa en planes disponibles
+  if (service.trialDays && service.trialDays > 0) {
+    chipsHtml += `
+      <button type="button" class="m3-plan-chip border-rose-500/40 text-rose-200 hover:border-rose-400" 
+              data-is-trial="true" data-trial-days="${service.trialDays}" data-price="0.00" data-cycle="monthly" 
+              onclick="handleSelectPlanChip(this)">
+        <span class="text-xs font-bold leading-tight flex items-center gap-1">
+          <i data-lucide="timer" class="w-3.5 h-3.5 text-rose-400"></i>
+          Prueba Gratis (${service.trialDays} días)
+        </span>
+        <span class="text-[11px] opacity-90 font-mono mt-0.5 font-medium text-rose-300">$0.00 luego ${baseSymbol}${formatNumber(convertCurrency(service.plans[0].priceUsd, 'USD', baseCurr))}</span>
+      </button>
+    `;
+  }
+
+  chipsHtml += service.plans.map((plan, idx) => {
     const converted = convertCurrency(plan.priceUsd, 'USD', baseCurr);
     const cycleLabel = plan.cycle === 'annual' ? '/año' : (plan.cycle === 'weekly' ? '/sem' : '/mes');
     const priceStr = formatNumber(converted).replace(/,/g, '');
@@ -3807,17 +3856,19 @@ function renderPlanSelector(serviceName, currentPrice = null, currentCycle = nul
     // Comprobar si coincide con el precio o ciclo actual
     const isMatchingPrice = currentPrice !== null && Math.abs(parseFloat(currentPrice) - converted) < 0.05;
     const isMatchingCycle = currentCycle ? plan.cycle === currentCycle : true;
-    const isActive = (isMatchingPrice && isMatchingCycle) || (currentPrice === null && idx === 0);
+    const isActive = (isMatchingPrice && isMatchingCycle) || (currentPrice === null && idx === 0 && (!service.trialDays || service.trialDays <= 0));
 
     return `
-      <button type="button" class="m3-plan-chip ${isActive ? 'active' : ''}" data-plan-index="${idx}" data-price="${priceStr}" data-cycle="${plan.cycle || 'monthly'}" onclick="handleSelectPlanChip(this)">
+      <button type="button" class="m3-plan-chip ${isActive ? 'active' : ''}" data-is-trial="false" data-plan-index="${idx}" data-price="${priceStr}" data-cycle="${plan.cycle || 'monthly'}" onclick="handleSelectPlanChip(this)">
         <span class="text-xs font-bold leading-tight">${escapeHtml(plan.name)}</span>
         <span class="text-[11px] opacity-80 font-mono mt-0.5 font-medium">${baseSymbol}${priceStr} ${cycleLabel}</span>
       </button>
     `;
   }).join('');
 
+  chipsContainer.innerHTML = chipsHtml;
   container.classList.remove('hidden');
+  initIcons();
 
   // En suscripciones con planes preconfigurados, no es necesario ingresar manualmente precio/ciclo
   if (manualPricingContainer) {
@@ -3829,6 +3880,8 @@ function renderPlanSelector(serviceName, currentPrice = null, currentCycle = nul
 function handleSelectPlanChip(chipBtn) {
   const price = chipBtn.dataset.price;
   const cycle = chipBtn.dataset.cycle;
+  const isTrial = chipBtn.dataset.isTrial === 'true';
+  const trialDays = parseInt(chipBtn.dataset.trialDays) || 0;
 
   // Actualizar clases activas en los chips
   document.querySelectorAll('#subPlanChips .m3-plan-chip').forEach(c => c.classList.remove('active'));
@@ -3837,8 +3890,32 @@ function handleSelectPlanChip(chipBtn) {
   // Actualizar campos del formulario
   const priceInput = document.getElementById('subPrice');
   const cycleInput = document.getElementById('subBillingCycle');
+  const trialCb = document.getElementById('subIsTrial');
+  const trialContainer = document.getElementById('trialFieldsContainer');
+  const trialEndDateInput = document.getElementById('subTrialEndDate');
+  const nextBillingDateInput = document.getElementById('subNextBillingDate');
+
   if (priceInput) priceInput.value = price;
   if (cycleInput) cycleInput.value = cycle;
+
+  if (isTrial) {
+    if (trialCb) trialCb.checked = true;
+    if (trialContainer) trialContainer.classList.remove('hidden');
+    const trialEnd = new Date();
+    trialEnd.setDate(trialEnd.getDate() + trialDays);
+    const trialEndStr = trialEnd.toISOString().split('T')[0];
+    if (trialEndDateInput) trialEndDateInput.value = trialEndStr;
+    if (nextBillingDateInput) nextBillingDateInput.value = trialEndStr;
+  } else {
+    if (trialCb) trialCb.checked = false;
+    if (trialContainer) trialContainer.classList.add('hidden');
+    if (trialEndDateInput) trialEndDateInput.value = '';
+    const defDate = new Date();
+    defDate.setMonth(defDate.getMonth() + 1);
+    if (nextBillingDateInput && (!nextBillingDateInput.value || nextBillingDateInput.value === trialEndDateInput?.value)) {
+      nextBillingDateInput.value = defDate.toISOString().split('T')[0];
+    }
+  }
 
   // Disparar recálculo en vivo
   updateModalLiveCalculation();
@@ -3902,6 +3979,8 @@ function openCustomSubscription() {
 
   document.getElementById('trialFieldsContainer')?.classList.add('hidden');
   document.getElementById('sharedFieldsContainer')?.classList.add('hidden');
+  document.getElementById('subTrialSectionContainer')?.classList.remove('hidden');
+  document.getElementById('subCategoryContainer')?.classList.remove('hidden');
   populateSharedFriendsCheckboxes([]);
 
   // En suscripción personalizada: mostrar campos manuales de precio y ciclo
@@ -3926,6 +4005,8 @@ function openModal(sub = null) {
 
   document.getElementById('trialFieldsContainer')?.classList.add('hidden');
   document.getElementById('sharedFieldsContainer')?.classList.add('hidden');
+  document.getElementById('subTrialSectionContainer')?.classList.remove('hidden');
+  document.getElementById('subCategoryContainer')?.classList.remove('hidden');
 
   let selectedFriendIds = [];
 
@@ -4088,6 +4169,11 @@ function selectPresetService(serviceIndex) {
     if (trialCb) trialCb.checked = false;
     if (trialContainer) trialContainer.classList.add('hidden');
   }
+
+  // En plantillas, el selector de categoría y la casilla de prueba gratis se ocultan
+  // (la categoría se asigna automáticamente y la prueba se elige directamente en Planes disponibles)
+  document.getElementById('subTrialSectionContainer')?.classList.add('hidden');
+  document.getElementById('subCategoryContainer')?.classList.add('hidden');
 
   // Renderizar chips de planes dinámicos para este servicio (ocultando inputs manuales innecesarios)
   renderPlanSelector(service.name, convertedPrice, plan.cycle);
