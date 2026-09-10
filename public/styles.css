@@ -760,5 +760,26 @@ body.privacy-mode-active .privacy-blur {
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
 }
 
-
-
+/* Botón de peligro Google M3 */
+.m3-btn-danger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background-color: var(--md-sys-color-error-container);
+  color: var(--md-sys-color-on-error-container);
+  border: 1px solid rgba(242, 184, 181, 0.4);
+  font-family: 'Google Sans', 'Google Sans Text', sans-serif;
+  font-weight: 600;
+  border-radius: var(--md-shape-full);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+}
+.m3-btn-danger:hover {
+  background-color: #b3261e;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(179, 38, 30, 0.4);
+}
+.m3-btn-danger:active {
+  transform: scale(0.98);
+}

@@ -945,7 +945,15 @@ async function handleAuthSubmit(e) {
 }
 
 async function handleLogout() {
-  if (!confirm('¿Deseas cerrar tu sesión actual?')) return;
+  const confirmed = await showM3Confirm({
+    title: 'Cerrar Sesión',
+    message: '¿Estás seguro de que deseas cerrar tu sesión actual?',
+    icon: 'log-out',
+    type: 'warning',
+    confirmText: 'Cerrar Sesión',
+    cancelText: 'Permanecer conectado'
+  });
+  if (!confirmed) return;
   try {
     await fetch('/api/auth/logout', { method: 'POST', headers: getAuthHeaders() });
   } catch (e) {}
@@ -1173,12 +1181,30 @@ function initEventListeners() {
   });
   document.getElementById('commandPaletteInput')?.addEventListener('keydown', handleCommandPaletteKeydown);
 
-  // Atajo global Ctrl+K / Cmd+K
+  // Diálogo Emergente M3 (Alert / Confirm / Prompt)
+  document.getElementById('m3ConfirmBtnAccept')?.addEventListener('click', () => closeM3Dialog(true));
+  document.getElementById('m3ConfirmBtnCancel')?.addEventListener('click', () => closeM3Dialog(false));
+  document.getElementById('m3ConfirmModal')?.addEventListener('click', (e) => {
+    if (e.target.id === 'm3ConfirmModal') closeM3Dialog(false);
+  });
+  document.getElementById('m3PromptInput')?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      closeM3Dialog(true);
+    }
+  });
+
+  // Atajo global Ctrl+K / Cmd+K y Escape para Diálogos
   window.addEventListener('keydown', (e) => {
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
       e.preventDefault();
       toggleCommandPalette();
     } else if (e.key === 'Escape') {
+      const confirmModal = document.getElementById('m3ConfirmModal');
+      if (confirmModal && !confirmModal.classList.contains('hidden')) {
+        closeM3Dialog(false);
+        return;
+      }
       const palModal = document.getElementById('commandPaletteModal');
       if (palModal && !palModal.classList.contains('hidden')) {
         closeCommandPalette();
@@ -1186,6 +1212,7 @@ function initEventListeners() {
     }
   });
 }
+
 
 // ================= CARGA DE DATOS =================
 async function loadAllData() {
@@ -2149,7 +2176,15 @@ async function editFriend(id) {
 }
 
 async function deleteFriend(id, name) {
-  if (!confirm(`¿Deseas eliminar a "${name}" de tu lista de amigos?`)) return;
+  const confirmed = await showM3Confirm({
+    title: 'Eliminar Amigo',
+    message: `¿Deseas eliminar a "${name}" de tu lista de amigos?`,
+    icon: 'user-x',
+    type: 'danger',
+    confirmText: 'Eliminar',
+    cancelText: 'Cancelar'
+  });
+  if (!confirmed) return;
   try {
     const res = await fetch(`/api/friends/${id}`, { method: 'DELETE', headers: getAuthHeaders() });
     const result = await res.json();
@@ -2163,8 +2198,17 @@ async function deleteFriend(id, name) {
 }
 
 async function recordFriendPaymentPrompt(friendId, friendName, amount) {
-  const notes = prompt(`Registrar pago recibido de ${friendName}:`, `Cuota mensual saldada (${state.currency}${amount})`);
+  const notes = await showM3Prompt({
+    title: 'Registrar Pago Recibido',
+    message: `Registrar pago recibido de ${friendName}:`,
+    defaultValue: `Cuota mensual saldada (${state.currency}${amount})`,
+    placeholder: 'Notas sobre el pago...',
+    icon: 'badge-dollar-sign',
+    confirmText: 'Registrar Pago',
+    cancelText: 'Cancelar'
+  });
   if (notes === null) return;
+
 
   try {
     const res = await fetch('/api/friends/record-payment', {
@@ -3740,7 +3784,15 @@ async function editSubscription(id) {
 }
 
 async function deleteSubscription(id, name) {
-  if (!confirm(`¿Estás seguro de que deseas eliminar la suscripción a "${name}"?`)) return;
+  const confirmed = await showM3Confirm({
+    title: 'Eliminar Suscripción',
+    message: `¿Estás seguro de que deseas eliminar la suscripción a "${name}"?`,
+    icon: 'trash-2',
+    type: 'danger',
+    confirmText: 'Eliminar Suscripción',
+    cancelText: 'Cancelar'
+  });
+  if (!confirmed) return;
   try {
     const res = await fetch(`/api/subscriptions/${id}`, { method: 'DELETE', headers: getAuthHeaders() });
     const result = await res.json();
@@ -4045,7 +4097,15 @@ async function handleImportJson(e) {
 }
 
 async function resetDemoData() {
-  if (!confirm('¿Restablecer datos de demostración?')) return;
+  const confirmed = await showM3Confirm({
+    title: 'Restablecer Datos Demo',
+    message: '¿Estás seguro de que deseas restablecer los datos de demostración? Se recargarán las suscripciones de prueba.',
+    icon: 'refresh-cw',
+    type: 'warning',
+    confirmText: 'Restablecer',
+    cancelText: 'Cancelar'
+  });
+  if (!confirmed) return;
   try {
     const res = await fetch('/api/reset', { method: 'POST', headers: getAuthHeaders() });
     const result = await res.json();
@@ -4125,6 +4185,206 @@ function showToast(message, type = 'info') {
   toast.classList.remove('translate-y-20', 'opacity-0', 'pointer-events-none');
   setTimeout(() => toast.classList.add('translate-y-20', 'opacity-0', 'pointer-events-none'), 3500);
 }
+
+// ================= DIÁLOGOS EMERGENTES CON ESTILO GOOGLE M3 (CONFIRM, ALERT, PROMPT) =================
+let m3DialogResolver = null;
+
+function showM3Confirm({
+  title = '¿Estás seguro?',
+  message = '',
+  icon = 'help-circle',
+  type = 'primary', // 'primary', 'danger', 'warning', 'info'
+  confirmText = 'Aceptar',
+  cancelText = 'Cancelar'
+}) {
+  return new Promise((resolve) => {
+    const modal = document.getElementById('m3ConfirmModal');
+    const titleElem = document.getElementById('m3ConfirmTitle');
+    const msgElem = document.getElementById('m3ConfirmMessage');
+    const iconElem = document.getElementById('m3ConfirmIcon');
+    const iconContainer = document.getElementById('m3ConfirmIconContainer');
+    const btnAccept = document.getElementById('m3ConfirmBtnAccept');
+    const btnCancel = document.getElementById('m3ConfirmBtnCancel');
+    const promptContainer = document.getElementById('m3PromptInputContainer');
+
+    if (!modal) {
+      resolve(confirm(message || title));
+      return;
+    }
+
+    m3DialogResolver = resolve;
+
+    titleElem.textContent = title;
+    msgElem.textContent = message;
+    if (promptContainer) promptContainer.classList.add('hidden');
+
+    // Botones
+    btnAccept.textContent = confirmText;
+    btnCancel.textContent = cancelText;
+    btnCancel.classList.remove('hidden');
+
+    // Temas visuales según el tipo
+    let iconName = icon;
+    let iconClass = 'text-[#d0bcff]';
+    let containerBg = 'bg-[#d0bcff]/15';
+    let acceptBtnClass = 'm3-btn-filled';
+
+    if (type === 'danger') {
+      iconName = icon || 'alert-triangle';
+      iconClass = 'text-[#f2b8b5]';
+      containerBg = 'bg-[#8c1d18]/25 border border-[#f2b8b5]/30';
+      acceptBtnClass = 'm3-btn-danger';
+    } else if (type === 'warning') {
+      iconName = icon || 'alert-circle';
+      iconClass = 'text-[#f2c18d]';
+      containerBg = 'bg-[#643f14]/30 border border-[#f2c18d]/30';
+      acceptBtnClass = 'm3-btn-filled bg-[#f2c18d] text-[#482905] hover:bg-[#ffe0be]';
+    } else if (type === 'success') {
+      iconName = icon || 'check-circle-2';
+      iconClass = 'text-[#a8d5b5]';
+      containerBg = 'bg-[#2b5037]/30 border border-[#a8d5b5]/30';
+      acceptBtnClass = 'm3-btn-filled bg-[#a8d5b5] text-[#133821] hover:bg-[#c4ebd0]';
+    } else {
+      iconName = icon || 'help-circle';
+      iconClass = 'text-[#d0bcff]';
+      containerBg = 'bg-[#4f378b]/30 border border-[#d0bcff]/30';
+      acceptBtnClass = 'm3-btn-filled';
+    }
+
+    iconContainer.className = `w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 shadow-inner ${containerBg}`;
+    iconElem.innerHTML = `<i data-lucide="${iconName}" class="w-5 h-5 ${iconClass}"></i>`;
+    btnAccept.className = `text-xs py-2 px-5 font-semibold ${acceptBtnClass}`;
+
+    initIcons();
+    modal.classList.remove('hidden');
+    btnAccept.focus();
+  });
+}
+
+function showM3Alert({
+  title = 'Información',
+  message = '',
+  icon = 'info',
+  type = 'info',
+  confirmText = 'Entendido'
+}) {
+  return new Promise((resolve) => {
+    const modal = document.getElementById('m3ConfirmModal');
+    const titleElem = document.getElementById('m3ConfirmTitle');
+    const msgElem = document.getElementById('m3ConfirmMessage');
+    const iconElem = document.getElementById('m3ConfirmIcon');
+    const iconContainer = document.getElementById('m3ConfirmIconContainer');
+    const btnAccept = document.getElementById('m3ConfirmBtnAccept');
+    const btnCancel = document.getElementById('m3ConfirmBtnCancel');
+    const promptContainer = document.getElementById('m3PromptInputContainer');
+
+    if (!modal) {
+      alert(message || title);
+      resolve(true);
+      return;
+    }
+
+    m3DialogResolver = resolve;
+
+    titleElem.textContent = title;
+    msgElem.textContent = message;
+    if (promptContainer) promptContainer.classList.add('hidden');
+
+    btnAccept.textContent = confirmText;
+    btnCancel.classList.add('hidden'); // En alert solo hay botón de aceptar
+
+    let iconName = icon;
+    let iconClass = 'text-[#d0bcff]';
+    let containerBg = 'bg-[#4f378b]/30 border border-[#d0bcff]/30';
+    let acceptBtnClass = 'm3-btn-filled';
+
+    if (type === 'danger' || type === 'error') {
+      iconName = icon || 'alert-circle';
+      iconClass = 'text-[#f2b8b5]';
+      containerBg = 'bg-[#8c1d18]/25 border border-[#f2b8b5]/30';
+      acceptBtnClass = 'm3-btn-danger';
+    } else if (type === 'warning') {
+      iconName = icon || 'alert-triangle';
+      iconClass = 'text-[#f2c18d]';
+      containerBg = 'bg-[#643f14]/30 border border-[#f2c18d]/30';
+      acceptBtnClass = 'm3-btn-filled bg-[#f2c18d] text-[#482905]';
+    }
+
+    iconContainer.className = `w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 shadow-inner ${containerBg}`;
+    iconElem.innerHTML = `<i data-lucide="${iconName}" class="w-5 h-5 ${iconClass}"></i>`;
+    btnAccept.className = `text-xs py-2 px-5 font-semibold ${acceptBtnClass}`;
+
+    initIcons();
+    modal.classList.remove('hidden');
+    btnAccept.focus();
+  });
+}
+
+function showM3Prompt({
+  title = 'Ingresa el dato',
+  message = '',
+  defaultValue = '',
+  placeholder = '',
+  icon = 'edit-3',
+  confirmText = 'Aceptar',
+  cancelText = 'Cancelar'
+}) {
+  return new Promise((resolve) => {
+    const modal = document.getElementById('m3ConfirmModal');
+    const titleElem = document.getElementById('m3ConfirmTitle');
+    const msgElem = document.getElementById('m3ConfirmMessage');
+    const iconElem = document.getElementById('m3ConfirmIcon');
+    const iconContainer = document.getElementById('m3ConfirmIconContainer');
+    const btnAccept = document.getElementById('m3ConfirmBtnAccept');
+    const btnCancel = document.getElementById('m3ConfirmBtnCancel');
+    const promptContainer = document.getElementById('m3PromptInputContainer');
+    const promptInput = document.getElementById('m3PromptInput');
+
+    if (!modal || !promptContainer || !promptInput) {
+      resolve(prompt(message || title, defaultValue));
+      return;
+    }
+
+    m3DialogResolver = (val) => {
+      if (val === true) {
+        resolve(promptInput.value);
+      } else {
+        resolve(null);
+      }
+    };
+
+    titleElem.textContent = title;
+    msgElem.textContent = message;
+
+    promptContainer.classList.remove('hidden');
+    promptInput.value = defaultValue;
+    promptInput.placeholder = placeholder;
+
+    btnAccept.textContent = confirmText;
+    btnCancel.textContent = cancelText;
+    btnCancel.classList.remove('hidden');
+
+    iconContainer.className = 'w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 shadow-inner bg-[#4f378b]/30 border border-[#d0bcff]/30';
+    iconElem.innerHTML = `<i data-lucide="${icon}" class="w-5 h-5 text-[#d0bcff]"></i>`;
+    btnAccept.className = 'text-xs py-2 px-5 font-semibold m3-btn-filled';
+
+    initIcons();
+    modal.classList.remove('hidden');
+    promptInput.focus();
+    promptInput.select();
+  });
+}
+
+function closeM3Dialog(result) {
+  const modal = document.getElementById('m3ConfirmModal');
+  if (modal) modal.classList.add('hidden');
+  if (m3DialogResolver) {
+    const resolver = m3DialogResolver;
+    m3DialogResolver = null;
+    resolver(result);
+  }
+}
+
 
 // ================= FASE 1: MODO PRIVACIDAD (BLUR FINANCIERO) =================
 function initPrivacyMode() {
@@ -4354,11 +4614,19 @@ function executeCommandPaletteIndex(index) {
 }
 
 // ================= FASE 2: 1-CLICK WHATSAPP PAYMENT REMINDER =================
-function openWhatsAppReminderPrompt(phone, friendName, amount, subNames = '') {
+async function openWhatsAppReminderPrompt(phone, friendName, amount, subNames = '') {
   let targetPhone = phone ? phone.replace(/[^0-9]/g, '') : '';
 
   if (!targetPhone) {
-    const inputPhone = prompt(`Ingresa el número de WhatsApp con código de país para ${friendName} (ej: +18091234567):`, '');
+    const inputPhone = await showM3Prompt({
+      title: 'Recordatorio por WhatsApp',
+      message: `Ingresa el número de WhatsApp con código de país para ${friendName}:`,
+      defaultValue: '',
+      placeholder: '+18091234567',
+      icon: 'phone',
+      confirmText: 'Abrir WhatsApp',
+      cancelText: 'Cancelar'
+    });
     if (!inputPhone) return;
     targetPhone = inputPhone.replace(/[^0-9]/g, '');
   }
@@ -4550,4 +4818,8 @@ window.openWhatsAppReminderPrompt = openWhatsAppReminderPrompt;
 window.renderSmartFinancialInsights = renderSmartFinancialInsights;
 window.handleInsightAction = handleInsightAction;
 window.toggleManualPricingFields = toggleManualPricingFields;
+window.showM3Confirm = showM3Confirm;
+window.showM3Alert = showM3Alert;
+window.showM3Prompt = showM3Prompt;
+window.closeM3Dialog = closeM3Dialog;
 

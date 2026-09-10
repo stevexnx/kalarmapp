@@ -1882,6 +1882,37 @@
     <span id="toastMessage"></span>
   </div>
 
+  <!-- MODAL DIÁLOGO DE CONFIRMACIÓN Y ALERTA ESTILO GOOGLE M3 -->
+  <div id="m3ConfirmModal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-black/75 backdrop-blur-sm p-4 flex items-center justify-center transition-all duration-200">
+    <div class="relative w-full max-w-md m3-dialog p-6 space-y-4 animate-scale-up border border-[#49454f]/50 shadow-2xl">
+      <div class="flex items-start gap-3.5">
+        <div id="m3ConfirmIconContainer" class="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 shadow-inner">
+          <div id="m3ConfirmIcon"></div>
+        </div>
+        <div class="flex-1 min-w-0 pt-0.5">
+          <h3 id="m3ConfirmTitle" class="text-base font-bold text-white font-google-sans leading-tight">
+            Confirmación
+          </h3>
+          <p id="m3ConfirmMessage" class="text-xs text-[#cac4d0] mt-1.5 leading-relaxed break-words"></p>
+          
+          <!-- Input opcional para prompts personalizados -->
+          <div id="m3PromptInputContainer" class="hidden mt-3">
+            <input type="text" id="m3PromptInput" class="m3-text-field text-xs" placeholder="">
+          </div>
+        </div>
+      </div>
+
+      <div class="pt-3 border-t border-[#49454f]/40 flex items-center justify-end gap-2.5">
+        <button type="button" id="m3ConfirmBtnCancel" class="m3-btn-outline text-xs py-2 px-4 font-medium">
+          Cancelar
+        </button>
+        <button type="button" id="m3ConfirmBtnAccept" class="m3-btn-filled text-xs py-2 px-5 font-semibold">
+          Aceptar
+        </button>
+      </div>
+    </div>
+  </div>
+
   <script src="/app.js"></script>
 </body>
 </html>
