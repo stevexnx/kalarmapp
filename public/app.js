@@ -3857,10 +3857,14 @@ function updateSharedCalculation() {
     summaryMyShare.textContent = `${sym}${formatNumber(myShareVal)}`;
   }
   if (summaryFriendShare) {
-    let friendShare = autoShareNum;
-    if (isCustomOpen && parseFloat(myShareInput?.value) >= 0 && totalIntegrantes > 1) {
-      const remaining = Math.max(0, price - parseFloat(myShareInput.value));
-      friendShare = remaining / (totalIntegrantes - 1);
+    let friendShare = 0;
+    if (checkedCount > 0) {
+      if (isCustomOpen && parseFloat(myShareInput?.value) >= 0 && totalIntegrantes > 1) {
+        const remaining = Math.max(0, price - parseFloat(myShareInput.value));
+        friendShare = remaining / (totalIntegrantes - 1);
+      } else {
+        friendShare = autoShareNum;
+      }
     }
     summaryFriendShare.textContent = `${sym}${formatNumber(friendShare)}`;
   }
