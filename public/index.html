@@ -1396,42 +1396,51 @@
 
           <!-- Selector de Planes Dinámico (Fase 1) -->
           <div id="subPlanSelectorContainer" class="sm:col-span-3 hidden">
-            <label class="block text-[11px] font-semibold text-[#d0bcff] mb-1.5 flex items-center gap-1.5">
-              <i data-lucide="layers" class="w-3.5 h-3.5"></i>
-              <span>Planes disponibles (autocompleta precio y ciclo):</span>
-            </label>
+            <div class="flex items-center justify-between mb-1.5">
+              <label class="block text-[11px] font-semibold text-[#d0bcff] flex items-center gap-1.5">
+                <i data-lucide="layers" class="w-3.5 h-3.5"></i>
+                <span>Planes disponibles (autocompleta precio y ciclo):</span>
+              </label>
+              <button type="button" id="btnToggleManualPricing" class="text-[10px] text-[#cac4d0] hover:text-[#d0bcff] underline transition flex items-center gap-1">
+                <i data-lucide="edit-2" class="w-3 h-3"></i>
+                <span id="btnToggleManualPricingText">Editar precio/ciclo manual</span>
+              </button>
+            </div>
             <div id="subPlanChips" class="flex flex-wrap gap-1.5"></div>
           </div>
 
-          <div>
-            <label class="block text-xs font-medium text-[#cac4d0] mb-1" for="subPrice">Precio / Costo *</label>
-            <input type="number" id="subPrice" step="0.01" min="0" required placeholder="0.00"
-              class="m3-text-field font-mono">
-          </div>
+          <!-- Campos de Precio y Ciclo Manual (visibles por defecto en personalizadas, ocultos/plegables en presets con plan) -->
+          <div id="subManualPricingContainer" class="sm:col-span-3 grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div>
+              <label class="block text-xs font-medium text-[#cac4d0] mb-1" for="subPrice">Precio / Costo *</label>
+              <input type="number" id="subPrice" step="0.01" min="0" required placeholder="0.00"
+                class="m3-text-field font-mono">
+            </div>
 
-          <div>
-            <label class="block text-xs font-medium text-[#cac4d0] mb-1" for="subCurrency">Moneda</label>
-            <select id="subCurrency" class="m3-text-field cursor-pointer">
-              <option value="USD">USD ($)</option>
-              <option value="DOP">DOP (RD$)</option>
-              <option value="EUR">EUR (€)</option>
-              <option value="MXN">MXN ($)</option>
-              <option value="ARS">ARS ($)</option>
-              <option value="CLP">CLP ($)</option>
-              <option value="COP">COP ($)</option>
-              <option value="GBP">GBP (£)</option>
-            </select>
-          </div>
+            <div>
+              <label class="block text-xs font-medium text-[#cac4d0] mb-1" for="subCurrency">Moneda</label>
+              <select id="subCurrency" class="m3-text-field cursor-pointer">
+                <option value="USD">USD ($)</option>
+                <option value="DOP">DOP (RD$)</option>
+                <option value="EUR">EUR (€)</option>
+                <option value="MXN">MXN ($)</option>
+                <option value="ARS">ARS ($)</option>
+                <option value="CLP">CLP ($)</option>
+                <option value="COP">COP ($)</option>
+                <option value="GBP">GBP (£)</option>
+              </select>
+            </div>
 
-          <div>
-            <label class="block text-xs font-medium text-[#cac4d0] mb-1" for="subBillingCycle">Ciclo de Cobro *</label>
-            <select id="subBillingCycle" class="m3-text-field cursor-pointer">
-              <option value="monthly">Mensual (12/año)</option>
-              <option value="annual">Anual (1/año)</option>
-              <option value="weekly">Semanal (52/año)</option>
-              <option value="quarterly">Trimestral (4/año)</option>
-              <option value="biannual">Semestral (2/año)</option>
-            </select>
+            <div>
+              <label class="block text-xs font-medium text-[#cac4d0] mb-1" for="subBillingCycle">Ciclo de Cobro *</label>
+              <select id="subBillingCycle" class="m3-text-field cursor-pointer">
+                <option value="monthly">Mensual (12/año)</option>
+                <option value="annual">Anual (1/año)</option>
+                <option value="weekly">Semanal (52/año)</option>
+                <option value="quarterly">Trimestral (4/año)</option>
+                <option value="biannual">Semestral (2/año)</option>
+              </select>
+            </div>
           </div>
         </div>
 

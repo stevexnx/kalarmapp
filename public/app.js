@@ -71,6 +71,7 @@ const PRESET_SERVICES = [
     icon: 'netflix',
     url: 'https://www.netflix.com',
     defaultPlan: 'Estándar',
+    trialDays: 0,
     plans: [
       { name: 'Estándar con anuncios', priceUsd: 6.99, cycle: 'monthly' },
       { name: 'Estándar (1080p)', priceUsd: 15.49, cycle: 'monthly' },
@@ -84,6 +85,7 @@ const PRESET_SERVICES = [
     icon: 'disneyplus',
     url: 'https://www.disneyplus.com',
     defaultPlan: 'Estándar',
+    trialDays: 0,
     plans: [
       { name: 'Estándar con anuncios', priceUsd: 9.99, cycle: 'monthly' },
       { name: 'Estándar sin anuncios', priceUsd: 15.99, cycle: 'monthly' },
@@ -98,6 +100,7 @@ const PRESET_SERVICES = [
     icon: 'amazonprime',
     url: 'https://www.amazon.com/prime',
     defaultPlan: 'Mensual',
+    trialDays: 30,
     plans: [
       { name: 'Mensual', priceUsd: 14.99, cycle: 'monthly' },
       { name: 'Anual', priceUsd: 139.00, cycle: 'annual' }
@@ -110,6 +113,7 @@ const PRESET_SERVICES = [
     icon: 'max',
     url: 'https://www.max.com',
     defaultPlan: 'Estándar',
+    trialDays: 7,
     plans: [
       { name: 'Básico con anuncios', priceUsd: 9.99, cycle: 'monthly' },
       { name: 'Estándar Full HD', priceUsd: 16.99, cycle: 'monthly' },
@@ -123,6 +127,7 @@ const PRESET_SERVICES = [
     icon: 'youtube',
     url: 'https://www.youtube.com/premium',
     defaultPlan: 'Individual',
+    trialDays: 30,
     plans: [
       { name: 'Individual', priceUsd: 13.99, cycle: 'monthly' },
       { name: 'Familiar (hasta 5)', priceUsd: 22.99, cycle: 'monthly' },
@@ -136,6 +141,7 @@ const PRESET_SERVICES = [
     icon: 'appletv',
     url: 'https://tv.apple.com',
     defaultPlan: 'Mensual',
+    trialDays: 7,
     plans: [
       { name: 'Mensual', priceUsd: 9.99, cycle: 'monthly' },
       { name: 'Anual', priceUsd: 99.00, cycle: 'annual' }
@@ -148,6 +154,7 @@ const PRESET_SERVICES = [
     icon: 'paramountplus',
     url: 'https://www.paramountplus.com',
     defaultPlan: 'Estándar',
+    trialDays: 7,
     plans: [
       { name: 'Essential', priceUsd: 7.99, cycle: 'monthly' },
       { name: 'Con Showtime', priceUsd: 12.99, cycle: 'monthly' }
@@ -160,6 +167,7 @@ const PRESET_SERVICES = [
     icon: 'crunchyroll',
     url: 'https://www.crunchyroll.com',
     defaultPlan: 'Fan',
+    trialDays: 14,
     plans: [
       { name: 'Fan', priceUsd: 7.99, cycle: 'monthly' },
       { name: 'Mega Fan', priceUsd: 11.99, cycle: 'monthly' },
@@ -175,6 +183,7 @@ const PRESET_SERVICES = [
     icon: 'spotify',
     url: 'https://www.spotify.com',
     defaultPlan: 'Individual',
+    trialDays: 30,
     plans: [
       { name: 'Individual', priceUsd: 11.99, cycle: 'monthly' },
       { name: 'Duo (2 cuentas)', priceUsd: 16.99, cycle: 'monthly' },
@@ -189,6 +198,7 @@ const PRESET_SERVICES = [
     icon: 'applemusic',
     url: 'https://music.apple.com',
     defaultPlan: 'Individual',
+    trialDays: 30,
     plans: [
       { name: 'Individual', priceUsd: 10.99, cycle: 'monthly' },
       { name: 'Familiar', priceUsd: 16.99, cycle: 'monthly' },
@@ -202,6 +212,7 @@ const PRESET_SERVICES = [
     icon: 'youtubemusic',
     url: 'https://music.youtube.com',
     defaultPlan: 'Individual',
+    trialDays: 30,
     plans: [
       { name: 'Individual', priceUsd: 10.99, cycle: 'monthly' },
       { name: 'Familiar', priceUsd: 16.99, cycle: 'monthly' }
@@ -216,6 +227,7 @@ const PRESET_SERVICES = [
     icon: 'openai',
     url: 'https://chatgpt.com',
     defaultPlan: 'Plus',
+    trialDays: 0,
     plans: [
       { name: 'Plus (GPT-4o & o1)', priceUsd: 20.00, cycle: 'monthly' },
       { name: 'Pro (o1 Pro ilimitado)', priceUsd: 200.00, cycle: 'monthly' }
@@ -228,6 +240,7 @@ const PRESET_SERVICES = [
     icon: 'anthropic',
     url: 'https://claude.ai',
     defaultPlan: 'Pro',
+    trialDays: 0,
     plans: [
       { name: 'Pro (Claude 3.5 Sonnet)', priceUsd: 20.00, cycle: 'monthly' }
     ]
@@ -239,6 +252,7 @@ const PRESET_SERVICES = [
     icon: 'midjourney',
     url: 'https://www.midjourney.com',
     defaultPlan: 'Estándar',
+    trialDays: 0,
     plans: [
       { name: 'Básico', priceUsd: 10.00, cycle: 'monthly' },
       { name: 'Estándar', priceUsd: 30.00, cycle: 'monthly' },
@@ -252,6 +266,7 @@ const PRESET_SERVICES = [
     icon: 'github',
     url: 'https://github.com/features/copilot',
     defaultPlan: 'Individual',
+    trialDays: 30,
     plans: [
       { name: 'Individual', priceUsd: 10.00, cycle: 'monthly' },
       { name: 'Individual Anual', priceUsd: 100.00, cycle: 'annual' }
@@ -264,6 +279,7 @@ const PRESET_SERVICES = [
     icon: 'microsoft',
     url: 'https://www.microsoft.com/microsoft-365',
     defaultPlan: 'Personal',
+    trialDays: 30,
     plans: [
       { name: 'Personal Mensual', priceUsd: 6.99, cycle: 'monthly' },
       { name: 'Personal Anual', priceUsd: 69.99, cycle: 'annual' },
@@ -278,6 +294,7 @@ const PRESET_SERVICES = [
     icon: 'notion',
     url: 'https://www.notion.so',
     defaultPlan: 'Plus Mensual',
+    trialDays: 0,
     plans: [
       { name: 'Plus Mensual', priceUsd: 10.00, cycle: 'monthly' },
       { name: 'Plus Anual', priceUsd: 96.00, cycle: 'annual' }
@@ -292,6 +309,7 @@ const PRESET_SERVICES = [
     icon: 'xbox',
     url: 'https://www.xbox.com/game-pass',
     defaultPlan: 'Ultimate',
+    trialDays: 14,
     plans: [
       { name: 'Core (Consola)', priceUsd: 9.99, cycle: 'monthly' },
       { name: 'PC Game Pass', priceUsd: 11.99, cycle: 'monthly' },
@@ -305,6 +323,7 @@ const PRESET_SERVICES = [
     icon: 'playstation',
     url: 'https://www.playstation.com/ps-plus',
     defaultPlan: 'Extra',
+    trialDays: 7,
     plans: [
       { name: 'Essential', priceUsd: 9.99, cycle: 'monthly' },
       { name: 'Extra (Catálogo juegos)', priceUsd: 14.99, cycle: 'monthly' },
@@ -321,6 +340,7 @@ const PRESET_SERVICES = [
     icon: 'nintendo',
     url: 'https://www.nintendo.com/switch-online',
     defaultPlan: 'Individual Anual',
+    trialDays: 7,
     plans: [
       { name: 'Individual Anual', priceUsd: 19.99, cycle: 'annual' },
       { name: 'Individual + Paquete Expansión', priceUsd: 49.99, cycle: 'annual' },
@@ -336,6 +356,7 @@ const PRESET_SERVICES = [
     icon: 'google',
     url: 'https://one.google.com',
     defaultPlan: '100 GB',
+    trialDays: 0,
     plans: [
       { name: 'Básico (100 GB)', priceUsd: 1.99, cycle: 'monthly' },
       { name: 'Estándar (200 GB)', priceUsd: 2.99, cycle: 'monthly' },
@@ -350,6 +371,7 @@ const PRESET_SERVICES = [
     icon: 'apple',
     url: 'https://www.apple.com/icloud',
     defaultPlan: '50 GB',
+    trialDays: 0,
     plans: [
       { name: '50 GB', priceUsd: 0.99, cycle: 'monthly' },
       { name: '200 GB', priceUsd: 2.99, cycle: 'monthly' },
@@ -363,6 +385,7 @@ const PRESET_SERVICES = [
     icon: 'dropbox',
     url: 'https://www.dropbox.com',
     defaultPlan: 'Plus 2TB',
+    trialDays: 30,
     plans: [
       { name: 'Plus Mensual (2 TB)', priceUsd: 11.99, cycle: 'monthly' },
       { name: 'Plus Anual (2 TB)', priceUsd: 119.88, cycle: 'annual' }
@@ -375,6 +398,7 @@ const PRESET_SERVICES = [
     icon: '1password',
     url: 'https://1password.com',
     defaultPlan: 'Individual',
+    trialDays: 14,
     plans: [
       { name: 'Individual Anual', priceUsd: 35.88, cycle: 'annual' },
       { name: 'Familiar Anual (5 pers)', priceUsd: 59.88, cycle: 'annual' }
@@ -1132,6 +1156,9 @@ function initEventListeners() {
   document.getElementById('btnClosePaymentModal')?.addEventListener('click', closePaymentModal);
   document.getElementById('btnCancelPaymentModal')?.addEventListener('click', closePaymentModal);
   document.getElementById('paymentForm')?.addEventListener('submit', handlePaymentSubmit);
+
+  // Toggle de precio/ciclo manual en selector de planes
+  document.getElementById('btnToggleManualPricing')?.addEventListener('click', toggleManualPricingFields);
 
   // Fase 1: Modo Privacidad
   document.getElementById('btnTogglePrivacyMode')?.addEventListener('click', togglePrivacyMode);
@@ -3263,15 +3290,19 @@ function showPresetsStep() {
   initIcons();
 }
 
-// ================= SELECTOR DE PLANES DINÁMICO (FASE 1) =================
+// ================= SELECTOR DE PLANES DINÁMICO & CONTROL INTELIGENTE DE CAMPOS =================
 function renderPlanSelector(serviceName, currentPrice = null, currentCycle = null) {
   const container = document.getElementById('subPlanSelectorContainer');
   const chipsContainer = document.getElementById('subPlanChips');
+  const manualPricingContainer = document.getElementById('subManualPricingContainer');
+  const btnToggleText = document.getElementById('btnToggleManualPricingText');
   if (!container || !chipsContainer) return;
 
   if (!serviceName) {
     container.classList.add('hidden');
     chipsContainer.innerHTML = '';
+    // En personalizadas, los campos manuales siempre se muestran
+    if (manualPricingContainer) manualPricingContainer.classList.remove('hidden');
     return;
   }
 
@@ -3280,6 +3311,7 @@ function renderPlanSelector(serviceName, currentPrice = null, currentCycle = nul
   if (!service || !service.plans || service.plans.length <= 1) {
     container.classList.add('hidden');
     chipsContainer.innerHTML = '';
+    if (manualPricingContainer) manualPricingContainer.classList.remove('hidden');
     return;
   }
 
@@ -3305,6 +3337,12 @@ function renderPlanSelector(serviceName, currentPrice = null, currentCycle = nul
   }).join('');
 
   container.classList.remove('hidden');
+
+  // En suscripciones con planes preconfigurados, no es necesario ingresar manualmente precio/ciclo
+  if (manualPricingContainer) {
+    manualPricingContainer.classList.add('hidden');
+    if (btnToggleText) btnToggleText.textContent = 'Ajustar precio/ciclo manualmente';
+  }
 }
 
 function handleSelectPlanChip(chipBtn) {
@@ -3323,6 +3361,21 @@ function handleSelectPlanChip(chipBtn) {
 
   // Disparar recálculo en vivo
   updateModalLiveCalculation();
+}
+
+function toggleManualPricingFields() {
+  const container = document.getElementById('subManualPricingContainer');
+  const btnText = document.getElementById('btnToggleManualPricingText');
+  if (!container) return;
+
+  const isHidden = container.classList.contains('hidden');
+  if (isHidden) {
+    container.classList.remove('hidden');
+    if (btnText) btnText.textContent = 'Ocultar ajuste manual';
+  } else {
+    container.classList.add('hidden');
+    if (btnText) btnText.textContent = 'Ajustar precio/ciclo manualmente';
+  }
 }
 
 function showDetailsForm(titleText = 'Detalles de Suscripción', isEdit = false) {
@@ -3370,7 +3423,9 @@ function openCustomSubscription() {
   document.getElementById('sharedFieldsContainer')?.classList.add('hidden');
   populateSharedFriendsCheckboxes([]);
 
-  // Ocultar selector de planes en personalizada
+  // En suscripción personalizada: mostrar campos manuales de precio y ciclo
+  const manualPricingContainer = document.getElementById('subManualPricingContainer');
+  if (manualPricingContainer) manualPricingContainer.classList.remove('hidden');
   renderPlanSelector('');
 
   showDetailsForm('Suscripción Personalizada', false);
@@ -3498,6 +3553,7 @@ function renderPresetCatalog(filterCategory = 'all', searchQuery = '') {
         <div class="overflow-hidden flex-1 min-w-0">
           <div class="text-xs font-bold text-white truncate flex items-center gap-1 font-google-sans">
             <span>${escapeHtml(service.name)}</span>
+            ${service.trialDays > 0 ? `<span class="text-[9px] font-bold px-1.5 py-0.2 rounded-full bg-[#f2b8b5]/20 text-[#f2b8b5] border border-[#f2b8b5]/40">${service.trialDays}d gratis</span>` : ''}
           </div>
           <div class="text-[11px] font-mono font-semibold text-[#d0bcff] truncate">
             ${baseSymbol}${formatNumber(converted)}${cycleLabel}
@@ -3530,7 +3586,29 @@ function selectPresetService(serviceIndex) {
     document.getElementById('subUrl').value = service.url;
   }
 
-  // Renderizar chips de planes dinámicos para este servicio
+  // Auto-configuración de prueba gratuita si el servicio cuenta con periodo de prueba
+  const trialCb = document.getElementById('subIsTrial');
+  const trialContainer = document.getElementById('trialFieldsContainer');
+  const trialEndDateInput = document.getElementById('subTrialEndDate');
+  const nextBillingDateInput = document.getElementById('subNextBillingDate');
+
+  if (service.trialDays && service.trialDays > 0) {
+    if (trialCb) trialCb.checked = true;
+    if (trialContainer) trialContainer.classList.remove('hidden');
+
+    const trialEnd = new Date();
+    trialEnd.setDate(trialEnd.getDate() + service.trialDays);
+    const trialEndStr = trialEnd.toISOString().split('T')[0];
+
+    if (trialEndDateInput) trialEndDateInput.value = trialEndStr;
+    // La fecha del primer cobro recurrente inicia cuando vence el periodo de prueba gratis
+    if (nextBillingDateInput) nextBillingDateInput.value = trialEndStr;
+  } else {
+    if (trialCb) trialCb.checked = false;
+    if (trialContainer) trialContainer.classList.add('hidden');
+  }
+
+  // Renderizar chips de planes dinámicos para este servicio (ocultando inputs manuales innecesarios)
   renderPlanSelector(service.name, convertedPrice, plan.cycle);
 
   showDetailsForm(service.name, false);
@@ -4471,4 +4549,5 @@ window.executeCommandPaletteIndex = executeCommandPaletteIndex;
 window.openWhatsAppReminderPrompt = openWhatsAppReminderPrompt;
 window.renderSmartFinancialInsights = renderSmartFinancialInsights;
 window.handleInsightAction = handleInsightAction;
+window.toggleManualPricingFields = toggleManualPricingFields;
 
