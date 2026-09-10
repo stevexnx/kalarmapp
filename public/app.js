@@ -984,9 +984,14 @@ async function handleLogout() {
     cancelText: 'Permanecer conectado'
   });
   if (!confirmed) return;
+
   try {
     await fetch('/api/auth/logout', { method: 'POST', headers: getAuthHeaders() });
-  } catch (e) {}
+  } catch (e) {
+    console.warn('Logout request error:', e);
+  }
+
+  // Limpiar tokens y almacenamiento
   state.token = '';
   state.user = null;
   localStorage.removeItem('subtracker_token');
@@ -996,6 +1001,8 @@ async function handleLogout() {
   // Limpiar modales abiertos
   document.getElementById('profileModal')?.classList.add('hidden');
   document.getElementById('settingsModal')?.classList.add('hidden');
+  document.getElementById('subscriptionModal')?.classList.add('hidden');
+  document.getElementById('authModal')?.classList.add('hidden');
 
   // Vaciar datos en memoria y re-renderizar interfaz limpia
   state.subscriptions = [];
@@ -1009,7 +1016,7 @@ async function handleLogout() {
   renderKPIs();
 
   showToast('Has cerrado sesión exitosamente', 'info');
-  openAuthModal('welcome');
+  showWelcomeLanding();
 }
 
 // ================= EVENT LISTENERS =================

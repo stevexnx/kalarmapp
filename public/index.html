@@ -175,15 +175,18 @@
             </button>
 
             <!-- Perfil Activo -->
-            <div id="userLoggedInMenu" class="hidden flex items-center">
+            <div id="userLoggedInMenu" class="hidden flex items-center gap-1">
               <button id="btnOpenProfileModal" type="button" class="flex items-center gap-2 p-1 rounded-full hover:bg-[#211f26] transition cursor-pointer text-left group" title="Ver perfil y cuenta">
                 <div id="userAvatarBadge" class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-[#381e72] shadow ring-2 ring-[#d0bcff]/40 shrink-0 group-hover:ring-[#d0bcff] transition" style="background-color: #d0bcff">
                   -
                 </div>
-                <div class="hidden sm:block text-left leading-tight pr-2">
+                <div class="hidden sm:block text-left leading-tight pr-1">
                   <div id="userDisplayNameText" class="text-xs font-bold text-[#e6e0e9] group-hover:text-[#d0bcff] transition">Usuario</div>
                   <div id="userUsernameText" class="text-[10px] text-[#cac4d0]">@usuario</div>
                 </div>
+              </button>
+              <button id="btnLogout" type="button" class="p-2 rounded-full text-[#cac4d0] hover:text-[#f2b8b5] hover:bg-[#8c1d18]/20 transition cursor-pointer" title="Cerrar Sesión">
+                <i data-lucide="log-out" class="w-4 h-4"></i>
               </button>
             </div>
           </div>
@@ -2082,7 +2085,7 @@
   </div>
 
   <!-- MODAL DIÁLOGO DE CONFIRMACIÓN Y ALERTA ESTILO GOOGLE M3 -->
-  <div id="m3ConfirmModal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-black/75 backdrop-blur-sm p-4 flex items-center justify-center transition-all duration-200">
+  <div id="m3ConfirmModal" class="hidden fixed inset-0 z-[70] overflow-y-auto bg-black/80 backdrop-blur-sm p-4 flex items-center justify-center transition-all duration-200">
     <div class="relative w-full max-w-md m3-dialog p-6 space-y-4 animate-scale-up border border-[#49454f]/50 shadow-2xl">
       <div class="flex items-start gap-3.5">
         <div id="m3ConfirmIconContainer" class="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 shadow-inner">
