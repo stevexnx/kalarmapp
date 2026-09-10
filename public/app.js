@@ -960,8 +960,8 @@ function initEventListeners() {
   document.getElementById('railBtnCalendar')?.addEventListener('click', () => switchTab('calendar'));
   document.getElementById('railBtnPayments')?.addEventListener('click', () => switchTab('payments'));
   document.getElementById('railBtnFriends')?.addEventListener('click', () => switchTab('friends'));
-  document.getElementById('railBtnSettings')?.addEventListener('click', openSettingsModal);
-  document.getElementById('railBtnBackup')?.addEventListener('click', openBackupModal);
+  document.getElementById('railBtnSettings')?.addEventListener('click', () => openSettingsModal('general'));
+  document.getElementById('railBtnBackup')?.addEventListener('click', () => openSettingsModal('backups'));
 
   // Navegación de Calendario
   document.getElementById('btnPrevMonth')?.addEventListener('click', () => changeCalendarMonth(-1));
@@ -1108,13 +1108,23 @@ function initEventListeners() {
     });
   });
 
-  // Ajustes
-  document.getElementById('btnOpenSettingsModal')?.addEventListener('click', openSettingsModal);
-  document.getElementById('btnQuickEditBudget')?.addEventListener('click', openSettingsModal);
+  // Ajustes y Configuración (Multi-pestaña)
+  document.getElementById('btnOpenSettingsModal')?.addEventListener('click', () => openSettingsModal('general'));
+  document.getElementById('btnQuickEditBudget')?.addEventListener('click', () => openSettingsModal('general'));
   document.getElementById('btnCloseSettingsModal')?.addEventListener('click', closeSettingsModal);
-  document.getElementById('btnCancelSettings')?.addEventListener('click', closeSettingsModal);
-  document.getElementById('settingsForm')?.addEventListener('submit', handleSettingsSubmit);
+  document.getElementById('tabSettingsGeneral')?.addEventListener('click', () => switchSettingsTab('general'));
+  document.getElementById('tabSettingsBackups')?.addEventListener('click', () => switchSettingsTab('backups'));
+  document.getElementById('tabSettingsNotifications')?.addEventListener('click', () => switchSettingsTab('notifications'));
+  document.getElementById('settingsGeneralForm')?.addEventListener('submit', handleSettingsGeneralSubmit);
+  document.getElementById('settingsNotificationsForm')?.addEventListener('submit', handleSettingsNotificationsSubmit);
   document.getElementById('btnTestWebhook')?.addEventListener('click', testWebhook);
+  document.getElementById('btnTestBrowserNotifications')?.addEventListener('click', requestNotificationPermission);
+
+  // Controles de Respaldos dentro de Ajustes
+  document.getElementById('btnExportJsonSettings')?.addEventListener('click', exportJson);
+  document.getElementById('btnExportCsvSettings')?.addEventListener('click', exportCsv);
+  document.getElementById('importFileInputSettings')?.addEventListener('change', handleImportJson);
+  document.getElementById('btnResetDemoSettings')?.addEventListener('click', resetDemoData);
 
   // Pagos Manuales
   document.getElementById('btnOpenManualPaymentModal')?.addEventListener('click', openManualPaymentModal);
@@ -1122,8 +1132,9 @@ function initEventListeners() {
   document.getElementById('btnCancelPaymentModal')?.addEventListener('click', closePaymentModal);
   document.getElementById('paymentForm')?.addEventListener('submit', handlePaymentSubmit);
 
-  // Respaldos
-  document.getElementById('btnOpenBackupModal')?.addEventListener('click', openBackupModal);
+  // Compatibilidad con Respaldos y Calendario desde Rail / TopBar
+  document.getElementById('railBtnBackup')?.addEventListener('click', () => openSettingsModal('backups'));
+  document.getElementById('btnOpenBackupModal')?.addEventListener('click', () => openSettingsModal('backups'));
   document.getElementById('btnCloseBackupModal')?.addEventListener('click', closeBackupModal);
   document.getElementById('btnExportJson')?.addEventListener('click', exportJson);
   document.getElementById('btnExportCsv')?.addEventListener('click', exportCsv);
@@ -3589,15 +3600,44 @@ async function markAsPaidAndAdvance(id) {
   }
 }
 
-// ================= MODALES AUXILIARES =================
-function openSettingsModal() {
+// ================= MODALES AUXILIARES: AJUSTES =================
+function switchSettingsTab(tabName) {
+  const btnGen = document.getElementById('tabSettingsGeneral');
+  const btnBkp = document.getElementById('tabSettingsBackups');
+  const btnNot = document.getElementById('tabSettingsNotifications');
+
+  const contentGen = document.getElementById('settingsTabContentGeneral');
+  const contentBkp = document.getElementById('settingsTabContentBackups');
+  const contentNot = document.getElementById('settingsTabContentNotifications');
+
+  // Reset tab button states
+  const inactiveClass = 'flex-1 min-w-[120px] py-2.5 px-3 rounded-xl text-[#cac4d0] hover:text-white transition flex items-center justify-center gap-2';
+  const activeClass = 'flex-1 min-w-[120px] py-2.5 px-3 rounded-xl bg-[#d0bcff] text-[#381e72] font-semibold transition flex items-center justify-center gap-2 shadow-sm';
+
+  if (btnGen) btnGen.className = (tabName === 'general') ? activeClass : inactiveClass;
+  if (btnBkp) btnBkp.className = (tabName === 'backups') ? activeClass : inactiveClass;
+  if (btnNot) btnNot.className = (tabName === 'notifications') ? activeClass : inactiveClass;
+
+  contentGen?.classList.toggle('hidden', tabName !== 'general');
+  contentBkp?.classList.toggle('hidden', tabName !== 'backups');
+  contentNot?.classList.toggle('hidden', tabName !== 'notifications');
+
+  initIcons();
+}
+
+function openSettingsModal(defaultTab = 'general') {
   const modal = document.getElementById('settingsModal');
   if (state.settings) {
-    document.getElementById('settingBudget').value = state.settings.monthly_budget || 150;
-    document.getElementById('settingBaseCurrency').value = state.settings.base_currency || 'USD';
-    document.getElementById('settingDiscordWebhook').value = state.settings.discord_webhook || '';
+    const budgetInput = document.getElementById('settingBudget');
+    const currencySelect = document.getElementById('settingBaseCurrency');
+    const webhookInput = document.getElementById('settingDiscordWebhook');
+
+    if (budgetInput) budgetInput.value = state.settings.monthly_budget || 150;
+    if (currencySelect) currencySelect.value = state.settings.base_currency || 'USD';
+    if (webhookInput) webhookInput.value = state.settings.discord_webhook || '';
   }
   renderUserProfile();
+  switchSettingsTab(defaultTab);
   modal?.classList.remove('hidden');
   initIcons();
 }
@@ -3606,12 +3646,11 @@ function closeSettingsModal() {
   document.getElementById('settingsModal')?.classList.add('hidden');
 }
 
-async function handleSettingsSubmit(e) {
+async function handleSettingsGeneralSubmit(e) {
   e.preventDefault();
   const data = {
     monthly_budget: parseFloat(document.getElementById('settingBudget').value) || 150,
-    base_currency: document.getElementById('settingBaseCurrency').value,
-    discord_webhook: document.getElementById('settingDiscordWebhook').value.trim()
+    base_currency: document.getElementById('settingBaseCurrency').value
   };
 
   try {
@@ -3622,12 +3661,42 @@ async function handleSettingsSubmit(e) {
     });
     const result = await res.json();
     if (result.success) {
-      showToast('Configuraciones guardadas exitosamente', 'success');
+      showToast('Ajustes generales guardados exitosamente', 'success');
       closeSettingsModal();
       await loadAllData();
+    } else {
+      showToast(result.error || 'Error al guardar ajustes', 'error');
     }
   } catch (err) {
     console.error('Error guardando ajustes:', err);
+    showToast(`Error de conexión: ${err.message || err}`, 'error');
+  }
+}
+
+async function handleSettingsNotificationsSubmit(e) {
+  e.preventDefault();
+  const webhookUrl = document.getElementById('settingDiscordWebhook')?.value.trim() || '';
+  const data = {
+    discord_webhook: webhookUrl
+  };
+
+  try {
+    const res = await fetch('/api/settings', {
+      method: 'PUT',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(data)
+    });
+    const result = await res.json();
+    if (result.success) {
+      showToast('Configuración de notificaciones guardada', 'success');
+      closeSettingsModal();
+      await loadSettings();
+    } else {
+      showToast(result.error || 'Error al guardar notificaciones', 'error');
+    }
+  } catch (err) {
+    console.error('Error guardando notificaciones:', err);
+    showToast(`Error de conexión: ${err.message || err}`, 'error');
   }
 }
 

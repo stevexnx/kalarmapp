@@ -1570,68 +1570,225 @@
     </div>
   </div>
 
-  <!-- ================= MODAL: AJUSTES & NOTIFICACIONES ================= -->
-  <div id="settingsModal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-black/70 backdrop-blur-sm p-4 flex items-center justify-center">
-    <div class="relative w-full max-w-lg m3-dialog p-6 space-y-5 animate-scale-up">
-      <div class="flex items-center justify-between border-b border-[#49454f]/40 pb-3">
-        <h3 class="text-base font-bold text-white flex items-center gap-2 font-google-sans">
-          <i data-lucide="settings" class="w-5 h-5 text-[#d0bcff]"></i> Ajustes y Presupuesto
-        </h3>
-        <button id="btnCloseSettingsModal" class="text-[#cac4d0] hover:text-white p-1 rounded-full hover:bg-[#2b2930]">
+  <!-- ================= MODAL: AJUSTES (GENERAL, RESPALDOS & CALENDARIO, NOTIFICACIONES) ================= -->
+  <div id="settingsModal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-black/75 backdrop-blur-md p-4 flex items-center justify-center transition-all duration-300">
+    <div class="relative w-full max-w-2xl m3-dialog p-6 sm:p-7 space-y-5 animate-scale-up border border-[#49454f]/50 shadow-2xl">
+      <!-- Encabezado del Modal -->
+      <div class="flex items-center justify-between border-b border-[#49454f]/40 pb-3.5">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-2xl bg-[#d0bcff]/15 text-[#d0bcff] flex items-center justify-center shadow-inner">
+            <i data-lucide="sliders-horizontal" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="text-base sm:text-lg font-bold text-white leading-tight font-google-sans">
+              Centro de Ajustes y Configuración
+            </h3>
+            <p class="text-xs text-[#cac4d0]">
+              Personaliza tu presupuesto, copias de seguridad, calendario y notificaciones
+            </p>
+          </div>
+        </div>
+        <button id="btnCloseSettingsModal" class="text-[#cac4d0] hover:text-white p-2 rounded-full hover:bg-[#2b2930] transition">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
 
-      <!-- Tarjeta de Cuenta Activa y Cerrar Sesión en Ajustes -->
+      <!-- Tarjeta de Usuario Activo en Ajustes -->
       <div id="settingsUserCard" class="hidden p-3.5 bg-[#1d1b20] border border-[#49454f]/40 rounded-2xl flex items-center justify-between">
-        <div class="flex items-center gap-2.5">
-          <div id="settingsUserAvatar" class="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold text-[#381e72] shadow ring-2 ring-[#d0bcff]/40 shrink-0" style="background-color: #d0bcff">
+        <div class="flex items-center gap-3">
+          <div id="settingsUserAvatar" class="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-[#381e72] shadow ring-2 ring-[#d0bcff]/40 shrink-0" style="background-color: #d0bcff">
             -
           </div>
           <div>
-            <div id="settingsUserDisplayName" class="text-xs font-bold text-white font-google-sans">Usuario</div>
-            <div id="settingsUserUsername" class="text-[11px] text-[#cac4d0]">@usuario</div>
+            <div id="settingsUserDisplayName" class="text-xs sm:text-sm font-bold text-white font-google-sans">Usuario</div>
+            <div id="settingsUserUsername" class="text-[11px] text-[#d0bcff] font-mono">@usuario</div>
           </div>
         </div>
-        <button type="button" id="btnLogoutSettings" class="m3-btn-outline text-rose-300 border-rose-500/40 hover:bg-rose-500/10 text-xs py-1.5 px-3">
+        <button type="button" id="btnLogoutSettings" class="m3-btn-outline text-rose-300 border-rose-500/40 hover:bg-rose-500/10 text-xs py-1.5 px-3.5 flex items-center gap-1.5">
           <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
           <span>Cerrar Sesión</span>
         </button>
       </div>
 
-      <form id="settingsForm" class="space-y-4 text-xs">
-        <div>
-          <label class="block font-semibold text-[#cac4d0] mb-1" for="settingBudget">Meta Mensual de Presupuesto</label>
-          <input type="number" id="settingBudget" step="1" min="0" required class="m3-text-field font-mono">
-        </div>
+      <!-- Pestañas de Navegación M3 en Ajustes -->
+      <div class="flex items-center gap-1.5 p-1.5 bg-[#141218] rounded-2xl border border-[#49454f]/40 overflow-x-auto text-xs font-semibold">
+        <button type="button" id="tabSettingsGeneral" class="flex-1 min-w-[120px] py-2.5 px-3 rounded-xl bg-[#d0bcff] text-[#381e72] font-semibold transition flex items-center justify-center gap-2 shadow-sm">
+          <i data-lucide="settings" class="w-4 h-4"></i>
+          <span>General</span>
+        </button>
+        <button type="button" id="tabSettingsBackups" class="flex-1 min-w-[150px] py-2.5 px-3 rounded-xl text-[#cac4d0] hover:text-white transition flex items-center justify-center gap-2">
+          <i data-lucide="database" class="w-4 h-4"></i>
+          <span>Copias y Calendario</span>
+        </button>
+        <button type="button" id="tabSettingsNotifications" class="flex-1 min-w-[130px] py-2.5 px-3 rounded-xl text-[#cac4d0] hover:text-white transition flex items-center justify-center gap-2">
+          <i data-lucide="bell" class="w-4 h-4"></i>
+          <span>Notificaciones</span>
+        </button>
+      </div>
 
-        <div>
-          <label class="block font-semibold text-[#cac4d0] mb-1" for="settingBaseCurrency">Divisa Base</label>
-          <select id="settingBaseCurrency" class="m3-text-field">
-            <option value="USD">USD ($)</option>
-            <option value="DOP">DOP (RD$)</option>
-            <option value="EUR">EUR (€)</option>
-            <option value="MXN">MXN ($)</option>
-            <option value="ARS">ARS ($)</option>
-            <option value="CLP">CLP ($)</option>
-            <option value="COP">COP ($)</option>
-            <option value="GBP">GBP (£)</option>
-          </select>
-        </div>
+      <!-- ================= PESTAÑA 1: GENERAL ================= -->
+      <div id="settingsTabContentGeneral" class="space-y-4 text-xs animate-m3-slide">
+        <form id="settingsGeneralForm" class="space-y-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="p-4 rounded-2xl bg-[#1d1b20] border border-[#49454f]/40 space-y-2">
+              <div class="flex items-center gap-2 text-white font-semibold font-google-sans">
+                <i data-lucide="wallet" class="w-4 h-4 text-[#a8d5b5]"></i>
+                <label for="settingBudget">Meta Mensual de Presupuesto</label>
+              </div>
+              <p class="text-[11px] text-[#cac4d0]">Límite de gasto mensual para alertas y métricas en el Dashboard.</p>
+              <div class="relative">
+                <input type="number" id="settingBudget" step="1" min="0" required class="m3-text-field font-mono text-sm font-bold">
+              </div>
+            </div>
 
-        <div>
-          <label class="block font-semibold text-[#cac4d0] mb-1" for="settingDiscordWebhook">Webhook Discord</label>
-          <div class="flex gap-2">
-            <input type="url" id="settingDiscordWebhook" placeholder="https://discord.com/api/webhooks/..." class="flex-1 m3-text-field font-mono text-[11px]">
-            <button type="button" id="btnTestWebhook" class="m3-btn-tonal">Probar</button>
+            <div class="p-4 rounded-2xl bg-[#1d1b20] border border-[#49454f]/40 space-y-2">
+              <div class="flex items-center gap-2 text-white font-semibold font-google-sans">
+                <i data-lucide="coins" class="w-4 h-4 text-[#f2c18d]"></i>
+                <label for="settingBaseCurrency">Divisa Base de la App</label>
+              </div>
+              <p class="text-[11px] text-[#cac4d0]">Moneda con la que se calcularán los totales acumulados.</p>
+              <select id="settingBaseCurrency" class="m3-text-field font-semibold">
+                <option value="USD">USD ($) - Dólar Estadounidense</option>
+                <option value="DOP">DOP (RD$) - Peso Dominicano</option>
+                <option value="EUR">EUR (€) - Euro</option>
+                <option value="MXN">MXN ($) - Peso Mexicano</option>
+                <option value="ARS">ARS ($) - Peso Argentino</option>
+                <option value="CLP">CLP ($) - Peso Chileno</option>
+                <option value="COP">COP ($) - Peso Colombiano</option>
+                <option value="GBP">GBP (£) - Libra Esterlina</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="pt-2 border-t border-[#49454f]/40 flex justify-end gap-2.5">
+            <button type="button" class="m3-btn-outline" onclick="closeSettingsModal()">Cerrar</button>
+            <button type="submit" class="m3-btn-filled py-2 px-6 text-xs font-bold shadow-md">
+              <i data-lucide="check" class="w-4 h-4"></i>
+              <span>Guardar Ajustes Generales</span>
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- ================= PESTAÑA 2: COPIAS DE SEGURIDAD Y EXPORTAR CALENDARIO ================= -->
+      <div id="settingsTabContentBackups" class="hidden space-y-4 text-xs animate-m3-slide">
+        <!-- Subsección: Exportación de Calendario -->
+        <div class="p-4 rounded-2xl bg-[#1d1b20] border border-[#49454f]/40 space-y-3">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+              <div class="w-9 h-9 rounded-xl bg-[#d0bcff]/15 text-[#d0bcff] flex items-center justify-center">
+                <i data-lucide="calendar-plus" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <h4 class="text-xs sm:text-sm font-bold text-white font-google-sans">Exportar Calendario (.ICS)</h4>
+                <p class="text-[11px] text-[#cac4d0]">Sincroniza tus fechas de corte con Google Calendar, Apple Calendar o Outlook.</p>
+              </div>
+            </div>
+            <a href="/api/calendar.ics" download="suscripciones.ics" class="m3-btn-filled py-2 px-4 text-xs font-bold flex items-center gap-1.5">
+              <i data-lucide="download" class="w-3.5 h-3.5"></i>
+              <span>Descargar .ICS</span>
+            </a>
           </div>
         </div>
 
-        <div class="pt-3 border-t border-[#49454f]/40 flex justify-end gap-2">
-          <button type="button" id="btnCancelSettings" class="m3-btn-outline">Cancelar</button>
-          <button type="submit" class="m3-btn-filled py-2 px-5 text-xs">Guardar</button>
+        <!-- Subsección: Respaldo de Base de Datos -->
+        <div class="space-y-3">
+          <h4 class="text-xs font-bold text-[#d0bcff] uppercase tracking-wider font-google-sans">Copias de Seguridad de Tus Suscripciones</h4>
+          
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div class="p-3.5 bg-[#1d1b20] border border-[#49454f]/40 rounded-2xl flex items-center justify-between">
+              <div>
+                <h5 class="text-xs font-bold text-white font-google-sans">Exportar a JSON</h5>
+                <p class="text-[11px] text-[#cac4d0]">Copia completa para restaurar.</p>
+              </div>
+              <button type="button" id="btnExportJsonSettings" class="m3-btn-filled py-1.5 px-3.5 text-xs">Descargar</button>
+            </div>
+
+            <div class="p-3.5 bg-[#1d1b20] border border-[#49454f]/40 rounded-2xl flex items-center justify-between">
+              <div>
+                <h5 class="text-xs font-bold text-white font-google-sans">Exportar a CSV</h5>
+                <p class="text-[11px] text-[#cac4d0]">Compatible con Excel y Sheets.</p>
+              </div>
+              <button type="button" id="btnExportCsvSettings" class="m3-btn-tonal py-1.5 px-3.5 text-xs">Exportar</button>
+            </div>
+          </div>
+
+          <!-- Importar Archivo -->
+          <div class="p-4 bg-[#1d1b20] border border-[#49454f]/40 rounded-2xl space-y-2">
+            <div class="flex items-center gap-2 text-white font-semibold">
+              <i data-lucide="upload-cloud" class="w-4 h-4 text-[#a8d5b5]"></i>
+              <h5 class="text-xs font-bold">Importar Respaldo JSON</h5>
+            </div>
+            <p class="text-[11px] text-[#cac4d0]">Carga un archivo de respaldo JSON generado previamente para restablecer tus servicios.</p>
+            <input type="file" id="importFileInputSettings" accept=".json" class="block w-full text-xs text-[#cac4d0] file:mr-3 file:py-1.5 file:px-4 file:rounded-full file:border-0 file:bg-[#2b2930] file:text-white file:font-semibold cursor-pointer">
+          </div>
+
+          <!-- Restablecer Datos de Ejemplo -->
+          <div class="p-3 bg-[#1d1b20] border border-[#49454f]/40 rounded-2xl flex items-center justify-between">
+            <div>
+              <span class="text-xs text-[#cac4d0] block">¿Quieres cargar datos de prueba iniciales?</span>
+              <span class="text-[10px] text-[#938f99]">Crea servicios de muestra para explorar la interfaz.</span>
+            </div>
+            <button type="button" id="btnResetDemoSettings" class="m3-btn-outline text-amber-300 border-amber-500/40 hover:bg-amber-500/10 text-xs py-1 px-3">
+              Restablecer Demo
+            </button>
+          </div>
         </div>
-      </form>
+
+        <div class="pt-2 border-t border-[#49454f]/40 flex justify-end">
+          <button type="button" class="m3-btn-outline" onclick="closeSettingsModal()">Cerrar</button>
+        </div>
+      </div>
+
+      <!-- ================= PESTAÑA 3: CONFIGURACIÓN DE NOTIFICACIONES ================= -->
+      <div id="settingsTabContentNotifications" class="hidden space-y-4 text-xs animate-m3-slide">
+        <!-- Notificaciones de Escritorio / PWA -->
+        <div class="p-4 rounded-2xl bg-[#1d1b20] border border-[#49454f]/40 space-y-3">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+              <div class="w-9 h-9 rounded-xl bg-amber-400/15 text-amber-300 flex items-center justify-center">
+                <i data-lucide="bell-ring" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <h4 class="text-xs sm:text-sm font-bold text-white font-google-sans">Notificaciones del Navegador</h4>
+                <p class="text-[11px] text-[#cac4d0]">Alertas automáticas en tu dispositivo antes de cada fecha de corte.</p>
+              </div>
+            </div>
+            <button type="button" id="btnTestBrowserNotifications" class="m3-btn-filled py-1.5 px-3.5 text-xs font-bold">
+              Activar / Probar
+            </button>
+          </div>
+        </div>
+
+        <!-- Notificaciones Webhook (Discord / Telegram) -->
+        <form id="settingsNotificationsForm" class="space-y-4">
+          <div class="p-4 rounded-2xl bg-[#1d1b20] border border-[#49454f]/40 space-y-3">
+            <div class="flex items-center gap-2 text-white font-semibold font-google-sans">
+              <i data-lucide="send" class="w-4 h-4 text-[#d0bcff]"></i>
+              <label for="settingDiscordWebhook">Webhook de Notificaciones (Discord)</label>
+            </div>
+            <p class="text-[11px] text-[#cac4d0]">
+              Recibe avisos de cobros y recordatorios directamente en tu canal o servidor de Discord.
+            </p>
+            <div class="flex gap-2">
+              <input type="url" id="settingDiscordWebhook" placeholder="https://discord.com/api/webhooks/..." class="flex-1 m3-text-field font-mono text-[11px]">
+              <button type="button" id="btnTestWebhook" class="m3-btn-tonal shrink-0 flex items-center gap-1">
+                <i data-lucide="play" class="w-3.5 h-3.5"></i>
+                <span>Probar</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="pt-2 border-t border-[#49454f]/40 flex justify-end gap-2.5">
+            <button type="button" class="m3-btn-outline" onclick="closeSettingsModal()">Cerrar</button>
+            <button type="submit" class="m3-btn-filled py-2 px-6 text-xs font-bold shadow-md">
+              <i data-lucide="check" class="w-4 h-4"></i>
+              <span>Guardar Notificaciones</span>
+            </button>
+          </div>
+        </form>
+      </div>
+
     </div>
   </div>
 
