@@ -1968,61 +1968,65 @@ async function respondSplitPay(requestId, action) {
   const isReceived = req ? (req.friend_user_id === state.user?.id) : (state.splitPayTab === 'received');
 
   if (!isPaid) {
-    // Declinar o cancelar solicitud
-    showM3Confirm({
+    // Declinar solicitud
+    const confirmed = await showM3Confirm({
       title: 'Declinar Solicitud',
-      message: '¿Deseas declinar o cancelar esta solicitud de pago en conjunto?',
+      message: '¿Deseas declinar esta solicitud de pago en conjunto?',
+      icon: 'x-circle',
+      type: 'danger',
       confirmText: 'Declinar',
-      isDanger: true,
-      onConfirm: async () => {
-        try {
-          const res = await fetch('/api/friends/split-requests/respond', {
-            method: 'POST',
-            headers: getAuthHeaders(),
-            body: JSON.stringify({ request_id: requestId, action: 'declined' })
-          });
-          const result = await res.json();
-          if (result.success) {
-            showToast('Solicitud declinada', 'success');
-            await loadFriends();
-          } else {
-            showToast(result.error || 'Error al procesar la solicitud', 'error');
-          }
-        } catch (err) {
-          showToast('Error al conectar con el servidor', 'error');
-        }
-      }
+      cancelText: 'Cancelar'
     });
+    if (!confirmed) return;
+
+    try {
+      const res = await fetch('/api/friends/split-requests/respond', {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ request_id: requestId, action: 'declined' })
+      });
+      const result = await res.json();
+      if (result.success) {
+        showToast('Solicitud declinada', 'success');
+        await loadFriends();
+      } else {
+        showToast(result.error || 'Error al procesar la solicitud', 'error');
+      }
+    } catch (err) {
+      showToast('Error al conectar con el servidor', 'error');
+    }
     return;
   }
 
   // Si es confirmar (pagar)
   if (!isReceived) {
     // Creador confirmando que el amigo le pagó
-    showM3Confirm({
+    const confirmed = await showM3Confirm({
       title: 'Confirmar Recepción de Pago',
       message: '¿Confirmas que recibiste el pago de este cobro en conjunto? Se registrará automáticamente en el balance de pagos.',
+      icon: 'check-circle-2',
+      type: 'primary',
       confirmText: 'Confirmar',
-      isDanger: false,
-      onConfirm: async () => {
-        try {
-          const res = await fetch('/api/friends/split-requests/respond', {
-            method: 'POST',
-            headers: getAuthHeaders(),
-            body: JSON.stringify({ request_id: requestId, action: 'paid' })
-          });
-          const result = await res.json();
-          if (result.success) {
-            showToast('¡Pago registrado exitosamente!', 'success');
-            await loadFriends();
-          } else {
-            showToast(result.error || 'Error al procesar la solicitud', 'error');
-          }
-        } catch (err) {
-          showToast('Error al conectar con el servidor', 'error');
-        }
-      }
+      cancelText: 'Cancelar'
     });
+    if (!confirmed) return;
+
+    try {
+      const res = await fetch('/api/friends/split-requests/respond', {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ request_id: requestId, action: 'paid' })
+      });
+      const result = await res.json();
+      if (result.success) {
+        showToast('¡Pago registrado exitosamente!', 'success');
+        await loadFriends();
+      } else {
+        showToast(result.error || 'Error al procesar la solicitud', 'error');
+      }
+    } catch (err) {
+      showToast('Error al conectar con el servidor', 'error');
+    }
     return;
   }
 
@@ -2032,31 +2036,28 @@ async function respondSplitPay(requestId, action) {
 
   if (existingSub) {
     // Ya cuenta con una suscripción de ese servicio: mostrar alerta y preguntar si desea sobreescribir
-    showM3Confirm({
+    const overwrite = await showM3Confirm({
       title: 'Suscripción ya existente',
-      message: `Ya cuentas con una suscripción registrada para "${existingSub.name}". ¿Deseas confirmar el pago y sobreescribir los datos de tu suscripción con esta cuota compartida (${req.currency} ${formatNumber(req.amount)}) asociada a tu amigo?`,
-      confirmText: 'Sí, sobreescribir',
-      cancelText: 'Solo confirmar pago',
-      isDanger: false,
-      onConfirm: async () => {
-        await executeConfirmSplitPay(requestId, req, existingSub.id);
-      },
-      onCancel: async () => {
-        // Solo confirmar el pago sin sobreescribir la suscripción
-        await executeConfirmSplitPay(requestId, req, null);
-      }
+      message: `Ya cuentas con una suscripción registrada para "${existingSub.name}". ¿Deseas sobreescribir sus datos con esta cuota compartida (${req.currency} ${formatNumber(req.amount)}) asociada a tu amigo? (Si seleccionas 'Mantener original', se confirmará el pago sin modificar tu suscripción)`,
+      icon: 'alert-triangle',
+      type: 'warning',
+      confirmText: 'Sobreescribir',
+      cancelText: 'Mantener original'
     });
+    // Si overwrite es true, se sobreescribe existingSub.id; si false, se confirma solo el pago
+    await executeConfirmSplitPay(requestId, req, overwrite ? existingSub.id : null);
   } else {
     // No existe: confirmar y agregar automáticamente la suscripción asociada al amigo
-    showM3Confirm({
+    const confirmed = await showM3Confirm({
       title: 'Confirmar y Agregar Suscripción',
       message: `¿Deseas confirmar este pago en conjunto de ${req.currency} ${formatNumber(req.amount)} para "${subName}"? Se registrará el pago y se agregará la suscripción a tu cuenta asociada a tu amigo.`,
+      icon: 'check-circle-2',
+      type: 'primary',
       confirmText: 'Confirmar',
-      isDanger: false,
-      onConfirm: async () => {
-        await executeConfirmSplitPay(requestId, req, 'new');
-      }
+      cancelText: 'Cancelar'
     });
+    if (!confirmed) return;
+    await executeConfirmSplitPay(requestId, req, 'new');
   }
 }
 
@@ -2136,31 +2137,33 @@ async function executeConfirmSplitPay(requestId, req, subMode) {
 }
 
 async function cancelSplitPayRequest(requestId) {
-  showM3Confirm({
+  const confirmed = await showM3Confirm({
     title: 'Cancelar Solicitud de Pago',
     message: '¿Estás seguro de que deseas cancelar esta solicitud? La solicitud dejará de aparecer tanto para ti como para tu amigo.',
+    icon: 'trash-2',
+    type: 'danger',
     confirmText: 'Sí, cancelar solicitud',
-    isDanger: true,
-    onConfirm: async () => {
-      try {
-        const res = await fetch('/api/friends/split-requests/respond', {
-          method: 'POST',
-          headers: getAuthHeaders(),
-          body: JSON.stringify({ request_id: requestId, action: 'cancelled' })
-        });
-        const result = await res.json();
-        if (result.success) {
-          closeSplitPayDetailModal();
-          showToast('Solicitud cancelada correctamente', 'info');
-          await loadFriends();
-        } else {
-          showToast(result.error || 'Error al cancelar solicitud', 'error');
-        }
-      } catch (err) {
-        showToast('Error al conectar con el servidor', 'error');
-      }
-    }
+    cancelText: 'Volver'
   });
+  if (!confirmed) return;
+
+  try {
+    const res = await fetch('/api/friends/split-requests/respond', {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ request_id: requestId, action: 'cancelled' })
+    });
+    const result = await res.json();
+    if (result.success) {
+      closeSplitPayDetailModal();
+      showToast('Solicitud cancelada correctamente', 'info');
+      await loadFriends();
+    } else {
+      showToast(result.error || 'Error al cancelar solicitud', 'error');
+    }
+  } catch (err) {
+    showToast('Error al conectar con el servidor', 'error');
+  }
 }
 
 
