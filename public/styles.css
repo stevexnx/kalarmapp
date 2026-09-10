@@ -980,27 +980,57 @@ body.theme-light .m3-switch input:checked + .m3-switch-track .m3-switch-thumb {
   background-color: #ffffff !important;
 }
 
-/* Clases utilitarias oscuras de Tailwind adaptadas a Light */
-body.theme-light [class*="bg-[#141218]"],
-body.theme-light [class*="bg-[#1d1b20]"],
-body.theme-light [class*="bg-[#211f26]"],
-body.theme-light [class*="bg-[#2b2930]"] {
-  background-color: var(--md-sys-color-surface-container-low) !important;
-  border-color: var(--md-sys-color-outline-variant) !important;
-}
-
-body.theme-light .text-white,
-body.theme-light .text-\[\#e6e0e9\] {
+/* Clases utilitarias y elementos adaptados a Light */
+body.theme-light,
+body.theme-light main,
+body.theme-light #viewDashboard,
+body.theme-light #viewCalendar,
+body.theme-light #viewPayments,
+body.theme-light #viewFriends,
+body.theme-light #viewSplitPay {
   color: #1d1b20 !important;
 }
 
-body.theme-light .text-\[\#cac4d0\] {
+body.theme-light .text-white,
+body.theme-light .text-\[\#e6e0e9\],
+body.theme-light .text-\[\#e8def8\],
+body.theme-light [class*="text-[#e6e0e9]"],
+body.theme-light [class*="text-[#e8def8]"],
+body.theme-light [class*="text-slate-100"],
+body.theme-light [class*="text-slate-200"],
+body.theme-light [class*="text-slate-300"] {
+  color: #1d1b20 !important;
+}
+
+body.theme-light .text-\[\#cac4d0\],
+body.theme-light [class*="text-[#cac4d0]"],
+body.theme-light [class*="text-slate-400"] {
   color: #49454f !important;
+}
+
+body.theme-light .bg-\[\#1d1b20\],
+body.theme-light .bg-\[\#211f26\],
+body.theme-light .bg-\[\#28262f\],
+body.theme-light .bg-\[\#2b2930\],
+body.theme-light [class*="bg-[#1d1b20]"],
+body.theme-light [class*="bg-[#211f26]"],
+body.theme-light [class*="bg-[#28262f]"],
+body.theme-light [class*="bg-[#2b2930]"] {
+  background-color: var(--md-sys-color-surface-container-low) !important;
+}
+
+body.theme-light .bg-\[\#141218\],
+body.theme-light [class*="bg-[#141218]"],
+body.theme-light [class*="bg-slate-900"],
+body.theme-light [class*="bg-slate-800"] {
+  background-color: var(--md-sys-color-surface) !important;
 }
 
 body.theme-light .border-\[\#49454f\]\/40,
 body.theme-light .border-\[\#49454f\]\/30,
 body.theme-light .border-\[\#49454f\]\/50,
-body.theme-light .border-\[\#49454f\] {
+body.theme-light .border-\[\#49454f\],
+body.theme-light [class*="border-[#49454f]"] {
   border-color: #cac4d0 !important;
 }
+

@@ -6,24 +6,46 @@
 // Estado global de la aplicación
 const initialToken = localStorage.getItem('subtracker_token') || sessionStorage.getItem('subtracker_token') || '';
 let initialUser = null;
+let cachedSubs = [];
+let cachedFriends = [];
+let cachedBalances = [];
+let cachedFriendRequests = { received: [], sent: [] };
+let cachedSplitPayRequests = { received: [], sent: [] };
+let cachedStats = null;
+let cachedSettings = null;
+
 try {
-  const cachedUser = localStorage.getItem('subtracker_user');
-  if (cachedUser) initialUser = JSON.parse(cachedUser);
+  const cUser = localStorage.getItem('subtracker_user');
+  if (cUser) initialUser = JSON.parse(cUser);
+  const cSubs = localStorage.getItem('subtracker_cached_subs');
+  if (cSubs) cachedSubs = JSON.parse(cSubs);
+  const cFriends = localStorage.getItem('subtracker_cached_friends');
+  if (cFriends) cachedFriends = JSON.parse(cFriends);
+  const cBalances = localStorage.getItem('subtracker_cached_balances');
+  if (cBalances) cachedBalances = JSON.parse(cBalances);
+  const cReqs = localStorage.getItem('subtracker_cached_friend_reqs');
+  if (cReqs) cachedFriendRequests = JSON.parse(cReqs);
+  const cSplit = localStorage.getItem('subtracker_cached_split_reqs');
+  if (cSplit) cachedSplitPayRequests = JSON.parse(cSplit);
+  const cStats = localStorage.getItem('subtracker_cached_stats');
+  if (cStats) cachedStats = JSON.parse(cStats);
+  const cSettings = localStorage.getItem('subtracker_cached_settings');
+  if (cSettings) cachedSettings = JSON.parse(cSettings);
 } catch (e) {}
 
 const state = {
   user: initialUser,
   token: initialToken,
-  subscriptions: [],
-  friends: [],
-  friendBalances: [],
-  friendRequests: { received: [], sent: [] },
-  splitPayRequests: { received: [], sent: [] },
+  subscriptions: Array.isArray(cachedSubs) ? cachedSubs : [],
+  friends: Array.isArray(cachedFriends) ? cachedFriends : [],
+  friendBalances: Array.isArray(cachedBalances) ? cachedBalances : [],
+  friendRequests: cachedFriendRequests || { received: [], sent: [] },
+  splitPayRequests: cachedSplitPayRequests || { received: [], sent: [] },
   splitPayTab: 'received', // 'received' | 'sent'
-  stats: null,
-  settings: null,
-  currency: '$',
-  baseCurrencyCode: 'USD',
+  stats: cachedStats,
+  settings: cachedSettings,
+  currency: (cachedSettings?.base_currency && CURRENCY_SYMBOLS[cachedSettings.base_currency]) || '$',
+  baseCurrencyCode: cachedSettings?.base_currency || 'USD',
   chartMode: 'annual', // 'annual' | 'monthly'
   viewMode: 'grid',    // 'grid' | 'table'
   currentTab: 'dashboard', // 'dashboard' | 'payments' | 'friends'
@@ -510,6 +532,25 @@ document.addEventListener('DOMContentLoaded', async () => {
     hideWelcomeLanding();
     if (state.user) {
       renderUserProfile();
+      // Renderizar de inmediato los datos cacheados para evitar pantalla vacía/en blanco
+      if (state.subscriptions && state.subscriptions.length > 0) {
+        renderSubscriptions();
+        updateCalendarBadge();
+      }
+      if (state.friends && state.friends.length > 0) {
+        renderFriendsList();
+        const badge = document.getElementById('friendsBadgeCount');
+        if (badge) badge.textContent = state.friends.length;
+        const railBadge = document.getElementById('railFriendsBadge');
+        if (railBadge) railFriendsBadge.textContent = state.friends.length;
+      }
+      if (state.stats) {
+        renderKPIs();
+        renderBudgetBar();
+        renderTrialAlerts();
+        renderUpcomingAlerts();
+        renderCharts();
+      }
     }
   } else {
     showWelcomeLanding();
@@ -998,6 +1039,13 @@ async function handleLogout() {
   localStorage.removeItem('subtracker_token');
   sessionStorage.removeItem('subtracker_token');
   localStorage.removeItem('subtracker_user');
+  localStorage.removeItem('subtracker_cached_subs');
+  localStorage.removeItem('subtracker_cached_friends');
+  localStorage.removeItem('subtracker_cached_balances');
+  localStorage.removeItem('subtracker_cached_friend_reqs');
+  localStorage.removeItem('subtracker_cached_split_reqs');
+  localStorage.removeItem('subtracker_cached_stats');
+  localStorage.removeItem('subtracker_cached_settings');
 
   // Limpiar modales abiertos
   document.getElementById('profileModal')?.classList.add('hidden');
@@ -1009,11 +1057,13 @@ async function handleLogout() {
   state.subscriptions = [];
   state.friends = [];
   state.friendBalances = [];
+  state.friendRequests = { received: [], sent: [] };
+  state.splitPayRequests = { received: [], sent: [] };
   state.stats = null;
 
   renderUserProfile();
   renderSubscriptions();
-  renderFriends();
+  renderFriendsList();
   renderKPIs();
 
   showToast('Has cerrado sesión exitosamente', 'info');
@@ -1279,7 +1329,7 @@ function initEventListeners() {
 
 // ================= CARGA DE DATOS =================
 async function loadAllData() {
-  await Promise.all([loadSettings(), loadStats(), loadSubscriptions(), loadPayments(), loadFriends()]);
+  await Promise.allSettled([loadSettings(), loadStats(), loadSubscriptions(), loadPayments(), loadFriends()]);
 }
 
 async function loadSettings() {
@@ -1288,6 +1338,7 @@ async function loadSettings() {
     const result = await res.json();
     if (result.success) {
       state.settings = result.data;
+      localStorage.setItem('subtracker_cached_settings', JSON.stringify(result.data));
       state.baseCurrencyCode = result.data.base_currency || 'USD';
       state.currency = CURRENCY_SYMBOLS[state.baseCurrencyCode] || '$';
       const navBadge = document.getElementById('navBaseCurrencyBadge');
@@ -1304,6 +1355,7 @@ async function loadStats() {
     const result = await res.json();
     if (result.success) {
       state.stats = result.data;
+      localStorage.setItem('subtracker_cached_stats', JSON.stringify(result.data));
       renderKPIs();
       renderBudgetBar();
       renderTrialAlerts();
@@ -1339,6 +1391,10 @@ async function loadSubscriptions() {
       if (status === 'trials') data = data.filter(s => s.is_trial);
       else if (status === 'shared') data = data.filter(s => s.is_shared);
       state.subscriptions = data;
+      // Guardar en caché solo cuando no haya filtros de búsqueda activos
+      if (!search && category === 'all' && status === 'all') {
+        localStorage.setItem('subtracker_cached_subs', JSON.stringify(data));
+      }
       renderSubscriptions();
       updateCalendarBadge();
       if (state.currentTab === 'calendar') {
@@ -1364,35 +1420,40 @@ async function loadPayments() {
 
 async function loadFriends() {
   try {
-    const [resFriends, resBalances, resReqs, resSplit] = await Promise.all([
-      fetch('/api/friends', { headers: getAuthHeaders() }),
-      fetch('/api/friends/balances', { headers: getAuthHeaders() }),
-      fetch('/api/friends/requests', { headers: getAuthHeaders() }),
-      fetch('/api/friends/split-requests', { headers: getAuthHeaders() })
+    const results = await Promise.allSettled([
+      fetch('/api/friends', { headers: getAuthHeaders() }).then(r => r.json()),
+      fetch('/api/friends/balances', { headers: getAuthHeaders() }).then(r => r.json()),
+      fetch('/api/friends/requests', { headers: getAuthHeaders() }).then(r => r.json()),
+      fetch('/api/friends/split-requests', { headers: getAuthHeaders() }).then(r => r.json())
     ]);
-    const friendsData = await resFriends.json();
-    const balancesData = await resBalances.json();
-    const reqsData = await resReqs.json();
-    const splitData = await resSplit.json();
 
-    if (friendsData.success) {
+    const friendsData = results[0].status === 'fulfilled' ? results[0].value : null;
+    const balancesData = results[1].status === 'fulfilled' ? results[1].value : null;
+    const reqsData = results[2].status === 'fulfilled' ? results[2].value : null;
+    const splitData = results[3].status === 'fulfilled' ? results[3].value : null;
+
+    if (friendsData && friendsData.success) {
       state.friends = friendsData.data;
+      localStorage.setItem('subtracker_cached_friends', JSON.stringify(friendsData.data));
       renderFriendsList();
       const badge = document.getElementById('friendsBadgeCount');
       if (badge) badge.textContent = state.friends.length;
       const railFriendsBadge = document.getElementById('railFriendsBadge');
       if (railFriendsBadge) railFriendsBadge.textContent = state.friends.length;
     }
-    if (balancesData.success) {
+    if (balancesData && balancesData.success) {
       state.friendBalances = balancesData.data;
+      localStorage.setItem('subtracker_cached_balances', JSON.stringify(balancesData.data));
       renderFriendBalances();
     }
-    if (reqsData.success) {
+    if (reqsData && reqsData.success) {
       state.friendRequests = reqsData.data || { received: [], sent: [] };
+      localStorage.setItem('subtracker_cached_friend_reqs', JSON.stringify(state.friendRequests));
       renderFriendRequests();
     }
-    if (splitData.success) {
+    if (splitData && splitData.success) {
       state.splitPayRequests = splitData.data || { received: [], sent: [] };
+      localStorage.setItem('subtracker_cached_split_reqs', JSON.stringify(state.splitPayRequests));
       renderSplitPayRequests();
     }
   } catch (err) {
