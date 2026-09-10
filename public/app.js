@@ -4092,18 +4092,32 @@ function handleSelectPlanChip(chipBtn) {
   updateModalLiveCalculation();
 }
 
-function toggleManualPricingFields() {
-  const container = document.getElementById('subManualPricingContainer');
-  const btnText = document.getElementById('btnToggleManualPricingText');
+// Presets rápidos de método de pago
+function setQuickPaymentMethod(methodName) {
+  const input = document.getElementById('subPaymentMethod');
+  if (input) {
+    input.value = methodName;
+    input.focus();
+  }
+}
+
+// Acordeón para opciones avanzadas (Color, Enlace de gestión, Notas)
+function toggleAdvancedOptionsModal(forceState = null) {
+  const container = document.getElementById('subAdvancedOptionsContainer');
+  const chevron = document.getElementById('advancedOptionsChevron');
+  const toggleText = document.getElementById('advancedOptionsToggleText');
   if (!container) return;
 
-  const isHidden = container.classList.contains('hidden');
-  if (isHidden) {
-    container.classList.remove('hidden');
-    if (btnText) btnText.textContent = 'Ocultar ajuste manual';
-  } else {
-    container.classList.add('hidden');
-    if (btnText) btnText.textContent = 'Ajustar precio/ciclo manualmente';
+  const shouldOpen = forceState !== null ? forceState : container.classList.contains('hidden');
+  container.classList.toggle('hidden', !shouldOpen);
+
+  if (chevron) {
+    chevron.style.transform = shouldOpen ? 'rotate(180deg)' : 'rotate(0deg)';
+  }
+  if (toggleText) {
+    toggleText.textContent = shouldOpen 
+      ? 'Ocultar opciones adicionales' 
+      : 'Más opciones opcionales (Enlace, Color, Notas)';
   }
 }
 
@@ -4213,6 +4227,10 @@ function openModal(sub = null) {
       selectedFriendIds = (sub.shared_friend_ids || '').split(',').filter(Boolean);
     }
 
+    // Si tiene notas o url personalizada, mostrar desplegadas las opciones avanzadas
+    const hasAdvancedData = Boolean(sub.notes || (sub.url && sub.url.length > 5));
+    toggleAdvancedOptionsModal(hasAdvancedData);
+
     renderPlanSelector(sub.name, sub.price, sub.billing_cycle);
     showDetailsForm(sub.name, true);
   } else {
@@ -4222,6 +4240,9 @@ function openModal(sub = null) {
     document.getElementById('subCurrency').value = state.baseCurrencyCode || 'USD';
     document.getElementById('subNextBillingDate').value = defaultDateStr;
     document.getElementById('subColor').value = '#d0bcff';
+
+    // Para nuevas suscripciones, mantener colapsadas las opciones avanzadas
+    toggleAdvancedOptionsModal(false);
 
     // Abrir directamente en el paso 1 (Buscador y Plantillas)
     showPresetsStep();
@@ -5516,6 +5537,8 @@ window.openWhatsAppReminderPrompt = openWhatsAppReminderPrompt;
 window.renderSmartFinancialInsights = renderSmartFinancialInsights;
 window.handleInsightAction = handleInsightAction;
 window.toggleManualPricingFields = toggleManualPricingFields;
+window.toggleAdvancedOptionsModal = toggleAdvancedOptionsModal;
+window.setQuickPaymentMethod = setQuickPaymentMethod;
 window.showM3Confirm = showM3Confirm;
 window.showM3Alert = showM3Alert;
 window.showM3Prompt = showM3Prompt;

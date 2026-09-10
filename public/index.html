@@ -1625,69 +1625,110 @@
           </div>
         </div>
 
-        <!-- TARJETA DE CÁLCULO EN TIEMPO REAL -->
-        <div class="bg-[#2b2930] border border-[#49454f]/60 rounded-2xl p-3.5 flex items-center justify-between">
-          <div>
-            <span class="text-[11px] font-semibold tracking-wider uppercase text-[#d0bcff] flex items-center gap-1 font-google-sans">
-              <i data-lucide="calculator" class="w-3.5 h-3.5"></i> Cálculo Instantáneo
-            </span>
-            <div class="text-xs text-[#cac4d0] mt-0.5">
-              Equivalente mensual: <span id="formCalcMonthly" class="font-bold text-white">$0.00 / mes</span>
+        <!-- BARRA DE CÁLCULO INSTANTÁNEO COMPACTA -->
+        <div class="bg-gradient-to-r from-[#2b2930] to-[#211f26] border border-[#49454f]/50 rounded-2xl px-3.5 py-2.5 flex items-center justify-between shadow-sm">
+          <div class="flex items-center gap-2">
+            <div class="w-7 h-7 rounded-xl bg-[#d0bcff]/15 flex items-center justify-center text-[#d0bcff] shrink-0">
+              <i data-lucide="calculator" class="w-3.5 h-3.5"></i>
+            </div>
+            <div>
+              <span class="text-[10px] uppercase font-semibold text-[#cac4d0] tracking-wider block">Equivalente mensual</span>
+              <span id="formCalcMonthly" class="text-xs sm:text-sm font-bold text-white font-mono">$0.00 / mes</span>
             </div>
           </div>
-          <div class="text-right">
-            <span class="text-[11px] text-[#cac4d0] block">Costo Anual Resultante:</span>
-            <span id="formCalcAnnual" class="text-sm font-extrabold text-[#d0bcff] tracking-tight font-mono">$0.00 / año</span>
+          <div class="text-right pl-3 border-l border-[#49454f]/40">
+            <span class="text-[10px] uppercase font-semibold text-[#cac4d0] tracking-wider block">Costo anual estimado</span>
+            <span id="formCalcAnnual" class="text-xs sm:text-sm font-extrabold text-[#d0bcff] font-mono">$0.00 / año</span>
           </div>
         </div>
 
-        <!-- Campos secundarios -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <!-- FILA PRINCIPAL: 3 COLUMNAS COMPACTAS (Corte, Pago, Estado) -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <!-- 1. Próximo Corte / Cobro -->
           <div>
-            <label class="block text-xs font-medium text-[#cac4d0] mb-1" for="subNextBillingDate">Próximo Corte / Cobro *</label>
-            <input type="date" id="subNextBillingDate" required class="m3-text-field">
+            <label class="block text-xs font-semibold text-white mb-1.5 font-google-sans" for="subNextBillingDate">
+              Próximo Cobro *
+            </label>
+            <input type="date" id="subNextBillingDate" required class="m3-text-field py-2 text-xs">
           </div>
 
-          <div id="subCategoryContainer">
-            <label class="block text-xs font-medium text-[#cac4d0] mb-1" for="subCategory">Categoría</label>
-            <select id="subCategory" class="m3-text-field">
-              <option value="Streaming">Streaming</option>
-              <option value="Software">Software & Herramientas</option>
-              <option value="Servicios">Servicios & Utilidades</option>
-              <option value="Salud & Fitness">Salud & Fitness</option>
-              <option value="Educación">Educación</option>
-              <option value="Gaming">Gaming</option>
-              <option value="Otros">Otros</option>
-            </select>
+          <!-- 2. Método de Pago con Presets Rápidos -->
+          <div class="relative">
+            <label class="block text-xs font-semibold text-white mb-1.5 font-google-sans" for="subPaymentMethod">
+              Método de Pago
+            </label>
+            <input type="text" id="subPaymentMethod" placeholder="Ej: Visa, PayPal..." class="m3-text-field py-2 text-xs">
+            <!-- Chips rápidos debajo del input -->
+            <div class="flex flex-wrap gap-1 mt-1.5">
+              <button type="button" onclick="setQuickPaymentMethod('Visa')" class="text-[10px] px-2 py-0.5 rounded-md bg-[#211f26] border border-[#49454f]/40 text-[#cac4d0] hover:text-white hover:border-[#d0bcff] transition">Visa</button>
+              <button type="button" onclick="setQuickPaymentMethod('Mastercard')" class="text-[10px] px-2 py-0.5 rounded-md bg-[#211f26] border border-[#49454f]/40 text-[#cac4d0] hover:text-white hover:border-[#d0bcff] transition">Mastercard</button>
+              <button type="button" onclick="setQuickPaymentMethod('PayPal')" class="text-[10px] px-2 py-0.5 rounded-md bg-[#211f26] border border-[#49454f]/40 text-[#cac4d0] hover:text-white hover:border-[#d0bcff] transition">PayPal</button>
+              <button type="button" onclick="setQuickPaymentMethod('Efectivo')" class="text-[10px] px-2 py-0.5 rounded-md bg-[#211f26] border border-[#49454f]/40 text-[#cac4d0] hover:text-white hover:border-[#d0bcff] transition">Efectivo</button>
+            </div>
           </div>
 
+          <!-- 3. Estado -->
           <div>
-            <label class="block text-xs font-medium text-[#cac4d0] mb-1" for="subPaymentMethod">Método de Pago</label>
-            <input type="text" id="subPaymentMethod" placeholder="Ej: Visa, PayPal..." class="m3-text-field">
-          </div>
-
-          <div>
-            <label class="block text-xs font-medium text-[#cac4d0] mb-1" for="subStatus">Estado</label>
-            <select id="subStatus" class="m3-text-field">
+            <label class="block text-xs font-semibold text-white mb-1.5 font-google-sans" for="subStatus">
+              Estado
+            </label>
+            <select id="subStatus" class="m3-text-field py-2 text-xs">
               <option value="active">Activa</option>
               <option value="paused">Pausada</option>
               <option value="canceled">Cancelada</option>
             </select>
           </div>
+        </div>
 
-          <div class="sm:col-span-2 flex items-center gap-3">
-            <input type="color" id="subColor" value="#d0bcff" class="w-9 h-9 rounded-lg cursor-pointer bg-[#211f26] border border-[#49454f] p-0.5">
-            <span class="text-xs text-[#cac4d0]">Color distintivo para la tarjeta y gráficas.</span>
-          </div>
+        <!-- ACORDEÓN / SECCIÓN COLAPSABLE: OPCIONES ADICIONALES (Color, Enlace de gestión, Notas, Categoría) -->
+        <div class="border-t border-[#49454f]/30 pt-2">
+          <button type="button" id="btnToggleAdvancedOptions" onclick="toggleAdvancedOptionsModal()" class="w-full flex items-center justify-between text-xs text-[#cac4d0] hover:text-white py-1.5 px-1 transition">
+            <span class="flex items-center gap-1.5 font-semibold">
+              <i data-lucide="sliders-horizontal" class="w-3.5 h-3.5 text-[#d0bcff]"></i>
+              <span id="advancedOptionsToggleText">Más opciones opcionales (Enlace, Color, Notas)</span>
+            </span>
+            <i id="advancedOptionsChevron" data-lucide="chevron-down" class="w-4 h-4 transition transform duration-200"></i>
+          </button>
 
-          <div class="sm:col-span-2">
-            <label class="block text-xs font-medium text-[#cac4d0] mb-1" for="subUrl">Enlace de Gestión o Cancelación</label>
-            <input type="url" id="subUrl" placeholder="https://mi-cuenta.com/billing" class="m3-text-field">
-          </div>
+          <div id="subAdvancedOptionsContainer" class="hidden space-y-3 pt-2.5 animate-m3-slide">
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <!-- Enlace de Gestión con Color integrado -->
+              <div>
+                <label class="block text-xs font-medium text-[#cac4d0] mb-1" for="subUrl">Enlace de Gestión o Cancelación</label>
+                <div class="flex items-center gap-2">
+                  <div class="relative flex-1">
+                    <input type="url" id="subUrl" placeholder="https://cuenta.com/billing" class="m3-text-field py-2 text-xs">
+                  </div>
+                  <!-- Selector de Color Integrado compacto -->
+                  <div class="relative shrink-0 flex items-center gap-1.5 bg-[#141218] border border-[#49454f]/40 rounded-xl px-2 py-1" title="Color distintivo de la tarjeta">
+                    <input type="color" id="subColor" value="#d0bcff" class="w-6 h-6 rounded-lg cursor-pointer bg-transparent border-0 p-0">
+                    <span class="text-[10px] text-[#cac4d0] hidden xs:inline">Color</span>
+                  </div>
+                </div>
+              </div>
 
-          <div class="sm:col-span-2">
-            <label class="block text-xs font-medium text-[#cac4d0] mb-1" for="subNotes">Notas</label>
-            <textarea id="subNotes" rows="2" placeholder="Detalles o miembros de la cuenta..." class="m3-text-field"></textarea>
+              <!-- Categoría (mostrada en personalizadas o editable aquí) -->
+              <div id="subCategoryContainer">
+                <label class="block text-xs font-medium text-[#cac4d0] mb-1" for="subCategory">Categoría</label>
+                <select id="subCategory" class="m3-text-field py-2 text-xs">
+                  <option value="Streaming">Streaming</option>
+                  <option value="Software">Software & Herramientas</option>
+                  <option value="Servicios">Servicios & Utilidades</option>
+                  <option value="Salud & Fitness">Salud & Fitness</option>
+                  <option value="Educación">Educación</option>
+                  <option value="Gaming">Gaming</option>
+                  <option value="Otros">Otros</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Notas compactas (1 fila expandible) -->
+            <div>
+              <label class="block text-xs font-medium text-[#cac4d0] mb-1" for="subNotes">Notas adicionales</label>
+              <input type="text" id="subNotes" placeholder="Detalles, correo de acceso, recordatorio de cancelación..." class="m3-text-field py-2 text-xs">
+            </div>
+
           </div>
         </div>
 
