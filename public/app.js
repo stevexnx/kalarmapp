@@ -1729,86 +1729,97 @@ function renderSplitPayRequests() {
     return;
   }
 
-  container.innerHTML = list.map(req => {
-    const isReceived = state.splitPayTab === 'received';
-    const statusMap = {
-      pending: { text: 'Pendiente', badge: 'bg-amber-400/20 text-amber-300 border-amber-500/30' },
-      paid: { text: 'Pagada', badge: 'bg-[#2b5037] text-[#a8d5b5] border-[#a8d5b5]/30' },
-      declined: { text: 'Rechazada', badge: 'bg-rose-500/20 text-rose-300 border-rose-500/30' }
-    };
-    const st = statusMap[req.status] || { text: req.status, badge: 'bg-zinc-700 text-zinc-300' };
-    const curSym = CURRENCY_SYMBOLS[req.currency] || req.currency || '$';
-    const otherPerson = isReceived
-      ? (req.creator_display_name || req.creator_name || req.creator_username || 'Usuario')
-      : (req.friend_display_name || req.friend_name || req.friend_username || 'Amigo');
-    const subName = req.subscription_name || req.sub_name || 'Suscripción';
+  try {
+    container.innerHTML = list.map(req => {
+      const isReceived = state.splitPayTab === 'received';
+      const statusMap = {
+        pending: { text: 'Pendiente', badge: 'bg-amber-400/20 text-amber-300 border-amber-500/30' },
+        paid: { text: 'Pagada', badge: 'bg-[#2b5037] text-[#a8d5b5] border-[#a8d5b5]/30' },
+        declined: { text: 'Rechazada', badge: 'bg-rose-500/20 text-rose-300 border-rose-500/30' }
+      };
+      const st = statusMap[req.status] || { text: req.status || 'Pendiente', badge: 'bg-zinc-700 text-zinc-300' };
+      const curSym = CURRENCY_SYMBOLS[req.currency] || req.currency || '$';
+      const otherPerson = isReceived
+        ? (req.creator_display_name || req.creator_name || req.creator_username || 'Usuario')
+        : (req.friend_display_name || req.friend_name || req.friend_username || 'Amigo');
+      const subName = req.subscription_name || req.sub_name || 'Suscripción';
+      const reqAmount = typeof req.amount === 'number' ? req.amount : parseFloat(req.amount || 0);
 
-    return `
-      <div class="p-3.5 bg-[#211f26] border border-[#49454f]/40 rounded-2xl flex flex-col justify-between space-y-3">
-        <div>
-          <div class="flex items-start justify-between gap-2">
-            <div>
-              <span class="text-[10px] text-[#cac4d0] uppercase tracking-wider block">
-                ${isReceived ? `Solicitado por ${escapeHtml(otherPerson)}` : `Enviado a ${escapeHtml(otherPerson)}`}
+      let dueDateFormatted = '';
+      if (req.due_date) {
+        dueDateFormatted = typeof formatDateFriendly === 'function' ? formatDateFriendly(req.due_date) : req.due_date;
+      }
+
+      return `
+        <div class="p-3.5 bg-[#211f26] border border-[#49454f]/40 rounded-2xl flex flex-col justify-between space-y-3">
+          <div>
+            <div class="flex items-start justify-between gap-2">
+              <div>
+                <span class="text-[10px] text-[#cac4d0] uppercase tracking-wider block">
+                  ${isReceived ? `Solicitado por ${escapeHtml(otherPerson)}` : `Enviado a ${escapeHtml(otherPerson)}`}
+                </span>
+                <h4 class="text-xs font-bold text-white font-google-sans mt-0.5">${escapeHtml(subName)}</h4>
+              </div>
+              <span class="text-[10px] px-2 py-0.5 rounded-full border font-semibold ${st.badge}">
+                ${st.text}
               </span>
-              <h4 class="text-xs font-bold text-white font-google-sans mt-0.5">${escapeHtml(subName)}</h4>
             </div>
-            <span class="text-[10px] px-2 py-0.5 rounded-full border font-semibold ${st.badge}">
-              ${st.text}
-            </span>
-          </div>
 
-          <div class="mt-2.5 flex items-baseline justify-between">
-            <span class="text-xs text-[#cac4d0]">Monto requerido:</span>
-            <span class="text-base font-extrabold text-[#a8d5b5] font-mono">${curSym}${formatNumber(req.amount)}</span>
-          </div>
-
-          ${req.due_date ? `
-            <div class="mt-1 text-[10px] text-[#cac4d0] flex items-center gap-1">
-              <i data-lucide="calendar" class="w-3 h-3 text-[#d0bcff]"></i>
-              <span>Vence: ${formatDate(req.due_date)}</span>
+            <div class="mt-2.5 flex items-baseline justify-between">
+              <span class="text-xs text-[#cac4d0]">Monto requerido:</span>
+              <span class="text-base font-extrabold text-[#a8d5b5] font-mono">${curSym}${formatNumber(reqAmount)}</span>
             </div>
-          ` : ''}
 
-          ${req.notes ? `
-            <p class="mt-1.5 text-[11px] text-[#938f99] italic bg-[#141218] p-2 rounded-xl border border-[#49454f]/30">
-              "${escapeHtml(req.notes)}"
-            </p>
-          ` : ''}
-        </div>
+            ${dueDateFormatted ? `
+              <div class="mt-1 text-[10px] text-[#cac4d0] flex items-center gap-1">
+                <i data-lucide="calendar" class="w-3 h-3 text-[#d0bcff]"></i>
+                <span>Vence: ${dueDateFormatted}</span>
+              </div>
+            ` : ''}
 
-        ${isReceived && req.status === 'pending' ? `
-          <div class="pt-2 border-t border-[#49454f]/30 flex items-center gap-2">
-            <button onclick="respondSplitPay(${req.id}, 'paid')" class="flex-1 m3-btn-filled text-xs py-1.5 px-3 flex items-center justify-center gap-1">
-              <i data-lucide="check-circle" class="w-3.5 h-3.5"></i> Confirmar
-            </button>
-            <button onclick="respondSplitPay(${req.id}, 'declined')" class="m3-btn-outline text-xs py-1.5 px-3 text-rose-300 border-rose-500/30 hover:bg-rose-500/10">
-              Declinar
-            </button>
+            ${req.notes ? `
+              <p class="mt-1.5 text-[11px] text-[#938f99] italic bg-[#141218] p-2 rounded-xl border border-[#49454f]/30">
+                "${escapeHtml(req.notes)}"
+              </p>
+            ` : ''}
           </div>
-        ` : ''}
 
-        ${!isReceived && req.status === 'pending' ? `
-          <div class="pt-2 border-t border-[#49454f]/30 flex flex-col gap-2">
-            <div class="flex items-center gap-2">
-              <button onclick="respondSplitPay(${req.id}, 'paid')" class="flex-1 m3-btn-filled text-xs py-1.5 px-3 flex items-center justify-center gap-1" title="Confirmar que el amigo pagó su parte">
+          ${isReceived && req.status === 'pending' ? `
+            <div class="pt-2 border-t border-[#49454f]/30 flex items-center gap-2">
+              <button onclick="respondSplitPay(${req.id}, 'paid')" class="flex-1 m3-btn-filled text-xs py-1.5 px-3 flex items-center justify-center gap-1">
                 <i data-lucide="check-circle" class="w-3.5 h-3.5"></i> Confirmar
               </button>
-              <button onclick="respondSplitPay(${req.id}, 'declined')" class="m3-btn-outline text-xs py-1.5 px-3 text-rose-300 border-rose-500/30 hover:bg-rose-500/10" title="Cancelar o declinar esta solicitud">
+              <button onclick="respondSplitPay(${req.id}, 'declined')" class="m3-btn-outline text-xs py-1.5 px-3 text-rose-300 border-rose-500/30 hover:bg-rose-500/10">
                 Declinar
               </button>
             </div>
-            <div class="flex items-center justify-between gap-2 pt-1 border-t border-[#49454f]/20">
-              <span class="text-[11px] text-[#cac4d0]">Recordatorio</span>
-              <button onclick="openWhatsAppReminderPrompt('', '${escapeHtml(otherPerson)}', ${req.amount}, '${escapeHtml(subName)}')" class="m3-btn-tonal text-xs py-1 px-2.5 flex items-center gap-1 text-[#a8d5b5]" title="Recordar por WhatsApp">
-                <i data-lucide="message-circle" class="w-3.5 h-3.5"></i> WhatsApp
-              </button>
+          ` : ''}
+
+          ${!isReceived && req.status === 'pending' ? `
+            <div class="pt-2 border-t border-[#49454f]/30 flex flex-col gap-2">
+              <div class="flex items-center gap-2">
+                <button onclick="respondSplitPay(${req.id}, 'paid')" class="flex-1 m3-btn-filled text-xs py-1.5 px-3 flex items-center justify-center gap-1" title="Confirmar que el amigo pagó su parte">
+                  <i data-lucide="check-circle" class="w-3.5 h-3.5"></i> Confirmar
+                </button>
+                <button onclick="respondSplitPay(${req.id}, 'declined')" class="m3-btn-outline text-xs py-1.5 px-3 text-rose-300 border-rose-500/30 hover:bg-rose-500/10" title="Cancelar o declinar esta solicitud">
+                  Declinar
+                </button>
+              </div>
+              <div class="flex items-center justify-between gap-2 pt-1 border-t border-[#49454f]/20">
+                <span class="text-[11px] text-[#cac4d0]">Recordatorio</span>
+                <button onclick="openWhatsAppReminderPrompt('', '${escapeHtml(otherPerson)}', ${reqAmount}, '${escapeHtml(subName)}')" class="m3-btn-tonal text-xs py-1 px-2.5 flex items-center gap-1 text-[#a8d5b5]" title="Recordar por WhatsApp">
+                  <i data-lucide="message-circle" class="w-3.5 h-3.5"></i> WhatsApp
+                </button>
+              </div>
             </div>
-          </div>
-        ` : ''}
-      </div>
-    `;
-  }).join('');
+          ` : ''}
+        </div>
+      `;
+    }).join('');
+  } catch (err) {
+    console.error('Error renderizando solicitudes de split pay:', err);
+    container.innerHTML = `<div class="col-span-full py-4 text-center text-rose-300 text-xs">Error al mostrar solicitudes. Por favor recarga la página.</div>`;
+  }
 
   initIcons();
 }
@@ -1859,14 +1870,37 @@ function openSplitPayModalForFriend(friendId, friendName, friendUserId, preselec
   // Sanear friendUserId si viene como null, undefined, 0 o 'null'
   const validFriendUserId = (friendUserId && friendUserId !== 'null' && friendUserId !== 'undefined') ? parseInt(friendUserId) : null;
 
+  const submitBtn = modal?.querySelector('button[type="submit"]');
+  const warningElem = document.getElementById('splitPayLocalFriendWarning');
+
   if (friendIdInput) friendIdInput.value = friendId;
   if (friendUserIdInput) friendUserIdInput.value = validFriendUserId || '';
   if (friendNameDisplay) {
     friendNameDisplay.innerHTML = `
       <i data-lucide="user" class="w-4 h-4 text-[#d0bcff]"></i>
       <span>${escapeHtml(friendName)}</span>
-      ${validFriendUserId ? `<span class="text-[10px] px-2 py-0.5 rounded-full bg-[#381e72] text-[#d0bcff]">Usuario Conectado</span>` : '<span class="text-[10px] px-2 py-0.5 rounded-full bg-[#211f26] text-[#cac4d0]">Amigo Local</span>'}
+      ${validFriendUserId ? `<span class="text-[10px] px-2 py-0.5 rounded-full bg-[#381e72] text-[#d0bcff]">Usuario Conectado</span>` : '<span class="text-[10px] px-2 py-0.5 rounded-full bg-[#4a4458] text-[#e8def8]">Amigo Local (Sin cuenta)</span>'}
     `;
+  }
+
+  if (warningElem) {
+    if (!validFriendUserId) {
+      warningElem.classList.remove('hidden');
+    } else {
+      warningElem.classList.add('hidden');
+    }
+  }
+
+  if (submitBtn) {
+    if (!validFriendUserId) {
+      submitBtn.disabled = true;
+      submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+      submitBtn.title = 'Este amigo no tiene una cuenta vinculada en SubTracker';
+    } else {
+      submitBtn.disabled = false;
+      submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+      submitBtn.title = '';
+    }
   }
 
   // Filtrar suscripciones activas del usuario
@@ -1940,6 +1974,11 @@ async function handleSplitPaySubmit(e) {
     return;
   }
 
+  if (!friendUserId) {
+    showToast('Para enviar solicitudes de Split Pay, el amigo debe tener una cuenta vinculada en SubTracker.', 'warning');
+    return;
+  }
+
   try {
     const res = await fetch('/api/friends/split-request', {
       method: 'POST',
@@ -1954,14 +1993,21 @@ async function handleSplitPaySubmit(e) {
         notes: notes
       })
     });
-    const result = await res.json();
-    if (result.success) {
+    
+    let result;
+    try {
+      result = await res.json();
+    } catch (parseErr) {
+      result = { success: false, error: 'Respuesta inválida del servidor' };
+    }
+
+    if (res.ok && result.success) {
       showToast('¡Solicitud de pago en conjunto enviada!', 'success');
       closeSplitPayModal();
       setSplitPayTab('sent');
       await loadFriends();
     } else {
-      showToast(result.error || 'Error enviando solicitud', 'error');
+      showToast(result.error || result.message || 'Error al enviar solicitud', 'error');
     }
   } catch (err) {
     showToast('Error al conectar con el servidor', 'error');
