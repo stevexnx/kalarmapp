@@ -2105,16 +2105,16 @@
       </div>
 
       <div class="pt-3 border-t border-[#49454f]/40 flex items-center justify-end gap-2.5">
-        <button type="button" id="m3ConfirmBtnCancel" class="m3-btn-outline text-xs py-2 px-4 font-medium">
+        <button type="button" id="m3ConfirmBtnCancel" onclick="closeM3Dialog(false)" class="m3-btn-outline text-xs py-2 px-4 font-medium">
           Cancelar
         </button>
-        <button type="button" id="m3ConfirmBtnAccept" class="m3-btn-filled text-xs py-2 px-5 font-semibold">
+        <button type="button" id="m3ConfirmBtnAccept" onclick="closeM3Dialog(true)" class="m3-btn-filled text-xs py-2 px-5 font-semibold">
           Aceptar
         </button>
       </div>
     </div>
   </div>
 
-  <script src="/app.js"></script>
+  <script src="/app.js?v=2.5.0"></script>
 </body>
 </html>
