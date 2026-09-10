@@ -1780,20 +1780,30 @@ function renderSplitPayRequests() {
         ${isReceived && req.status === 'pending' ? `
           <div class="pt-2 border-t border-[#49454f]/30 flex items-center gap-2">
             <button onclick="respondSplitPay(${req.id}, 'paid')" class="flex-1 m3-btn-filled text-xs py-1.5 px-3 flex items-center justify-center gap-1">
-              <i data-lucide="check-circle" class="w-3.5 h-3.5"></i> Confirmar Pago
+              <i data-lucide="check-circle" class="w-3.5 h-3.5"></i> Confirmar
             </button>
             <button onclick="respondSplitPay(${req.id}, 'declined')" class="m3-btn-outline text-xs py-1.5 px-3 text-rose-300 border-rose-500/30 hover:bg-rose-500/10">
-              Rechazar
+              Declinar
             </button>
           </div>
         ` : ''}
 
         ${!isReceived && req.status === 'pending' ? `
-          <div class="pt-2 border-t border-[#49454f]/30 flex items-center justify-between gap-2">
-            <span class="text-[11px] text-[#cac4d0]">Pendiente de pago</span>
-            <button onclick="openWhatsAppReminderPrompt('', '${escapeHtml(otherPerson)}', ${req.amount}, '${escapeHtml(subName)}')" class="m3-btn-tonal text-xs py-1 px-2.5 flex items-center gap-1 text-[#a8d5b5]" title="Recordar por WhatsApp">
-              <i data-lucide="message-circle" class="w-3.5 h-3.5"></i> Recordar por WhatsApp
-            </button>
+          <div class="pt-2 border-t border-[#49454f]/30 flex flex-col gap-2">
+            <div class="flex items-center gap-2">
+              <button onclick="respondSplitPay(${req.id}, 'paid')" class="flex-1 m3-btn-filled text-xs py-1.5 px-3 flex items-center justify-center gap-1" title="Confirmar que el amigo pagó su parte">
+                <i data-lucide="check-circle" class="w-3.5 h-3.5"></i> Confirmar
+              </button>
+              <button onclick="respondSplitPay(${req.id}, 'declined')" class="m3-btn-outline text-xs py-1.5 px-3 text-rose-300 border-rose-500/30 hover:bg-rose-500/10" title="Cancelar o declinar esta solicitud">
+                Declinar
+              </button>
+            </div>
+            <div class="flex items-center justify-between gap-2 pt-1 border-t border-[#49454f]/20">
+              <span class="text-[11px] text-[#cac4d0]">Recordatorio</span>
+              <button onclick="openWhatsAppReminderPrompt('', '${escapeHtml(otherPerson)}', ${req.amount}, '${escapeHtml(subName)}')" class="m3-btn-tonal text-xs py-1 px-2.5 flex items-center gap-1 text-[#a8d5b5]" title="Recordar por WhatsApp">
+                <i data-lucide="message-circle" class="w-3.5 h-3.5"></i> WhatsApp
+              </button>
+            </div>
           </div>
         ` : ''}
       </div>
@@ -1804,22 +1814,35 @@ function renderSplitPayRequests() {
 }
 
 async function respondSplitPay(requestId, action) {
-  try {
-    const res = await fetch('/api/friends/split-requests/respond', {
-      method: 'POST',
-      headers: getAuthHeaders(),
-      body: JSON.stringify({ request_id: requestId, action: action })
-    });
-    const result = await res.json();
-    if (result.success) {
-      showToast(action === 'paid' ? '¡Pago registrado exitosamente!' : 'Solicitud rechazada', 'success');
-      await loadFriends();
-    } else {
-      showToast(result.error || 'Error al procesar pago', 'error');
+  const isPaid = action === 'paid' || action === 'pay' || action === 'accept';
+  const confirmMsg = isPaid 
+    ? '¿Deseas confirmar este pago en conjunto? Se registrará automáticamente en los pagos de la suscripción.'
+    : '¿Deseas declinar o cancelar esta solicitud de pago en conjunto?';
+  
+  showM3Confirm({
+    title: isPaid ? 'Confirmar Pago' : 'Declinar Solicitud',
+    message: confirmMsg,
+    confirmText: isPaid ? 'Confirmar' : 'Declinar',
+    isDanger: !isPaid,
+    onConfirm: async () => {
+      try {
+        const res = await fetch('/api/friends/split-requests/respond', {
+          method: 'POST',
+          headers: getAuthHeaders(),
+          body: JSON.stringify({ request_id: requestId, action: isPaid ? 'paid' : 'declined' })
+        });
+        const result = await res.json();
+        if (result.success) {
+          showToast(isPaid ? '¡Pago confirmado exitosamente!' : 'Solicitud declinada', 'success');
+          await loadFriends();
+        } else {
+          showToast(result.error || 'Error al procesar la solicitud', 'error');
+        }
+      } catch (err) {
+        showToast('Error al conectar con el servidor', 'error');
+      }
     }
-  } catch (err) {
-    showToast('Error al conectar con el servidor', 'error');
-  }
+  });
 }
 
 function openSplitPayModalForFriend(friendId, friendName, friendUserId, preselectedSubId = null, customAmount = null) {
@@ -4879,4 +4902,8 @@ window.showM3Confirm = showM3Confirm;
 window.showM3Alert = showM3Alert;
 window.showM3Prompt = showM3Prompt;
 window.closeM3Dialog = closeM3Dialog;
+window.respondSplitPay = respondSplitPay;
+window.setSplitPayTab = setSplitPayTab;
+window.renderSplitPayRequests = renderSplitPayRequests;
+window.openSplitPayModalForFriend = openSplitPayModalForFriend;
 
