@@ -680,4 +680,85 @@ h1, h2, h3, h4, .font-google-sans {
   animation: floatSoft 6s ease-in-out infinite reverse;
 }
 
+/* ================= FASE 1: MODO PRIVACIDAD (CAMUFLAJE FINANCIERO) ================= */
+.privacy-blur {
+  transition: filter 0.25s ease, opacity 0.25s ease;
+}
+
+body.privacy-mode-active .privacy-blur {
+  filter: blur(7px) !important;
+  user-select: none !important;
+  opacity: 0.75;
+}
+
+/* ================= FASE 1: SELECTOR DE PLANES EN FORMULARIO ================= */
+.m3-plan-chip {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 8px 14px;
+  border-radius: var(--md-shape-md);
+  background-color: var(--md-sys-color-surface-container);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  color: var(--md-sys-color-on-surface);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+  user-select: none;
+}
+.m3-plan-chip:hover {
+  background-color: var(--md-sys-color-surface-container-high);
+  border-color: var(--md-sys-color-primary);
+  transform: translateY(-1px);
+}
+.m3-plan-chip.active {
+  background-color: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-on-primary-container);
+  border-color: var(--md-sys-color-primary);
+  box-shadow: 0 2px 8px rgba(208, 188, 255, 0.2);
+}
+
+/* ================= FASE 1: COMMAND PALETTE (CTRL+K) ================= */
+.command-palette-backdrop {
+  background-color: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.command-palette-dialog {
+  background-color: var(--md-sys-color-surface-container-high);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: var(--md-shape-xl);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.75);
+}
+.command-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border-radius: var(--md-shape-sm);
+  color: var(--md-sys-color-on-surface);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.command-item:hover, .command-item.selected {
+  background-color: var(--md-sys-color-surface-container-highest);
+  color: #fff;
+}
+.command-item.selected {
+  border-left: 3px solid var(--md-sys-color-primary);
+}
+
+/* ================= FASES 2 & 3: SOCIAL & SMART INSIGHTS ================= */
+.m3-insight-card {
+  background: linear-gradient(135deg, rgba(33, 31, 38, 0.95) 0%, rgba(43, 41, 48, 0.7) 100%);
+  border: 1px solid rgba(208, 188, 255, 0.15);
+  border-radius: var(--md-shape-lg);
+  transition: all 0.22s ease;
+}
+.m3-insight-card:hover {
+  border-color: rgba(208, 188, 255, 0.4);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+}
+
+
 

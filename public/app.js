@@ -475,6 +475,7 @@ function convertCurrency(amount, fromCurr, toCurr) {
 // ================= INICIALIZACIÓN =================
 document.addEventListener('DOMContentLoaded', async () => {
   initPWA();
+  initPrivacyMode();
   initIcons();
   initEventListeners();
   await checkAuth();
@@ -1131,6 +1132,32 @@ function initEventListeners() {
   document.getElementById('btnClosePaymentModal')?.addEventListener('click', closePaymentModal);
   document.getElementById('btnCancelPaymentModal')?.addEventListener('click', closePaymentModal);
   document.getElementById('paymentForm')?.addEventListener('submit', handlePaymentSubmit);
+
+  // Fase 1: Modo Privacidad
+  document.getElementById('btnTogglePrivacyMode')?.addEventListener('click', togglePrivacyMode);
+
+  // Fase 1: Paleta de Comandos (Ctrl+K / Cmd+K)
+  document.getElementById('btnOpenCommandPalette')?.addEventListener('click', openCommandPalette);
+  document.getElementById('commandPaletteModal')?.addEventListener('click', (e) => {
+    if (e.target.id === 'commandPaletteModal') closeCommandPalette();
+  });
+  document.getElementById('commandPaletteInput')?.addEventListener('input', (e) => {
+    renderCommandPaletteResults(e.target.value);
+  });
+  document.getElementById('commandPaletteInput')?.addEventListener('keydown', handleCommandPaletteKeydown);
+
+  // Atajo global Ctrl+K / Cmd+K
+  window.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+      e.preventDefault();
+      toggleCommandPalette();
+    } else if (e.key === 'Escape') {
+      const palModal = document.getElementById('commandPaletteModal');
+      if (palModal && !palModal.classList.contains('hidden')) {
+        closeCommandPalette();
+      }
+    }
+  });
 }
 
 // ================= CARGA DE DATOS =================
@@ -1280,6 +1307,11 @@ function renderFriendsList() {
     }
   });
 
+  // Fase 2: Compensación de deudas mutuas ("Simplify Debts") con solicitudes Split Pay
+  // Si yo le debo al amigo o él me debe a mí en solicitudes pendientes
+  const pendingReceived = (state.splitPayRequests?.received || []).filter(r => r.status === 'pending');
+  const pendingSent = (state.splitPayRequests?.sent || []).filter(r => r.status === 'pending');
+
   if (totalElem) {
     totalElem.textContent = `${state.currency}${formatNumber(grandTotalOwed)}`;
   }
@@ -1298,12 +1330,21 @@ function renderFriendsList() {
     const balanceInfo = balanceMap[f.id];
     const monthlyOwed = balanceInfo ? balanceInfo.monthly_total_owed : 0;
     const subsList = balanceInfo ? (balanceInfo.shared_subscriptions || []) : [];
-    const hasActiveDebt = monthlyOwed > 0;
+    
+    // Cálculo de compensación neta de deudas cruzadas:
+    // f debe a usuario: monthlyOwed + pendingSent(hacia f)
+    // usuario debe a f: pendingReceived(de f)
+    const extraSentToFriend = pendingSent
+      .filter(r => (f.linked_user_id && r.friend_user_id === f.linked_user_id) || r.friend_id === f.id)
+      .reduce((sum, r) => sum + (parseFloat(r.amount) || 0), 0);
+    const owedToFriendByMe = pendingReceived
+      .filter(r => (f.linked_user_id && r.creator_id === f.linked_user_id))
+      .reduce((sum, r) => sum + (parseFloat(r.amount) || 0), 0);
 
-    // Mensaje preconfigurado para WhatsApp si debe algo
-    const subNames = subsList.map(s => s.name).join(', ');
-    const waText = encodeURIComponent(`Hola ${f.name}, te escribo para recordarte tu parte de ${subNames || 'las suscripciones'} de este mes por ${state.currency}${formatNumber(monthlyOwed)}. ¡Gracias!`);
-    const waUrl = f.phone ? `https://wa.me/${f.phone.replace(/[^0-9]/g, '')}?text=${waText}` : `https://wa.me/?text=${waText}`;
+    const friendTotalOwesMe = monthlyOwed + extraSentToFriend;
+    const netBalance = friendTotalOwesMe - owedToFriendByMe;
+    const hasNetDebt = Math.abs(netBalance) > 0.01;
+    const hasCrossDebt = (friendTotalOwesMe > 0 && owedToFriendByMe > 0);
 
     // Badges resumidos de suscripciones compartidas (hasta 2)
     let subsBadgesHtml = '';
@@ -1314,7 +1355,7 @@ function renderFriendsList() {
         return `
           <div class="flex items-center justify-between text-[11px] bg-[#141218] px-2.5 py-1 rounded-lg border border-[#49454f]/30">
             <span class="text-[#e6e0e9] font-medium truncate pr-2">${escapeHtml(s.name)}</span>
-            <span class="font-mono font-bold text-[#a8d5b5] shrink-0 text-[10px]">${state.currency}${formatNumber(shareConv)}</span>
+            <span class="font-mono font-bold text-[#a8d5b5] shrink-0 text-[10px] privacy-blur">${state.currency}${formatNumber(shareConv)}</span>
           </div>
         `;
       }).join('');
@@ -1322,6 +1363,9 @@ function renderFriendsList() {
         subsBadgesHtml += `<div class="text-[10px] text-[#cac4d0] text-right">+${subsList.length - 2} más</div>`;
       }
     }
+
+    const subNames = subsList.map(s => s.name).join(', ') || 'suscripciones';
+    const cleanPhone = (f.phone || '').replace(/[^0-9+]/g, '');
 
     return `
     <div onclick="viewSharedSubsWithFriend(${f.id}, '${escapeHtml(f.name)}', ${f.linked_user_id || 'null'})" class="p-4 bg-[#211f26] border border-[#49454f]/40 rounded-2xl flex flex-col justify-between hover:border-[#d0bcff]/70 hover:bg-[#28262f] cursor-pointer transition space-y-3 group shadow-sm">
@@ -1346,16 +1390,28 @@ function renderFriendsList() {
           </div>
         </div>
 
-        <!-- Estado de Cuota / Cobro Integrado -->
+        <!-- Estado de Cuota / Cobro Integrado con Compensación Cruzada -->
         <div class="mt-3 pt-2.5 border-t border-[#49454f]/30 flex items-center justify-between">
           <div class="text-[10px] uppercase font-bold text-[#cac4d0]">
             ${subsList.length > 0 ? `${subsList.length} ${subsList.length === 1 ? 'plan compartido' : 'planes compartidos'}` : 'Sin planes compartidos'}
           </div>
           <div class="text-right">
             <span class="text-[9px] uppercase text-[#cac4d0] block">Cuota mensual</span>
-            <span class="text-xs font-bold font-mono ${hasActiveDebt ? 'text-[#a8d5b5]' : 'text-[#938f99]'}">${state.currency}${formatNumber(monthlyOwed)}</span>
+            <span class="text-xs font-bold font-mono privacy-blur ${monthlyOwed > 0 ? 'text-[#a8d5b5]' : 'text-[#938f99]'}">${state.currency}${formatNumber(monthlyOwed)}</span>
           </div>
         </div>
+
+        <!-- Compensación Cruzada Inteligente si hay deudas mutuas -->
+        ${hasCrossDebt ? `
+          <div class="mt-2 p-2 bg-[#141218] rounded-xl border border-[#d0bcff]/30 flex items-center justify-between text-[11px]">
+            <span class="text-[#d0bcff] font-medium flex items-center gap-1">
+              <i data-lucide="scale" class="w-3 h-3"></i> Balance Neto:
+            </span>
+            <span class="font-mono font-bold ${netBalance > 0 ? 'text-[#a8d5b5]' : (netBalance < 0 ? 'text-[#f2b8b5]' : 'text-slate-300')} privacy-blur">
+              ${netBalance > 0 ? `Te debe ${state.currency}${formatNumber(netBalance)}` : (netBalance < 0 ? `Le debes ${state.currency}${formatNumber(Math.abs(netBalance))}` : 'Saldados (0.00)')}
+            </span>
+          </div>
+        ` : ''}
 
         <!-- Lista de suscripciones resumidas si existen -->
         ${subsBadgesHtml ? `<div class="mt-2 space-y-1">${subsBadgesHtml}</div>` : ''}
@@ -1364,20 +1420,18 @@ function renderFriendsList() {
       <!-- Acciones Unificadas -->
       <div class="pt-2 border-t border-[#49454f]/30 flex items-center gap-1.5 text-xs" onclick="event.stopPropagation()">
         <button onclick="viewSharedSubsWithFriend(${f.id}, '${escapeHtml(f.name)}', ${f.linked_user_id || 'null'})" class="flex-1 m3-btn-tonal text-[10px] py-1 px-2 flex items-center justify-center gap-1" title="Ver suscripciones individuales y planes">
-          <i data-lucide="layers" class="w-3.5 h-3.5 text-[#d0bcff]"></i> Ver Suscripciones
+          <i data-lucide="layers" class="w-3.5 h-3.5 text-[#d0bcff]"></i> Planes
         </button>
         <button onclick="openSplitPayModalForFriend(${f.id}, '${escapeHtml(f.name)}', ${f.linked_user_id || 'null'})" class="m3-btn-filled text-[10px] py-1 px-2.5 flex items-center justify-center gap-1" title="Solicitar pagar en conjunto">
           <i data-lucide="split" class="w-3 h-3"></i> Dividir
         </button>
-        ${hasActiveDebt ? `
+        ${monthlyOwed > 0 ? `
           <button onclick="recordFriendPaymentPrompt(${f.id}, '${escapeHtml(f.name)}', ${monthlyOwed})" class="m3-btn-outline text-[10px] py-1 px-2 flex items-center justify-center gap-1" title="Marcar cuota de este mes como saldada">
             <i data-lucide="check" class="w-3 h-3 text-[#a8d5b5]"></i> Saldar
           </button>
-          ${f.phone ? `
-            <a href="${waUrl}" target="_blank" rel="noopener" class="p-1.5 rounded-full bg-[#2b5037] hover:bg-[#2b5037]/80 text-[#a8d5b5] flex items-center justify-center transition" title="Enviar recordatorio por WhatsApp">
-              <i data-lucide="message-circle" class="w-3.5 h-3.5"></i>
-            </a>
-          ` : ''}
+          <button onclick="openWhatsAppReminderPrompt('${cleanPhone}', '${escapeHtml(f.name)}', ${monthlyOwed}, '${escapeHtml(subNames)}')" class="p-1.5 rounded-full bg-[#2b5037] hover:bg-[#2b5037]/80 text-[#a8d5b5] flex items-center justify-center transition" title="Enviar recordatorio de cobro por WhatsApp">
+            <i data-lucide="message-circle" class="w-3.5 h-3.5"></i>
+          </button>
         ` : ''}
       </div>
     </div>
@@ -1676,6 +1730,15 @@ function renderSplitPayRequests() {
             </button>
             <button onclick="respondSplitPay(${req.id}, 'declined')" class="m3-btn-outline text-xs py-1.5 px-3 text-rose-300 border-rose-500/30 hover:bg-rose-500/10">
               Rechazar
+            </button>
+          </div>
+        ` : ''}
+
+        ${!isReceived && req.status === 'pending' ? `
+          <div class="pt-2 border-t border-[#49454f]/30 flex items-center justify-between gap-2">
+            <span class="text-[11px] text-[#cac4d0]">Pendiente de pago</span>
+            <button onclick="openWhatsAppReminderPrompt('', '${escapeHtml(otherPerson)}', ${req.amount}, '${escapeHtml(subName)}')" class="m3-btn-tonal text-xs py-1 px-2.5 flex items-center gap-1 text-[#a8d5b5]" title="Recordar por WhatsApp">
+              <i data-lucide="message-circle" class="w-3.5 h-3.5"></i> Recordar por WhatsApp
             </button>
           </div>
         ` : ''}
@@ -2172,6 +2235,9 @@ function renderKPIs() {
       <span>Ahorro estimado: Podrías ahorrar <strong>${cur}${formatNumber(s.potential_annual_savings)}/año</strong> pagando planes anuales.</span>
     `;
   }
+
+  // Fase 3: Smart Financial Insights & Cashflow Predictor
+  renderSmartFinancialInsights();
 }
 
 function renderBudgetBar() {
@@ -2435,12 +2501,12 @@ function createCardHtml(sub) {
           <div>
             <span class="text-[10px] uppercase font-semibold tracking-wider text-[#cac4d0] block">Cobro Recurrente</span>
             ${isDifferentCurrency ? `
-              <span class="text-xs font-bold text-white font-mono">${baseSymbol}${formatNumber(convertedPrice)} <span class="text-[10px] font-normal text-[#cac4d0]">/${cycleLabel.toLowerCase()}</span></span>
-              <span class="block text-[11px] font-medium text-[#d0bcff]">orig. ${subSymbol}${formatNumber(sub.price)} ${subCurr}</span>
-              ${sub.is_shared ? `<span class="block text-[10px] text-[#a8d5b5] font-medium mt-0.5">Tu parte: ${baseSymbol}${formatNumber(convertedMonthly)}/m</span>` : ''}
+              <span class="text-xs font-bold text-white font-mono privacy-blur">${baseSymbol}${formatNumber(convertedPrice)} <span class="text-[10px] font-normal text-[#cac4d0]">/${cycleLabel.toLowerCase()}</span></span>
+              <span class="block text-[11px] font-medium text-[#d0bcff] privacy-blur">orig. ${subSymbol}${formatNumber(sub.price)} ${subCurr}</span>
+              ${sub.is_shared ? `<span class="block text-[10px] text-[#a8d5b5] font-medium mt-0.5 privacy-blur">Tu parte: ${baseSymbol}${formatNumber(convertedMonthly)}/m</span>` : ''}
             ` : `
-              <span class="text-xs font-bold text-white font-mono">${baseSymbol}${formatNumber(sub.price)} <span class="text-[10px] font-normal text-[#cac4d0]">/${cycleLabel.toLowerCase()}</span></span>
-              ${sub.is_shared ? `<span class="block text-[10px] text-[#a8d5b5] font-medium mt-0.5">Tu parte: ${baseSymbol}${formatNumber(sub.monthly_cost)}/m</span>` : ''}
+              <span class="text-xs font-bold text-white font-mono privacy-blur">${baseSymbol}${formatNumber(sub.price)} <span class="text-[10px] font-normal text-[#cac4d0]">/${cycleLabel.toLowerCase()}</span></span>
+              ${sub.is_shared ? `<span class="block text-[10px] text-[#a8d5b5] font-medium mt-0.5 privacy-blur">Tu parte: ${baseSymbol}${formatNumber(sub.monthly_cost)}/m</span>` : ''}
             `}
           </div>
 
@@ -2448,13 +2514,13 @@ function createCardHtml(sub) {
             <span class="text-[10px] uppercase font-bold tracking-wider text-[#d0bcff] block flex items-center justify-end gap-0.5 font-google-sans">
               <i data-lucide="sparkles" class="w-2.5 h-2.5"></i> Costo Anual
             </span>
-            <span class="text-sm font-extrabold text-[#e8def8] tracking-tight block font-mono">
+            <span class="text-sm font-extrabold text-[#e8def8] tracking-tight block font-mono privacy-blur">
               ${baseSymbol}${formatNumber(convertedAnnual)} <span class="text-[10px] font-medium text-[#cac4d0]">/año</span>
             </span>
             ${isDifferentCurrency ? `
-              <span class="text-[10px] text-[#cac4d0] block font-mono">(${subSymbol}${formatNumber(sub.annual_cost)} ${subCurr})</span>
+              <span class="text-[10px] text-[#cac4d0] block font-mono privacy-blur">(${subSymbol}${formatNumber(sub.annual_cost)} ${subCurr})</span>
             ` : `
-              <span class="text-[10px] text-[#cac4d0] block font-mono">(${baseSymbol}${formatNumber(convertedMonthly)}/mes)</span>
+              <span class="text-[10px] text-[#cac4d0] block font-mono privacy-blur">(${baseSymbol}${formatNumber(convertedMonthly)}/mes)</span>
             `}
           </div>
         </div>
@@ -2523,16 +2589,16 @@ function createTableRowHtml(sub) {
       </td>
       <td class="px-4 py-3.5 font-mono">
         ${isDifferentCurrency ? `
-          <div class="font-bold text-white">${baseSymbol}${formatNumber(convertedPrice)} <span class="text-[11px] text-[#cac4d0] font-normal">/${cycleLabel.toLowerCase()}</span></div>
-          <div class="text-[11px] text-[#d0bcff] font-semibold">orig. ${subSymbol}${formatNumber(sub.price)} ${subCurr}</div>
+          <div class="font-bold text-white privacy-blur">${baseSymbol}${formatNumber(convertedPrice)} <span class="text-[11px] text-[#cac4d0] font-normal">/${cycleLabel.toLowerCase()}</span></div>
+          <div class="text-[11px] text-[#d0bcff] font-semibold privacy-blur">orig. ${subSymbol}${formatNumber(sub.price)} ${subCurr}</div>
         ` : `
-          <div class="font-bold text-white">${baseSymbol}${formatNumber(sub.price)}</div>
+          <div class="font-bold text-white privacy-blur">${baseSymbol}${formatNumber(sub.price)}</div>
           <div class="text-[11px] text-[#cac4d0]">${cycleLabel}</div>
         `}
       </td>
       <td class="px-4 py-3.5 font-mono">
-        <div class="font-extrabold text-[#d0bcff]">${baseSymbol}${formatNumber(convertedAnnual)} / año</div>
-        <div class="text-[10px] text-[#cac4d0]">
+        <div class="font-extrabold text-[#d0bcff] privacy-blur">${baseSymbol}${formatNumber(convertedAnnual)} / año</div>
+        <div class="text-[10px] text-[#cac4d0] privacy-blur">
           (${baseSymbol}${formatNumber(convertedMonthly)} / mes${isDifferentCurrency ? ` &bull; orig. ${subSymbol}${formatNumber(sub.annual_cost)}` : ''})
         </div>
       </td>
@@ -3197,6 +3263,68 @@ function showPresetsStep() {
   initIcons();
 }
 
+// ================= SELECTOR DE PLANES DINÁMICO (FASE 1) =================
+function renderPlanSelector(serviceName, currentPrice = null, currentCycle = null) {
+  const container = document.getElementById('subPlanSelectorContainer');
+  const chipsContainer = document.getElementById('subPlanChips');
+  if (!container || !chipsContainer) return;
+
+  if (!serviceName) {
+    container.classList.add('hidden');
+    chipsContainer.innerHTML = '';
+    return;
+  }
+
+  // Buscar servicio en PRESET_SERVICES de forma insensible a mayúsculas
+  const service = PRESET_SERVICES.find(s => s.name.toLowerCase() === serviceName.toLowerCase().trim());
+  if (!service || !service.plans || service.plans.length <= 1) {
+    container.classList.add('hidden');
+    chipsContainer.innerHTML = '';
+    return;
+  }
+
+  const baseCurr = state.baseCurrencyCode || 'USD';
+  const baseSymbol = state.currency || '$';
+
+  chipsContainer.innerHTML = service.plans.map((plan, idx) => {
+    const converted = convertCurrency(plan.priceUsd, 'USD', baseCurr);
+    const cycleLabel = plan.cycle === 'annual' ? '/año' : (plan.cycle === 'weekly' ? '/sem' : '/mes');
+    const priceStr = formatNumber(converted).replace(/,/g, '');
+
+    // Comprobar si coincide con el precio o ciclo actual
+    const isMatchingPrice = currentPrice !== null && Math.abs(parseFloat(currentPrice) - converted) < 0.05;
+    const isMatchingCycle = currentCycle ? plan.cycle === currentCycle : true;
+    const isActive = (isMatchingPrice && isMatchingCycle) || (currentPrice === null && idx === 0);
+
+    return `
+      <button type="button" class="m3-plan-chip ${isActive ? 'active' : ''}" data-plan-index="${idx}" data-price="${priceStr}" data-cycle="${plan.cycle || 'monthly'}" onclick="handleSelectPlanChip(this)">
+        <span class="text-xs font-bold leading-tight">${escapeHtml(plan.name)}</span>
+        <span class="text-[11px] opacity-80 font-mono mt-0.5 font-medium">${baseSymbol}${priceStr} ${cycleLabel}</span>
+      </button>
+    `;
+  }).join('');
+
+  container.classList.remove('hidden');
+}
+
+function handleSelectPlanChip(chipBtn) {
+  const price = chipBtn.dataset.price;
+  const cycle = chipBtn.dataset.cycle;
+
+  // Actualizar clases activas en los chips
+  document.querySelectorAll('#subPlanChips .m3-plan-chip').forEach(c => c.classList.remove('active'));
+  chipBtn.classList.add('active');
+
+  // Actualizar campos del formulario
+  const priceInput = document.getElementById('subPrice');
+  const cycleInput = document.getElementById('subBillingCycle');
+  if (priceInput) priceInput.value = price;
+  if (cycleInput) cycleInput.value = cycle;
+
+  // Disparar recálculo en vivo
+  updateModalLiveCalculation();
+}
+
 function showDetailsForm(titleText = 'Detalles de Suscripción', isEdit = false) {
   const tplStep = document.getElementById('templatesStepContainer');
   const form = document.getElementById('subscriptionForm');
@@ -3241,6 +3369,9 @@ function openCustomSubscription() {
   document.getElementById('trialFieldsContainer')?.classList.add('hidden');
   document.getElementById('sharedFieldsContainer')?.classList.add('hidden');
   populateSharedFriendsCheckboxes([]);
+
+  // Ocultar selector de planes en personalizada
+  renderPlanSelector('');
 
   showDetailsForm('Suscripción Personalizada', false);
 }
@@ -3292,6 +3423,7 @@ function openModal(sub = null) {
       selectedFriendIds = (sub.shared_friend_ids || '').split(',').filter(Boolean);
     }
 
+    renderPlanSelector(sub.name, sub.price, sub.billing_cycle);
     showDetailsForm(sub.name, true);
   } else {
     btnSubmitText.textContent = 'Guardar Suscripción';
@@ -3328,17 +3460,12 @@ function renderPresetCatalog(filterCategory = 'all', searchQuery = '') {
   // Tarjeta de Personalizada siempre accesible como primera o destacada opción
   const customCardHtml = `
     <div class="m3-preset-card border-dashed border-[#d0bcff]/50 bg-[#2b2930]/40 group hover:border-[#d0bcff]" onclick="openCustomSubscription()" title="Crear suscripción propia desde cero">
-      <div class="m3-brand-icon-box bg-[#d0bcff]/20 text-[#d0bcff] transition-transform group-hover:scale-105 border border-[#d0bcff]/40">
+      <div class="m3-brand-icon-box bg-[#381e72]/50 border border-[#d0bcff]/40 text-[#d0bcff]">
         <i data-lucide="plus" class="w-5 h-5"></i>
       </div>
-      <div class="overflow-hidden flex-1 min-w-0">
-        <div class="text-xs font-bold text-white truncate flex items-center gap-1.5 font-google-sans">
-          <span>Personalizada</span>
-          <span class="m3-badge-primary text-[9px]">Nuevo</span>
-        </div>
-        <div class="text-[11px] text-[#cac4d0] truncate">
-          Crea un servicio que no esté en la lista
-        </div>
+      <div>
+        <div class="text-xs font-bold text-white font-google-sans">Personalizada</div>
+        <div class="text-[11px] text-[#cac4d0]">Desde cero</div>
       </div>
     </div>
   `;
@@ -3354,7 +3481,8 @@ function renderPresetCatalog(filterCategory = 'all', searchQuery = '') {
     return;
   }
 
-  const itemsHtml = filtered.map((service, sIndex) => {
+  const itemsHtml = filtered.map(service => {
+    const sIndex = PRESET_SERVICES.indexOf(service);
     const plan = service.plans[0];
     const converted = convertCurrency(plan.priceUsd, 'USD', baseCurr);
     const cycleLabel = plan.cycle === 'annual' ? '/año' : '/mes';
@@ -3401,6 +3529,9 @@ function selectPresetService(serviceIndex) {
   if (service.url) {
     document.getElementById('subUrl').value = service.url;
   }
+
+  // Renderizar chips de planes dinámicos para este servicio
+  renderPlanSelector(service.name, convertedPrice, plan.cycle);
 
   showDetailsForm(service.name, false);
 }
@@ -3917,6 +4048,405 @@ function showToast(message, type = 'info') {
   setTimeout(() => toast.classList.add('translate-y-20', 'opacity-0', 'pointer-events-none'), 3500);
 }
 
+// ================= FASE 1: MODO PRIVACIDAD (BLUR FINANCIERO) =================
+function initPrivacyMode() {
+  const isPrivacyActive = localStorage.getItem('subtracker_privacy') === 'true';
+  applyPrivacyMode(isPrivacyActive);
+}
+
+function togglePrivacyMode() {
+  const willBeActive = !document.body.classList.contains('privacy-mode-active');
+  localStorage.setItem('subtracker_privacy', willBeActive ? 'true' : 'false');
+  applyPrivacyMode(willBeActive);
+  showToast(willBeActive ? 'Modo Privacidad activado: Montos ocultos' : 'Modo Privacidad desactivado: Montos visibles', 'info');
+}
+
+function applyPrivacyMode(active) {
+  const body = document.body;
+  const icon = document.getElementById('iconPrivacyMode');
+  const btn = document.getElementById('btnTogglePrivacyMode');
+
+  if (active) {
+    body.classList.add('privacy-mode-active');
+    if (icon) icon.setAttribute('data-lucide', 'eye-off');
+    if (btn) btn.classList.add('bg-[#381e72]', 'text-[#d0bcff]', 'border-[#d0bcff]/50');
+  } else {
+    body.classList.remove('privacy-mode-active');
+    if (icon) icon.setAttribute('data-lucide', 'eye');
+    if (btn) btn.classList.remove('bg-[#381e72]', 'text-[#d0bcff]', 'border-[#d0bcff]/50');
+  }
+  initIcons();
+}
+
+// ================= FASE 1: PALETA DE COMANDOS (CTRL + K) =================
+let commandPaletteSelectedIndex = 0;
+let commandPaletteFilteredItems = [];
+
+function toggleCommandPalette() {
+  const modal = document.getElementById('commandPaletteModal');
+  if (!modal) return;
+  if (modal.classList.contains('hidden')) {
+    openCommandPalette();
+  } else {
+    closeCommandPalette();
+  }
+}
+
+function openCommandPalette() {
+  const modal = document.getElementById('commandPaletteModal');
+  const input = document.getElementById('commandPaletteInput');
+  if (!modal) return;
+
+  modal.classList.remove('hidden');
+  if (input) {
+    input.value = '';
+    input.focus();
+  }
+  commandPaletteSelectedIndex = 0;
+  renderCommandPaletteResults('');
+}
+
+function closeCommandPalette() {
+  const modal = document.getElementById('commandPaletteModal');
+  if (modal) modal.classList.add('hidden');
+}
+
+function getCommandPaletteIndex() {
+  const items = [
+    // Acciones principales
+    { id: 'act_new_sub', title: 'Nueva Suscripción', subtitle: 'Añadir suscripción o servicio recurrente', icon: 'plus-circle', category: 'Acciones Rápidas', action: () => { closeCommandPalette(); openModal(); } },
+    { id: 'act_new_friend', title: 'Añadir Amigo', subtitle: 'Registrar amigo o buscar usuarios registrados', icon: 'user-plus', category: 'Acciones Rápidas', action: () => { closeCommandPalette(); openFriendModal(); } },
+    { id: 'act_toggle_privacy', title: 'Alternar Modo Privacidad', subtitle: 'Ocultar o mostrar cifras de dinero', icon: 'eye', category: 'Acciones Rápidas', action: () => { closeCommandPalette(); togglePrivacyMode(); } },
+    { id: 'act_record_payment', title: 'Registrar Pago Manual', subtitle: 'Guardar comprobante o pago de corte', icon: 'receipt', category: 'Acciones Rápidas', action: () => { closeCommandPalette(); openManualPaymentModal(); } },
+    { id: 'act_settings', title: 'Ajustes y Monedas', subtitle: 'Configurar presupuesto, respaldos y alertas', icon: 'settings', category: 'Navegación', action: () => { closeCommandPalette(); openSettingsModal('general'); } },
+
+    // Pestañas / Vistas
+    { id: 'nav_dashboard', title: 'Ir a Suscripciones (Dashboard)', subtitle: 'Panel principal de finanzas y tarjetas', icon: 'layout-dashboard', category: 'Navegación', action: () => { closeCommandPalette(); switchTab('dashboard'); } },
+    { id: 'nav_calendar', title: 'Ir a Calendario de Cortes', subtitle: 'Vista mensual de cobros programados', icon: 'calendar', category: 'Navegación', action: () => { closeCommandPalette(); switchTab('calendar'); } },
+    { id: 'nav_payments', title: 'Ir a Historial de Pagos', subtitle: 'Registro cronológico de pagos realizados', icon: 'history', category: 'Navegación', action: () => { closeCommandPalette(); switchTab('payments'); } },
+    { id: 'nav_friends', title: 'Ir a Amigos & Split Pay', subtitle: 'División de gastos compartidos y cuentas', icon: 'users', category: 'Navegación', action: () => { closeCommandPalette(); switchTab('friends'); } }
+  ];
+
+  // Suscripciones activas del usuario
+  (state.subscriptions || []).forEach(sub => {
+    items.push({
+      id: `sub_${sub.id}`,
+      title: sub.name,
+      subtitle: `${state.currency}${formatNumber(sub.price)} / ${sub.billing_cycle} &bull; Corte: ${formatDateFriendly(sub.next_billing_date)}`,
+      icon: 'layers',
+      category: 'Tus Suscripciones',
+      action: () => {
+        closeCommandPalette();
+        switchTab('dashboard');
+        editSubscription(sub.id);
+      }
+    });
+  });
+
+  // Amigos agregados
+  (state.friends || []).forEach(f => {
+    items.push({
+      id: `friend_${f.id}`,
+      title: f.name,
+      subtitle: `${f.phone || f.email || 'Sin contacto'} &bull; Ver cuentas compartidas`,
+      icon: 'user',
+      category: 'Tus Amigos',
+      action: () => {
+        closeCommandPalette();
+        switchTab('friends');
+        viewSharedSubsWithFriend(f.id, f.name, f.linked_user_id);
+      }
+    });
+  });
+
+  // Presets populares disponibles
+  PRESET_SERVICES.slice(0, 10).forEach(preset => {
+    items.push({
+      id: `preset_${preset.name}`,
+      title: `Añadir ${preset.name}`,
+      subtitle: `Plantilla oficial ${preset.category} &bull; $${preset.plans[0].priceUsd} USD`,
+      icon: 'sparkles',
+      category: 'Catálogo de Servicios',
+      action: () => {
+        closeCommandPalette();
+        const pIdx = PRESET_SERVICES.indexOf(preset);
+        selectPresetService(pIdx);
+        document.getElementById('subscriptionModal')?.classList.remove('hidden');
+      }
+    });
+  });
+
+  return items;
+}
+
+function renderCommandPaletteResults(query = '') {
+  const container = document.getElementById('commandPaletteResults');
+  if (!container) return;
+
+  const q = (query || '').toLowerCase().trim();
+  const allItems = getCommandPaletteIndex();
+
+  commandPaletteFilteredItems = allItems.filter(item => {
+    if (!q) return true;
+    return item.title.toLowerCase().includes(q) ||
+           item.subtitle.toLowerCase().includes(q) ||
+           item.category.toLowerCase().includes(q);
+  });
+
+  if (commandPaletteSelectedIndex >= commandPaletteFilteredItems.length) {
+    commandPaletteSelectedIndex = Math.max(0, commandPaletteFilteredItems.length - 1);
+  }
+
+  if (commandPaletteFilteredItems.length === 0) {
+    container.innerHTML = `
+      <div class="py-8 text-center text-[#cac4d0] text-xs">
+        No se encontraron acciones, suscripciones o comandos para "<strong>${escapeHtml(query)}</strong>"
+      </div>
+    `;
+    return;
+  }
+
+  // Agrupar por categoría
+  const groups = {};
+  commandPaletteFilteredItems.forEach((item, index) => {
+    if (!groups[item.category]) groups[item.category] = [];
+    groups[item.category].push({ item, index });
+  });
+
+  let html = '';
+  Object.keys(groups).forEach(cat => {
+    html += `<div class="px-2 pt-2 pb-1 text-[10px] font-bold uppercase tracking-wider text-[#938f99]">${cat}</div>`;
+    groups[cat].forEach(({ item, index }) => {
+      const isSelected = index === commandPaletteSelectedIndex;
+      html += `
+        <div class="command-item ${isSelected ? 'selected' : ''}" data-cmd-index="${index}" onclick="executeCommandPaletteIndex(${index})">
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-7 h-7 rounded-lg bg-[#2b2930] flex items-center justify-center text-[#d0bcff] shrink-0 border border-[#49454f]/50">
+              <i data-lucide="${item.icon}" class="w-3.5 h-3.5"></i>
+            </div>
+            <div class="min-w-0">
+              <div class="text-xs font-semibold text-white truncate">${escapeHtml(item.title)}</div>
+              <div class="text-[11px] text-[#cac4d0] truncate">${item.subtitle}</div>
+            </div>
+          </div>
+          <i data-lucide="chevron-right" class="w-4 h-4 text-[#938f99] shrink-0"></i>
+        </div>
+      `;
+    });
+  });
+
+  container.innerHTML = html;
+  initIcons();
+}
+
+function handleCommandPaletteKeydown(e) {
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    if (commandPaletteSelectedIndex < commandPaletteFilteredItems.length - 1) {
+      commandPaletteSelectedIndex++;
+      renderCommandPaletteResults(e.target.value);
+      scrollSelectedCommandIntoView();
+    }
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    if (commandPaletteSelectedIndex > 0) {
+      commandPaletteSelectedIndex--;
+      renderCommandPaletteResults(e.target.value);
+      scrollSelectedCommandIntoView();
+    }
+  } else if (e.key === 'Enter') {
+    e.preventDefault();
+    executeCommandPaletteIndex(commandPaletteSelectedIndex);
+  }
+}
+
+function scrollSelectedCommandIntoView() {
+  const container = document.getElementById('commandPaletteResults');
+  const selected = container?.querySelector('.command-item.selected');
+  if (selected && container) {
+    selected.scrollIntoView({ block: 'nearest' });
+  }
+}
+
+function executeCommandPaletteIndex(index) {
+  const item = commandPaletteFilteredItems[index];
+  if (item && item.action) {
+    item.action();
+  }
+}
+
+// ================= FASE 2: 1-CLICK WHATSAPP PAYMENT REMINDER =================
+function openWhatsAppReminderPrompt(phone, friendName, amount, subNames = '') {
+  let targetPhone = phone ? phone.replace(/[^0-9]/g, '') : '';
+
+  if (!targetPhone) {
+    const inputPhone = prompt(`Ingresa el número de WhatsApp con código de país para ${friendName} (ej: +18091234567):`, '');
+    if (!inputPhone) return;
+    targetPhone = inputPhone.replace(/[^0-9]/g, '');
+  }
+
+  const subText = subNames ? `de ${subNames}` : 'de las suscripciones compartidas';
+  const message = `Hola ${friendName} 👋 Te comparto el recordatorio de tu parte ${subText} por un monto de ${state.currency}${formatNumber(amount)}. ¡Muchas gracias!`;
+  const waUrl = `https://wa.me/${targetPhone}?text=${encodeURIComponent(message)}`;
+
+  window.open(waUrl, '_blank', 'noopener,noreferrer');
+}
+
+// ================= FASE 3: SMART FINANCIAL INSIGHTS & CASHFLOW PREDICTOR =================
+function renderSmartFinancialInsights() {
+  const container = document.getElementById('smartFinancialInsightsSection');
+  if (!container || !state.stats) return;
+
+  const subs = state.subscriptions || [];
+  const s = state.stats;
+  const insights = [];
+
+  // Insight 1: Oportunidad de ahorro anual (Switch to annual plan)
+  const monthlySubs = subs.filter(sub => sub.status === 'active' && sub.billing_cycle === 'monthly');
+  let potentialSwitchSavings = 0;
+  let sampleSubName = '';
+
+  monthlySubs.forEach(sub => {
+    // Buscar si existe un plan anual en presets para este servicio
+    const preset = PRESET_SERVICES.find(p => p.name.toLowerCase() === sub.name.toLowerCase());
+    if (preset && preset.plans) {
+      const annualPlan = preset.plans.find(p => p.cycle === 'annual');
+      if (annualPlan) {
+        const annualConverted = convertCurrency(annualPlan.priceUsd, 'USD', state.baseCurrencyCode);
+        const currentAnnualCost = sub.converted_price ? (sub.converted_price * 12) : (convertCurrency(sub.price, sub.currency, state.baseCurrencyCode) * 12);
+        const diff = currentAnnualCost - annualConverted;
+        if (diff > 5) {
+          potentialSwitchSavings += diff;
+          if (!sampleSubName) sampleSubName = sub.name;
+        }
+      }
+    }
+  });
+
+  // Si no hay cálculo exacto con presets pero hay potencial de stats
+  if (potentialSwitchSavings === 0 && s.potential_annual_savings > 0) {
+    potentialSwitchSavings = s.potential_annual_savings;
+  }
+
+  if (potentialSwitchSavings > 0) {
+    insights.push({
+      type: 'savings',
+      badge: 'Optimización de Plan',
+      badgeClass: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
+      icon: 'sparkles',
+      iconBg: 'bg-emerald-500/20 text-emerald-300',
+      title: `Podrías ahorrar ≈ ${state.currency}${formatNumber(potentialSwitchSavings)}/año`,
+      description: sampleSubName 
+        ? `Cambiando servicios como <strong>${escapeHtml(sampleSubName)}</strong> a facturación anual en lugar de mensual obtienes 2 meses gratis en promedio.`
+        : `Tienes suscripciones mensuales que ofrecen descuento si las pagas anualmente. ¡Ahorra hasta un 15-20%!`,
+      actionText: 'Ver suscripciones',
+      actionHandler: () => {
+        document.getElementById('statusFilter').value = 'all';
+        loadSubscriptions();
+      }
+    });
+  }
+
+  // Insight 2: Cashflow Predictor / Picos de cobros en los próximos 7 días
+  const upcoming = s.upcoming_7_days || [];
+  if (upcoming.length >= 2) {
+    const sumUpcoming = upcoming.reduce((acc, sub) => {
+      const conv = sub.converted_price !== undefined ? sub.converted_price : convertCurrency(sub.price, sub.currency, state.baseCurrencyCode);
+      return acc + conv;
+    }, 0);
+
+    insights.push({
+      type: 'cashflow',
+      badge: 'Previsión de Liquidez',
+      badgeClass: 'bg-amber-500/20 text-amber-300 border-amber-500/30',
+      icon: 'trending-up',
+      iconBg: 'bg-amber-500/20 text-amber-300',
+      title: `Pico de cargos: ${state.currency}${formatNumber(sumUpcoming)} en los próximos 7 días`,
+      description: `Tienes <strong>${upcoming.length} suscripciones</strong> con corte programado esta semana (${upcoming.map(u => u.name).slice(0, 3).join(', ')}). Asegúrate de tener saldo disponible en tus tarjetas.`,
+      actionText: 'Ver calendario',
+      actionHandler: () => {
+        switchTab('calendar');
+      }
+    });
+  }
+
+  // Insight 3: Optimización de suscripciones duplicadas o en la misma categoría
+  const categoryCounts = {};
+  subs.filter(sub => sub.status === 'active').forEach(sub => {
+    const cat = sub.category || 'Otros';
+    categoryCounts[cat] = (categoryCounts[cat] || 0) + 1;
+  });
+
+  const crowdedCategory = Object.keys(categoryCounts).find(cat => categoryCounts[cat] >= 3 && cat !== 'Otros');
+  if (crowdedCategory && insights.length < 2) {
+    insights.push({
+      type: 'review',
+      badge: 'Control de Gasto',
+      badgeClass: 'bg-[#381e72] text-[#d0bcff] border-[#d0bcff]/30',
+      icon: 'layers',
+      iconBg: 'bg-[#381e72] text-[#d0bcff]',
+      title: `Tienes ${categoryCounts[crowdedCategory]} suscripciones en "${crowdedCategory}"`,
+      description: `Revisa si utilizas activamente todas estas cuentas o si podrías pausar alguna para reducir tus cobros recurrentes.`,
+      actionText: 'Filtrar categoría',
+      actionHandler: () => {
+        const catSelect = document.getElementById('categoryFilter');
+        if (catSelect) {
+          catSelect.value = crowdedCategory;
+          loadSubscriptions();
+        }
+      }
+    });
+  }
+
+  if (insights.length === 0) {
+    container.classList.add('hidden');
+    container.innerHTML = '';
+    return;
+  }
+
+  container.classList.remove('hidden');
+  container.innerHTML = `
+    <div class="grid grid-cols-1 ${insights.length > 1 ? 'md:grid-cols-2' : ''} gap-3">
+      ${insights.map((ins, idx) => `
+        <div class="m3-insight-card p-4 flex flex-col justify-between space-y-3">
+          <div>
+            <div class="flex items-center justify-between gap-2">
+              <span class="text-[10px] px-2 py-0.5 rounded-full border font-bold ${ins.badgeClass}">
+                ${ins.badge}
+              </span>
+              <div class="w-7 h-7 rounded-lg ${ins.iconBg} flex items-center justify-center shrink-0">
+                <i data-lucide="${ins.icon}" class="w-3.5 h-3.5"></i>
+              </div>
+            </div>
+            <h4 class="text-xs sm:text-sm font-bold text-white mt-2 font-google-sans leading-tight">
+              ${ins.title}
+            </h4>
+            <p class="text-[11px] text-[#cac4d0] mt-1 leading-relaxed">
+              ${ins.description}
+            </p>
+          </div>
+          <div class="pt-2 border-t border-[#49454f]/30 flex justify-end">
+            <button onclick="handleInsightAction(${idx})" class="m3-btn-tonal text-[11px] py-1 px-3 flex items-center gap-1.5">
+              <span>${ins.actionText}</span>
+              <i data-lucide="arrow-right" class="w-3 h-3"></i>
+            </button>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+
+  // Guardar acciones de insights en window para interacción
+  window._currentInsights = insights;
+  initIcons();
+}
+
+function handleInsightAction(index) {
+  if (window._currentInsights && window._currentInsights[index]) {
+    window._currentInsights[index].actionHandler();
+  }
+}
+
 // Funciones accesibles globalmente
 window.editSubscription = editSubscription;
 window.deleteSubscription = deleteSubscription;
@@ -3931,3 +4461,14 @@ window.resetCalendarToToday = resetCalendarToToday;
 window.openCustomSubscription = openCustomSubscription;
 window.showPresetsStep = showPresetsStep;
 window.selectPresetService = selectPresetService;
+window.handleSelectPlanChip = handleSelectPlanChip;
+window.renderPlanSelector = renderPlanSelector;
+window.togglePrivacyMode = togglePrivacyMode;
+window.openCommandPalette = openCommandPalette;
+window.closeCommandPalette = closeCommandPalette;
+window.toggleCommandPalette = toggleCommandPalette;
+window.executeCommandPaletteIndex = executeCommandPaletteIndex;
+window.openWhatsAppReminderPrompt = openWhatsAppReminderPrompt;
+window.renderSmartFinancialInsights = renderSmartFinancialInsights;
+window.handleInsightAction = handleInsightAction;
+

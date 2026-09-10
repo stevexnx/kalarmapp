@@ -140,6 +140,18 @@
             <span id="navBaseCurrencyBadge" class="font-bold text-[#d0bcff]">USD ($)</span>
           </div>
 
+          <!-- Botón Command Palette (Ctrl+K) -->
+          <button id="btnOpenCommandPalette" title="Buscar y comandos rápidos (Ctrl + K)" class="hidden sm:inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#211f26] hover:bg-[#2b2930] text-xs text-[#cac4d0] hover:text-white border border-[#49454f]/50 transition">
+            <i data-lucide="search" class="w-3.5 h-3.5 text-[#d0bcff]"></i>
+            <span class="hidden md:inline">Buscar...</span>
+            <kbd class="px-1.5 py-0.5 rounded bg-[#141218] border border-[#49454f]/60 text-[10px] text-[#938f99] font-mono">Ctrl K</kbd>
+          </button>
+
+          <!-- Botón Modo Privacidad (Ocultar / Mostrar cifras de dinero) -->
+          <button id="btnTogglePrivacyMode" title="Modo Privacidad: Ocultar o mostrar montos" class="inline-flex items-center justify-center p-2 rounded-full bg-[#211f26] hover:bg-[#2b2930] text-[#cac4d0] hover:text-[#d0bcff] border border-[#49454f]/50 transition">
+            <i data-lucide="eye" id="iconPrivacyMode" class="w-4 h-4"></i>
+          </button>
+
           <!-- Botón Ajustes (móvil/tablet) -->
           <button id="btnOpenSettingsModal" title="Ajustes y Configuración" class="md:hidden inline-flex items-center justify-center p-2 text-xs rounded-full bg-[#211f26] hover:bg-[#2b2930] text-[#cac4d0] border border-[#49454f]/50 transition">
             <i data-lucide="settings" class="w-4 h-4"></i>
@@ -227,7 +239,7 @@
 
           <div class="text-left sm:text-right flex items-center sm:block gap-3">
             <div class="text-xs text-[#cac4d0]">
-              Consumido: <span id="budgetSpentAmount" class="font-bold text-white font-mono">$0.00</span> / <span id="budgetLimitAmount" class="font-bold text-[#cac4d0] font-mono">$150.00</span>
+              Consumido: <span id="budgetSpentAmount" class="font-bold text-white font-mono privacy-blur">$0.00</span> / <span id="budgetLimitAmount" class="font-bold text-[#cac4d0] font-mono privacy-blur">$150.00</span>
             </div>
             <button id="btnQuickEditBudget" class="m3-btn-text text-[11px] py-0 px-1 mt-0.5">
               Modificar presupuesto
@@ -243,6 +255,11 @@
       <!-- BANNER DE ALERTAS DE FECHAS DE CORTE INMINENTES -->
       <div id="cutOffAlertsBanner" class="hidden rounded-2xl p-4 sm:p-5 border transition-all duration-300"></div>
 
+      <!-- FASE 3: SMART FINANCIAL INSIGHTS & CASHFLOW PREDICTOR (CONTENEDOR DINÁMICO) -->
+      <div id="smartFinancialInsightsSection" class="hidden space-y-3">
+        <!-- Renderizado dinámicamente por app.js con sugerencias de optimización de planes y proyección de liquidez -->
+      </div>
+
       <!-- TARJETAS DE RESUMEN FINANCIERO (KPIs) CON ESTILO M3 -->
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
         
@@ -255,7 +272,7 @@
             </div>
           </div>
           <div class="mt-3">
-            <div class="text-2xl sm:text-3xl font-bold text-white tracking-tight font-mono" id="kpiMonthlyCost">$0.00</div>
+            <div class="text-2xl sm:text-3xl font-bold text-white tracking-tight font-mono privacy-blur" id="kpiMonthlyCost">$0.00</div>
             <p class="text-xs text-[#cac4d0] mt-1" id="kpiMonthlySubtitle">Total recurrente activo</p>
           </div>
         </div>
@@ -272,7 +289,7 @@
             </div>
           </div>
           <div class="mt-3">
-            <div class="text-2xl sm:text-3xl font-bold text-white tracking-tight font-mono" id="kpiAnnualCost">$0.00</div>
+            <div class="text-2xl sm:text-3xl font-bold text-white tracking-tight font-mono privacy-blur" id="kpiAnnualCost">$0.00</div>
             <p class="text-xs text-[#cac4d0] mt-1" id="kpiSavingsTip">Impacto acumulado en 12 meses</p>
           </div>
         </div>
@@ -300,7 +317,7 @@
             </div>
           </div>
           <div class="mt-3">
-            <div class="text-2xl sm:text-3xl font-bold text-[#a8d5b5] tracking-tight font-mono" id="kpiSharedSavings">$0.00</div>
+            <div class="text-2xl sm:text-3xl font-bold text-[#a8d5b5] tracking-tight font-mono privacy-blur" id="kpiSharedSavings">$0.00</div>
             <p class="text-xs text-[#cac4d0] mt-1" id="kpiSharedSubtitle">Total aportado por amigos</p>
           </div>
         </div>
@@ -1377,6 +1394,15 @@
               class="m3-text-field">
           </div>
 
+          <!-- Selector de Planes Dinámico (Fase 1) -->
+          <div id="subPlanSelectorContainer" class="sm:col-span-3 hidden">
+            <label class="block text-[11px] font-semibold text-[#d0bcff] mb-1.5 flex items-center gap-1.5">
+              <i data-lucide="layers" class="w-3.5 h-3.5"></i>
+              <span>Planes disponibles (autocompleta precio y ciclo):</span>
+            </label>
+            <div id="subPlanChips" class="flex flex-wrap gap-1.5"></div>
+          </div>
+
           <div>
             <label class="block text-xs font-medium text-[#cac4d0] mb-1" for="subPrice">Precio / Costo *</label>
             <input type="number" id="subPrice" step="0.01" min="0" required placeholder="0.00"
@@ -1811,6 +1837,33 @@
           <button type="submit" class="m3-btn-filled py-2 px-5 text-xs">Guardar</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- MODAL COMMAND PALETTE (CTRL + K) -->
+  <div id="commandPaletteModal" class="hidden fixed inset-0 z-50 command-palette-backdrop flex items-start justify-center pt-[15vh] px-4">
+    <div class="command-palette-dialog w-full max-w-xl rounded-2xl shadow-2xl overflow-hidden flex flex-col border border-[#49454f]">
+      <!-- Input de búsqueda -->
+      <div class="flex items-center px-4 py-3 border-b border-[#49454f]/50 gap-3 bg-[#1d1b20]">
+        <i data-lucide="search" class="w-5 h-5 text-[#d0bcff] shrink-0"></i>
+        <input type="text" id="commandPaletteInput" placeholder="Escribe un comando, servicio o acción... (ej: Netflix, Nueva, Amigos)"
+          class="w-full bg-transparent border-none text-[#e6e0e9] placeholder-[#938f99] text-sm focus:outline-none focus:ring-0">
+        <kbd class="px-2 py-0.5 text-[10px] font-mono bg-[#2b2930] text-[#cac4d0] rounded border border-[#49454f]">ESC</kbd>
+      </div>
+
+      <!-- Lista de resultados / sugerencias -->
+      <div id="commandPaletteResults" class="p-2 max-h-[60vh] overflow-y-auto space-y-1 bg-[#141218]">
+        <!-- Renderizado dinámico desde app.js -->
+      </div>
+
+      <!-- Footer con atajos de teclado -->
+      <div class="px-4 py-2 bg-[#1d1b20] border-t border-[#49454f]/40 flex items-center justify-between text-[11px] text-[#cac4d0]">
+        <div class="flex items-center gap-3">
+          <span><kbd class="bg-[#2b2930] px-1 py-0.5 rounded border border-[#49454f]">↑</kbd> <kbd class="bg-[#2b2930] px-1 py-0.5 rounded border border-[#49454f]">↓</kbd> navegar</span>
+          <span><kbd class="bg-[#2b2930] px-1.5 py-0.5 rounded border border-[#49454f]">ENTER</kbd> ejecutar</span>
+        </div>
+        <span class="text-[#d0bcff] font-medium">Kalarm Command Palette</span>
+      </div>
     </div>
   </div>
 
