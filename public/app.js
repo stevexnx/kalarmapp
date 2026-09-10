@@ -1801,21 +1801,13 @@ function renderSplitPayRequests() {
           ` : ''}
 
           ${!isReceived && req.status === 'pending' ? `
-            <div class="pt-2 border-t border-[#49454f]/30 flex flex-col gap-2" onclick="event.stopPropagation()">
-              <div class="flex items-center gap-2">
-                <button onclick="respondSplitPay(${req.id}, 'paid')" class="flex-1 m3-btn-filled text-xs py-1.5 px-3 flex items-center justify-center gap-1" title="Confirmar que el amigo pagó su parte">
-                  <i data-lucide="check-circle" class="w-3.5 h-3.5"></i> Confirmar
-                </button>
-                <button onclick="respondSplitPay(${req.id}, 'declined')" class="m3-btn-outline text-xs py-1.5 px-3 text-rose-300 border-rose-500/30 hover:bg-rose-500/10" title="Cancelar o declinar esta solicitud">
-                  Declinar
-                </button>
-              </div>
-              <div class="flex items-center justify-between gap-2 pt-1 border-t border-[#49454f]/20">
-                <span class="text-[11px] text-[#cac4d0]">Recordatorio</span>
-                <button onclick="openWhatsAppReminderPrompt('', '${escapeHtml(otherPerson)}', ${reqAmount}, '${escapeHtml(subName)}')" class="m3-btn-tonal text-xs py-1 px-2.5 flex items-center gap-1 text-[#a8d5b5]" title="Recordar por WhatsApp">
-                  <i data-lucide="message-circle" class="w-3.5 h-3.5"></i> WhatsApp
-                </button>
-              </div>
+            <div class="pt-2 border-t border-[#49454f]/30 flex items-center justify-between gap-2" onclick="event.stopPropagation()">
+              <span class="text-[11px] text-[#cac4d0] flex items-center gap-1">
+                <i data-lucide="clock" class="w-3.5 h-3.5 text-amber-300"></i> Pendiente de cobro
+              </span>
+              <button onclick="openWhatsAppReminderPrompt('', '${escapeHtml(otherPerson)}', ${reqAmount}, '${escapeHtml(subName)}')" class="m3-btn-tonal text-xs py-1 px-2.5 flex items-center gap-1 text-[#a8d5b5]" title="Recordar por WhatsApp">
+                <i data-lucide="message-circle" class="w-3.5 h-3.5"></i> Recordar
+              </button>
             </div>
           ` : ''}
         </div>
@@ -1934,15 +1926,26 @@ function openSplitPayDetailModal(requestId) {
 
   if (actions) {
     if (req.status === 'pending') {
-      actions.innerHTML = `
-        <button type="button" onclick="closeSplitPayDetailModal()" class="m3-btn-outline text-xs py-1.5 px-3">Cerrar</button>
-        <button type="button" onclick="closeSplitPayDetailModal(); respondSplitPay(${req.id}, 'declined')" class="m3-btn-outline text-xs py-1.5 px-3 text-rose-300 border-rose-500/30 hover:bg-rose-500/10">
-          Declinar
-        </button>
-        <button type="button" onclick="closeSplitPayDetailModal(); respondSplitPay(${req.id}, 'paid')" class="m3-btn-filled text-xs py-1.5 px-4 flex items-center gap-1.5 font-bold">
-          <i data-lucide="check-circle" class="w-3.5 h-3.5"></i> Confirmar
-        </button>
-      `;
+      if (isReceived) {
+        // Solicitud recibida: Cerrar, Declinar o Confirmar
+        actions.innerHTML = `
+          <button type="button" onclick="closeSplitPayDetailModal()" class="m3-btn-outline text-xs py-1.5 px-3">Cerrar</button>
+          <button type="button" onclick="closeSplitPayDetailModal(); respondSplitPay(${req.id}, 'declined')" class="m3-btn-outline text-xs py-1.5 px-3 text-rose-300 border-rose-500/30 hover:bg-rose-500/10">
+            Declinar
+          </button>
+          <button type="button" onclick="closeSplitPayDetailModal(); respondSplitPay(${req.id}, 'paid')" class="m3-btn-filled text-xs py-1.5 px-4 flex items-center gap-1.5 font-bold">
+            <i data-lucide="check-circle" class="w-3.5 h-3.5"></i> Confirmar
+          </button>
+        `;
+      } else {
+        // Solicitud enviada: Únicamente botón de Cancelar Solicitud y Cerrar
+        actions.innerHTML = `
+          <button type="button" onclick="closeSplitPayDetailModal()" class="m3-btn-outline text-xs py-1.5 px-3">Cerrar</button>
+          <button type="button" onclick="cancelSplitPayRequest(${req.id})" class="m3-btn-filled text-xs py-1.5 px-4 flex items-center gap-1.5 font-bold bg-rose-600 hover:bg-rose-700 text-white border-0">
+            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Cancelar Solicitud
+          </button>
+        `;
+      }
     } else {
       actions.innerHTML = `
         <button type="button" onclick="closeSplitPayDetailModal()" class="m3-btn-filled text-xs py-1.5 px-4">Cerrar</button>
@@ -2131,6 +2134,35 @@ async function executeConfirmSplitPay(requestId, req, subMode) {
     showToast('Error al conectar con el servidor', 'error');
   }
 }
+
+async function cancelSplitPayRequest(requestId) {
+  showM3Confirm({
+    title: 'Cancelar Solicitud de Pago',
+    message: '¿Estás seguro de que deseas cancelar esta solicitud? La solicitud dejará de aparecer tanto para ti como para tu amigo.',
+    confirmText: 'Sí, cancelar solicitud',
+    isDanger: true,
+    onConfirm: async () => {
+      try {
+        const res = await fetch('/api/friends/split-requests/respond', {
+          method: 'POST',
+          headers: getAuthHeaders(),
+          body: JSON.stringify({ request_id: requestId, action: 'cancelled' })
+        });
+        const result = await res.json();
+        if (result.success) {
+          closeSplitPayDetailModal();
+          showToast('Solicitud cancelada correctamente', 'info');
+          await loadFriends();
+        } else {
+          showToast(result.error || 'Error al cancelar solicitud', 'error');
+        }
+      } catch (err) {
+        showToast('Error al conectar con el servidor', 'error');
+      }
+    }
+  });
+}
+
 
 function openSplitPayModalForFriend(friendId, friendName, friendUserId, preselectedSubId = null, customAmount = null) {
   const modal = document.getElementById('splitPayModal');
@@ -5231,4 +5263,5 @@ window.openSplitPayModalForFriend = openSplitPayModalForFriend;
 window.openSplitPayDetailModal = openSplitPayDetailModal;
 window.closeSplitPayDetailModal = closeSplitPayDetailModal;
 window.executeConfirmSplitPay = executeConfirmSplitPay;
+window.cancelSplitPayRequest = cancelSplitPayRequest;
 

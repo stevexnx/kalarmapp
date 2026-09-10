@@ -1119,7 +1119,7 @@ def get_split_pay_requests(user_id: int, db_path=None):
     conn = get_connection(db_path)
     cursor = conn.cursor()
 
-    # Recibidas (me solicitan pagar)
+    # Recibidas (me solicitan pagar) - solo activas o pagadas (se excluyen canceladas para que dejen de aparecer)
     cursor.execute('''
         SELECT sp.*,
                u.username as creator_username,
@@ -1139,12 +1139,12 @@ def get_split_pay_requests(user_id: int, db_path=None):
         FROM shared_pay_requests sp
         LEFT JOIN users u ON sp.creator_id = u.id
         LEFT JOIN subscriptions s ON sp.subscription_id = s.id
-        WHERE sp.friend_user_id = ?
+        WHERE sp.friend_user_id = ? AND sp.status != 'cancelled' AND sp.status != 'declined'
         ORDER BY sp.created_at DESC
     ''', (user_id,))
     received = [dict(r) for r in cursor.fetchall()]
 
-    # Creadas por mí (yo solicité a amigos)
+    # Creadas por mí (yo solicité a amigos) - se excluyen canceladas para que dejen de aparecer
     cursor.execute('''
         SELECT sp.*,
                u.username as friend_username,
@@ -1164,7 +1164,7 @@ def get_split_pay_requests(user_id: int, db_path=None):
         FROM shared_pay_requests sp
         LEFT JOIN users u ON sp.friend_user_id = u.id
         LEFT JOIN subscriptions s ON sp.subscription_id = s.id
-        WHERE sp.creator_id = ?
+        WHERE sp.creator_id = ? AND sp.status != 'cancelled' AND sp.status != 'declined'
         ORDER BY sp.created_at DESC
     ''', (user_id,))
     sent = [dict(r) for r in cursor.fetchall()]
@@ -1173,11 +1173,11 @@ def get_split_pay_requests(user_id: int, db_path=None):
     return {'received': received, 'sent': sent}
 
 def respond_split_pay_request(request_id: int, user_id: int, action: str, db_path=None):
-    """Responde a una solicitud de pago conjunto (marcar 'paid' o 'declined')."""
+    """Responde a una solicitud de pago conjunto (marcar 'paid', 'declined' o 'cancelled')."""
     conn = get_connection(db_path)
     cursor = conn.cursor()
 
-    # El usuario puede responder si es el friend_user_id (pagador) o el creator_id (creador confirmando pago)
+    # El usuario puede responder si es el friend_user_id (pagador) o el creator_id (creador confirmando o cancelando)
     cursor.execute("SELECT * FROM shared_pay_requests WHERE id = ? AND (friend_user_id = ? OR creator_id = ?)", (request_id, user_id, user_id))
     req = cursor.fetchone()
     if not req:
@@ -1185,7 +1185,13 @@ def respond_split_pay_request(request_id: int, user_id: int, action: str, db_pat
         raise ValueError("Solicitud de pago no encontrada o sin permisos")
 
     req_dict = dict(req)
-    new_status = 'paid' if action in ('paid', 'pay', 'accept') else 'declined'
+    if action in ('paid', 'pay', 'accept'):
+        new_status = 'paid'
+    elif action in ('cancelled', 'cancel'):
+        new_status = 'cancelled'
+    else:
+        new_status = 'declined'
+
     cursor.execute("UPDATE shared_pay_requests SET status = ? WHERE id = ?", (new_status, request_id))
 
     # Si se marcó como pagada, registrar automáticamente en friend_payments del creador
