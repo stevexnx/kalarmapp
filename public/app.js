@@ -1122,13 +1122,7 @@ function initEventListeners() {
   });
 
   document.getElementById('subSharedCount')?.addEventListener('input', () => {
-    const price = parseFloat(document.getElementById('subPrice')?.value) || 0;
-    const count = parseInt(document.getElementById('subSharedCount')?.value) || 1;
-    const myShare = document.getElementById('subMySharePrice');
-    if (myShare && count >= 1) {
-      myShare.value = (price / count).toFixed(2);
-    }
-    updateModalLiveCalculation();
+    updateSharedCalculation(true);
   });
 
   // Cálculo en vivo
@@ -1140,9 +1134,23 @@ function initEventListeners() {
       updateModalLiveCalculation();
     }
   });
-  document.getElementById('subCurrency')?.addEventListener('change', updateModalLiveCalculation);
+  document.getElementById('subCurrency')?.addEventListener('change', () => {
+    const isShared = document.getElementById('subIsShared')?.checked;
+    if (isShared) {
+      updateSharedCalculation();
+    } else {
+      updateModalLiveCalculation();
+    }
+  });
   document.getElementById('subBillingCycle')?.addEventListener('change', updateModalLiveCalculation);
-  document.getElementById('subMySharePrice')?.addEventListener('input', updateModalLiveCalculation);
+  document.getElementById('subMySharePrice')?.addEventListener('input', () => {
+    const isShared = document.getElementById('subIsShared')?.checked;
+    if (isShared) {
+      updateSharedCalculation(true);
+    } else {
+      updateModalLiveCalculation();
+    }
+  });
 
   // Catálogo M3 de Servicios & Presets
   document.getElementById('presetSearchInput')?.addEventListener('input', (e) => {
@@ -3770,7 +3778,7 @@ let sharedFriendsFilterQuery = '';
 function filterSharedFriendsCheckboxes() {
   const q = (document.getElementById('sharedFriendsSearchInput')?.value || '').toLowerCase().trim();
   sharedFriendsFilterQuery = q;
-  const items = document.querySelectorAll('#sharedFriendsCheckboxList .friend-checkbox-label');
+  const items = document.querySelectorAll('#sharedFriendsCheckboxList .friend-contact-card');
   let visibleCount = 0;
 
   items.forEach(item => {
@@ -3788,38 +3796,106 @@ function filterSharedFriendsCheckboxes() {
   }
 }
 
-function updateSharedCalculation() {
+// Control de incremento/decremento de integrantes
+function stepSharedCount(delta) {
+  const countInput = document.getElementById('subSharedCount');
+  if (!countInput) return;
+  let val = parseInt(countInput.value) || 1;
+  val = Math.max(1, Math.min(50, val + delta));
+  countInput.value = val;
+  updateSharedCalculation(true);
+}
+
+// Toggle para mostrar/ocultar el input de cuota personalizada manual
+function toggleCustomSharePriceFields() {
+  const container = document.getElementById('customShareContainer');
+  const btnText = document.getElementById('btnToggleCustomShareText');
+  if (!container) return;
+  
+  const isCurrentlyHidden = container.classList.contains('hidden');
+  container.classList.toggle('hidden', !isCurrentlyHidden);
+  if (btnText) {
+    btnText.textContent = isCurrentlyHidden 
+      ? 'Ocultar ajuste manual' 
+      : 'Ajustar monto personal manualmente';
+  }
+}
+
+function updateSharedCalculation(manualStep = false) {
   const checkedCbs = document.querySelectorAll('#sharedFriendsCheckboxList .friend-checkbox:checked');
   const checkedCount = checkedCbs.length;
   const countInput = document.getElementById('subSharedCount');
   const myShareInput = document.getElementById('subMySharePrice');
-  const countLabel = document.getElementById('sharedFriendsSelectedCount');
+  const countBadge = document.getElementById('sharedFriendsSelectedCount');
 
-  if (countLabel) {
-    countLabel.textContent = `${checkedCount} amigo${checkedCount === 1 ? '' : 's'} seleccionado${checkedCount === 1 ? '' : 's'}`;
+  if (countBadge) {
+    countBadge.textContent = `${checkedCount} amigo${checkedCount === 1 ? '' : 's'} seleccionado${checkedCount === 1 ? '' : 's'}`;
   }
 
-  // Total de integrantes = tú (1) + amigos marcados
-  const totalIntegrantes = Math.max(1, checkedCount + 1);
-  if (countInput) {
-    countInput.value = totalIntegrantes;
+  // Si no fue modificado explícitamente por el stepper, autoajustamos totalIntegrantes a tú (1) + amigos seleccionados
+  let totalIntegrantes = parseInt(countInput?.value) || 2;
+  if (!manualStep) {
+    totalIntegrantes = Math.max(1, checkedCount + 1);
+    if (countInput) {
+      countInput.value = totalIntegrantes;
+    }
+  } else {
+    totalIntegrantes = Math.max(1, totalIntegrantes);
   }
 
   const price = parseFloat(document.getElementById('subPrice')?.value) || 0;
-  if (myShareInput) {
-    const autoShare = (price / totalIntegrantes).toFixed(2);
+  const currSelect = document.getElementById('subCurrency');
+  const subCurr = currSelect?.value || state.baseCurrencyCode || 'USD';
+  const sym = CURRENCY_SYMBOLS[subCurr] || '$';
+
+  const autoShare = (price / totalIntegrantes).toFixed(2);
+  const autoShareNum = parseFloat(autoShare) || 0;
+
+  // Si no hay cuota manual ingresada, o si el contenedor manual está oculto, usamos la cuota calculada
+  const isCustomOpen = document.getElementById('customShareContainer') && !document.getElementById('customShareContainer').classList.contains('hidden');
+  if (myShareInput && (!isCustomOpen || !myShareInput.value)) {
     myShareInput.value = autoShare;
   }
 
-  // Actualizar estilos activos de los chips seleccionados
-  document.querySelectorAll('#sharedFriendsCheckboxList .friend-checkbox-label').forEach(label => {
-    const cb = label.querySelector('.friend-checkbox');
-    if (cb && cb.checked) {
-      label.classList.add('bg-[#381e72]/60', 'border-[#d0bcff]', 'text-white');
-      label.classList.remove('bg-[#211f26]', 'border-[#49454f]/40', 'text-[#cac4d0]');
+  // Actualizar tarjeta visual de desglose
+  const summaryTotal = document.getElementById('sharedSummaryTotal');
+  const summaryMyShare = document.getElementById('sharedSummaryMyShare');
+  const summaryFriendShare = document.getElementById('sharedSummaryFriendShare');
+
+  if (summaryTotal) summaryTotal.textContent = `${sym}${formatNumber(price)} ${subCurr}`;
+  if (summaryMyShare) {
+    const myShareVal = (isCustomOpen && parseFloat(myShareInput?.value) >= 0) ? parseFloat(myShareInput.value) : autoShareNum;
+    summaryMyShare.textContent = `${sym}${formatNumber(myShareVal)}`;
+  }
+  if (summaryFriendShare) {
+    let friendShare = autoShareNum;
+    if (isCustomOpen && parseFloat(myShareInput?.value) >= 0 && totalIntegrantes > 1) {
+      const remaining = Math.max(0, price - parseFloat(myShareInput.value));
+      friendShare = remaining / (totalIntegrantes - 1);
+    }
+    summaryFriendShare.textContent = `${sym}${formatNumber(friendShare)}`;
+  }
+
+  // Actualizar estilos táctiles de las tarjetas de contactos
+  document.querySelectorAll('#sharedFriendsCheckboxList .friend-contact-card').forEach(card => {
+    const cb = card.querySelector('.friend-checkbox');
+    const isChecked = cb && cb.checked;
+    const checkIcon = card.querySelector('.friend-check-icon');
+    
+    if (isChecked) {
+      card.classList.add('bg-[#381e72]/70', 'border-[#d0bcff]', 'text-white', 'shadow-sm');
+      card.classList.remove('bg-[#211f26]', 'border-[#49454f]/40', 'text-[#cac4d0]');
+      if (checkIcon) {
+        checkIcon.classList.remove('opacity-0', 'scale-75');
+        checkIcon.classList.add('opacity-100', 'scale-100', 'text-[#d0bcff]');
+      }
     } else {
-      label.classList.remove('bg-[#381e72]/60', 'border-[#d0bcff]', 'text-white');
-      label.classList.add('bg-[#211f26]', 'border-[#49454f]/40', 'text-[#cac4d0]');
+      card.classList.remove('bg-[#381e72]/70', 'border-[#d0bcff]', 'text-white', 'shadow-sm');
+      card.classList.add('bg-[#211f26]', 'border-[#49454f]/40', 'text-[#cac4d0]');
+      if (checkIcon) {
+        checkIcon.classList.add('opacity-0', 'scale-75');
+        checkIcon.classList.remove('opacity-100', 'scale-100', 'text-[#d0bcff]');
+      }
     }
   });
 
@@ -3833,12 +3909,12 @@ function populateSharedFriendsCheckboxes(selectedIds = []) {
   const friends = state.friends || [];
   if (friends.length === 0) {
     container.innerHTML = `
-      <div class="col-span-full py-4 text-center text-xs text-[#cac4d0] w-full">
-        No tienes amigos registrados aún. Haz clic en <button type="button" onclick="openFriendModal()" class="text-[#d0bcff] font-bold underline">Añadir a un amigo</button> para comenzar a dividir gastos.
+      <div class="col-span-full py-4 px-2 text-center text-xs text-[#cac4d0] w-full">
+        No tienes amigos registrados aún. Haz clic en <button type="button" onclick="openFriendModal()" class="text-[#d0bcff] font-bold underline hover:text-white transition">Añadir a un amigo</button> para comenzar a dividir gastos.
       </div>
     `;
-    const countLabel = document.getElementById('sharedFriendsSelectedCount');
-    if (countLabel) countLabel.textContent = '0 amigos seleccionados';
+    const countBadge = document.getElementById('sharedFriendsSelectedCount');
+    if (countBadge) countBadge.textContent = '0 amigos seleccionados';
     return;
   }
 
@@ -3848,16 +3924,27 @@ function populateSharedFriendsCheckboxes(selectedIds = []) {
     ${friends.map(f => {
       const isChecked = normalizedSelected.includes(String(f.id));
       const activeClasses = isChecked 
-        ? 'bg-[#381e72]/60 border-[#d0bcff] text-white' 
+        ? 'bg-[#381e72]/70 border-[#d0bcff] text-white shadow-sm' 
         : 'bg-[#211f26] border-[#49454f]/40 text-[#cac4d0]';
 
       return `
         <label data-name="${escapeHtml(f.name)}" data-phone="${escapeHtml(f.phone || '')}" data-email="${escapeHtml(f.email || '')}"
-               class="friend-checkbox-label inline-flex items-center gap-2 px-3 py-1.5 rounded-xl border hover:border-[#d0bcff]/60 hover:text-white transition cursor-pointer text-xs ${activeClasses}">
-          <input type="checkbox" class="friend-checkbox w-3.5 h-3.5 text-[#d0bcff] rounded bg-[#141218] border-[#49454f] focus:ring-0 cursor-pointer" value="${f.id}" ${isChecked ? 'checked' : ''}>
-          <span class="w-2.5 h-2.5 rounded-full shrink-0 shadow-sm" style="background-color: ${f.avatar_color || '#10B981'}"></span>
-          <span class="font-medium truncate max-w-[140px]">${escapeHtml(f.name)}</span>
-          ${f.linked_user_id ? `<span class="text-[9px] px-1.5 py-0.2 rounded bg-[#381e72] text-[#d0bcff] font-mono">app</span>` : ''}
+               class="friend-contact-card relative group inline-flex items-center gap-2.5 px-3 py-2 rounded-xl border hover:border-[#d0bcff]/80 hover:text-white transition cursor-pointer select-none text-xs ${activeClasses}">
+          <input type="checkbox" class="friend-checkbox sr-only" value="${f.id}" ${isChecked ? 'checked' : ''}>
+          
+          <!-- Avatar con inicial y color -->
+          <span class="w-6 h-6 rounded-full shrink-0 flex items-center justify-center text-[10px] font-bold text-white shadow-inner" style="background-color: ${f.avatar_color || '#10B981'}">
+            ${escapeHtml(f.name.charAt(0).toUpperCase())}
+          </span>
+          
+          <!-- Nombre y badge -->
+          <span class="font-medium truncate max-w-[130px]">${escapeHtml(f.name)}</span>
+          ${f.linked_user_id ? `<span class="text-[9px] px-1.5 py-0.5 rounded-full bg-[#381e72] text-[#d0bcff] font-semibold border border-[#d0bcff]/30">app</span>` : ''}
+
+          <!-- Checkmark animado táctil -->
+          <div class="friend-check-icon w-4 h-4 rounded-full flex items-center justify-center transition transform ${isChecked ? 'opacity-100 scale-100 text-[#d0bcff]' : 'opacity-0 scale-75'}">
+            <i data-lucide="check-circle-2" class="w-4 h-4"></i>
+          </div>
         </label>
       `;
     }).join('')}
@@ -3866,16 +3953,22 @@ function populateSharedFriendsCheckboxes(selectedIds = []) {
     </div>
   `;
 
-  // Listener para checkboxes
-  container.querySelectorAll('.friend-checkbox').forEach(cb => {
-    cb.addEventListener('change', updateSharedCalculation);
+  // Listener para selección táctil de tarjetas
+  container.querySelectorAll('.friend-contact-card').forEach(card => {
+    card.addEventListener('click', (e) => {
+      // Dejar que el label propague al checkbox natural
+      setTimeout(() => {
+        updateSharedCalculation();
+      }, 0);
+    });
   });
 
-  // Re-aplicar filtro si había algo escrito
+  // Re-aplicar filtro si había búsqueda
   filterSharedFriendsCheckboxes();
 
   // Actualizar cálculo inicial
   updateSharedCalculation();
+  initIcons();
 }
 
 function showPresetsStep() {
