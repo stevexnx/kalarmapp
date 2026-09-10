@@ -4092,8 +4092,13 @@ function handleSelectPlanChip(chipBtn) {
     }
   }
 
-  // Disparar recálculo en vivo
-  updateModalLiveCalculation();
+  // Disparar recálculo en vivo de cuotas y totales
+  const isShared = document.getElementById('subIsShared')?.checked;
+  if (isShared) {
+    updateSharedCalculation();
+  } else {
+    updateModalLiveCalculation();
+  }
 }
 
 // Presets rápidos de método de pago
@@ -4145,7 +4150,11 @@ function showDetailsForm(titleText = 'Detalles de Suscripción', isEdit = false)
     if (modalSubtitle) modalSubtitle.textContent = 'Configura el plan, fecha de corte y división de gastos';
   }
 
-  updateModalLiveCalculation();
+  if (document.getElementById('subIsShared')?.checked) {
+    updateSharedCalculation();
+  } else {
+    updateModalLiveCalculation();
+  }
   initIcons();
 }
 
