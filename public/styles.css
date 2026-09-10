@@ -841,133 +841,149 @@ body.privacy-mode-active .privacy-blur {
 /* ================= GOOGLE MATERIAL 3 LIGHT THEME ================= */
 html.theme-light,
 body.theme-light {
-  /* Google M3 Light Theme Tonal Palette */
-  --md-sys-color-background: #fdf7ff;
-  --md-sys-color-surface: #fdf7ff;
-  --md-sys-color-surface-dim: #ded8e1;
-  --md-sys-color-surface-bright: #fdf7ff;
+  /* Google M3 Light Theme - Tonos Lavanda / Warm Purple (Material You 2025) */
+  --md-sys-color-background:              #f6f0ff;
+  --md-sys-color-surface:                 #f6f0ff;
+  --md-sys-color-surface-dim:             #e0d8ee;
+  --md-sys-color-surface-bright:          #fdf7ff;
   
-  --md-sys-color-surface-container-lowest: #ffffff;
-  --md-sys-color-surface-container-low: #f7f2fa;
-  --md-sys-color-surface-container: #f3edf7;
-  --md-sys-color-surface-container-high: #ece6f0;
-  --md-sys-color-surface-container-highest: #e6e0e9;
+  --md-sys-color-surface-container-lowest: #fffbff;
+  --md-sys-color-surface-container-low:    #f0e9fc;
+  --md-sys-color-surface-container:        #ece4f8;
+  --md-sys-color-surface-container-high:   #e6ddf3;
+  --md-sys-color-surface-container-highest:#dfd6ec;
 
-  --md-sys-color-on-surface: #1d1b20;
-  --md-sys-color-on-surface-variant: #49454f;
-  --md-sys-color-outline: #79747e;
-  --md-sys-color-outline-variant: #cac4d0;
+  --md-sys-color-on-surface:             #1d1b20;
+  --md-sys-color-on-surface-variant:     #49454f;
+  --md-sys-color-outline:                #79747e;
+  --md-sys-color-outline-variant:        #cac4d0;
 
   /* Google M3 Primary (Púrpura M3) */
-  --md-sys-color-primary: #6750a4;
-  --md-sys-color-on-primary: #ffffff;
-  --md-sys-color-primary-container: #eaddff;
-  --md-sys-color-on-primary-container: #21005d;
+  --md-sys-color-primary:                #6750a4;
+  --md-sys-color-on-primary:             #ffffff;
+  --md-sys-color-primary-container:      #eaddff;
+  --md-sys-color-on-primary-container:   #21005d;
 
   /* Secondary Tonal Palette */
-  --md-sys-color-secondary: #625b71;
-  --md-sys-color-secondary-container: #e8def8;
+  --md-sys-color-secondary:              #625b71;
+  --md-sys-color-secondary-container:    #e8def8;
   --md-sys-color-on-secondary-container: #1d192b;
 
   /* Tertiary Tonal Palette */
-  --md-sys-color-tertiary: #7d5260;
-  --md-sys-color-tertiary-container: #ffd8e4;
-  --md-sys-color-on-tertiary-container: #31111d;
+  --md-sys-color-tertiary:               #7d5260;
+  --md-sys-color-tertiary-container:     #ffd8e4;
+  --md-sys-color-on-tertiary-container:  #31111d;
 
-  /* Success / Positive Tonal Palette */
-  --md-sys-color-success: #2b5037;
-  --md-sys-color-on-success: #ffffff;
-  --md-sys-color-success-container: #c4ebd0;
-  --md-sys-color-on-success-container: #00210f;
+  /* Success */
+  --md-sys-color-success:                #2b5037;
+  --md-sys-color-on-success:             #ffffff;
+  --md-sys-color-success-container:      #c4ebd0;
+  --md-sys-color-on-success-container:   #00210f;
 
-  /* Warning / Caution Tonal Palette */
-  --md-sys-color-warning: #7a4300;
-  --md-sys-color-on-warning: #ffffff;
-  --md-sys-color-warning-container: #feddbd;
-  --md-sys-color-on-warning-container: #2b1700;
+  /* Warning */
+  --md-sys-color-warning:                #7a4300;
+  --md-sys-color-on-warning:             #ffffff;
+  --md-sys-color-warning-container:      #feddbd;
+  --md-sys-color-on-warning-container:   #2b1700;
 
-  /* Error Tonal Palette */
-  --md-sys-color-error: #ba1a1a;
-  --md-sys-color-on-error: #ffffff;
-  --md-sys-color-error-container: #ffdad6;
-  --md-sys-color-on-error-container: #410002;
+  /* Error */
+  --md-sys-color-error:                  #ba1a1a;
+  --md-sys-color-on-error:               #ffffff;
+  --md-sys-color-error-container:        #ffdad6;
+  --md-sys-color-on-error-container:     #410002;
 }
 
+/* Base del body en modo claro */
 body.theme-light {
-  background-color: var(--md-sys-color-background) !important;
+  background: linear-gradient(160deg, #f0e9fc 0%, #f6f0ff 40%, #fdf7ff 100%) !important;
+  background-attachment: fixed !important;
   color: var(--md-sys-color-on-surface) !important;
 }
 
-/* Adaptaciones de componentes específicos en modo claro */
+/* Navigation Rail — tono medio lavanda */
 body.theme-light .m3-nav-rail {
-  background-color: var(--md-sys-color-surface-container) !important;
-  border-right-color: var(--md-sys-color-outline-variant) !important;
+  background: linear-gradient(180deg, #ede5f9 0%, #e6def5 100%) !important;
+  border-right-color: rgba(103, 80, 164, 0.15) !important;
 }
 
+/* Top App Bar — leve tinte lila con glass blur */
 body.theme-light .m3-top-app-bar {
-  background-color: rgba(247, 242, 250, 0.95) !important;
-  border-bottom-color: var(--md-sys-color-outline-variant) !important;
+  background: rgba(240, 233, 252, 0.92) !important;
+  backdrop-filter: blur(12px) !important;
+  border-bottom: 1px solid rgba(103, 80, 164, 0.12) !important;
 }
 
+/* Tarjetas M3 — superficies lila tonal suave, no blancas */
 body.theme-light .m3-card,
 body.theme-light .m3-dialog,
 body.theme-light .command-palette-dialog {
-  background-color: var(--md-sys-color-surface-container-low) !important;
-  border-color: var(--md-sys-color-outline-variant) !important;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08) !important;
+  background-color: #ede5f8 !important;
+  border: 1px solid rgba(103, 80, 164, 0.14) !important;
+  box-shadow: 0 2px 12px rgba(103, 80, 164, 0.08), 0 1px 3px rgba(0,0,0,0.06) !important;
 }
 
 body.theme-light .m3-card:hover {
-  background-color: var(--md-sys-color-surface-container) !important;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12) !important;
+  background-color: #e8dff6 !important;
+  border-color: rgba(103, 80, 164, 0.28) !important;
+  box-shadow: 0 8px 24px rgba(103, 80, 164, 0.15), 0 2px 6px rgba(0,0,0,0.08) !important;
 }
 
+/* Campos de texto — fondo blanco perla con borde lavanda */
 body.theme-light .m3-text-field {
-  background-color: #ffffff !important;
-  border-color: var(--md-sys-color-outline-variant) !important;
+  background-color: #faf7ff !important;
+  border-color: rgba(103, 80, 164, 0.25) !important;
   color: var(--md-sys-color-on-surface) !important;
 }
-
 body.theme-light .m3-text-field:focus {
   border-color: var(--md-sys-color-primary) !important;
-  box-shadow: 0 0 0 2px rgba(103, 80, 164, 0.2) !important;
-}
-
-body.theme-light .calendar-day-cell {
+  box-shadow: 0 0 0 3px rgba(103, 80, 164, 0.18) !important;
   background-color: #ffffff !important;
-  border-color: var(--md-sys-color-outline-variant) !important;
 }
 
+/* Celdas del Calendario */
+body.theme-light .calendar-day-cell {
+  background-color: #ede5f8 !important;
+  border-color: rgba(103, 80, 164, 0.12) !important;
+}
+body.theme-light .calendar-day-cell:hover {
+  background-color: #e5d9f5 !important;
+}
 body.theme-light .calendar-day-cell.is-selected {
-  background-color: rgba(103, 80, 164, 0.08) !important;
+  background-color: #eaddff !important;
   border-color: var(--md-sys-color-primary) !important;
 }
 
+/* Hero de bienvenida en modo claro */
 body.theme-light .clickup-hero-mesh {
-  background: radial-gradient(circle at 50% 0%, rgba(208, 188, 255, 0.45) 0%, rgba(253, 247, 255, 0.95) 75%),
-              radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.12) 0%, transparent 40%),
-              radial-gradient(circle at 90% 25%, rgba(242, 193, 141, 0.15) 0%, transparent 40%) !important;
+  background: radial-gradient(circle at 50% 0%, rgba(208, 188, 255, 0.55) 0%, rgba(240, 233, 252, 0.96) 70%),
+              radial-gradient(circle at 10% 20%, rgba(103, 80, 164, 0.18) 0%, transparent 50%),
+              radial-gradient(circle at 90% 25%, rgba(242, 193, 141, 0.18) 0%, transparent 45%) !important;
 }
 
+/* Botones */
 body.theme-light .m3-btn-filled {
   background-color: var(--md-sys-color-primary) !important;
   color: var(--md-sys-color-on-primary) !important;
+  box-shadow: 0 2px 8px rgba(103, 80, 164, 0.3) !important;
 }
 body.theme-light .m3-btn-filled:hover {
   background-color: #7965b2 !important;
+  box-shadow: 0 4px 14px rgba(103, 80, 164, 0.4) !important;
 }
-
 body.theme-light .m3-btn-outline {
-  border-color: var(--md-sys-color-outline-variant) !important;
-  color: var(--md-sys-color-on-surface) !important;
+  border-color: rgba(103, 80, 164, 0.35) !important;
+  color: var(--md-sys-color-primary) !important;
+  background-color: transparent !important;
 }
 body.theme-light .m3-btn-outline:hover {
   background-color: rgba(103, 80, 164, 0.08) !important;
+  border-color: var(--md-sys-color-primary) !important;
 }
 
+/* Switch */
 body.theme-light .m3-switch-track {
-  background-color: #e6e0e9 !important;
-  border-color: #79747e !important;
+  background-color: #d4c8e8 !important;
+  border-color: #9e97ae !important;
 }
 body.theme-light .m3-switch-thumb {
   background-color: #79747e !important;
@@ -980,7 +996,15 @@ body.theme-light .m3-switch input:checked + .m3-switch-track .m3-switch-thumb {
   background-color: #ffffff !important;
 }
 
-/* Clases utilitarias y elementos adaptados a Light */
+/* Secciones de KPIs: fondo tonal de color, no blancas */
+body.theme-light [id="kpiMonthlyCost"],
+body.theme-light [id="kpiAnnualCost"],
+body.theme-light [id="kpiUpcomingCount"],
+body.theme-light [id="kpiSharedSavings"] {
+  color: var(--md-sys-color-primary) !important;
+}
+
+/* Texto general — lectura clara sobre fondos lavanda */
 body.theme-light,
 body.theme-light main,
 body.theme-light #viewDashboard,
@@ -991,6 +1015,7 @@ body.theme-light #viewSplitPay {
   color: #1d1b20 !important;
 }
 
+/* Adaptar clases de color de texto blanco/claro al oscuro legible */
 body.theme-light .text-white,
 body.theme-light .text-\[\#e6e0e9\],
 body.theme-light .text-\[\#e8def8\],
@@ -1008,6 +1033,7 @@ body.theme-light [class*="text-slate-400"] {
   color: #49454f !important;
 }
 
+/* Fondos oscuros → superficies tonal lavanda claro */
 body.theme-light .bg-\[\#1d1b20\],
 body.theme-light .bg-\[\#211f26\],
 body.theme-light .bg-\[\#28262f\],
@@ -1016,21 +1042,107 @@ body.theme-light [class*="bg-[#1d1b20]"],
 body.theme-light [class*="bg-[#211f26]"],
 body.theme-light [class*="bg-[#28262f]"],
 body.theme-light [class*="bg-[#2b2930]"] {
-  background-color: var(--md-sys-color-surface-container-low) !important;
+  background-color: #ede5f8 !important;
 }
 
 body.theme-light .bg-\[\#141218\],
 body.theme-light [class*="bg-[#141218]"],
 body.theme-light [class*="bg-slate-900"],
 body.theme-light [class*="bg-slate-800"] {
-  background-color: var(--md-sys-color-surface) !important;
+  background-color: #f0e9fc !important;
 }
 
+/* Bordes sutiles con tinte lavanda */
 body.theme-light .border-\[\#49454f\]\/40,
 body.theme-light .border-\[\#49454f\]\/30,
 body.theme-light .border-\[\#49454f\]\/50,
 body.theme-light .border-\[\#49454f\],
 body.theme-light [class*="border-[#49454f]"] {
-  border-color: #cac4d0 !important;
+  border-color: rgba(103, 80, 164, 0.18) !important;
+}
+
+/* Nav pills en modo claro */
+body.theme-light .m3-nav-pill {
+  color: #49454f !important;
+}
+body.theme-light .m3-nav-pill:hover {
+  background-color: rgba(103, 80, 164, 0.08) !important;
+  color: #1d1b20 !important;
+}
+body.theme-light .m3-nav-pill.active {
+  background-color: #eaddff !important;
+  color: #21005d !important;
+}
+
+/* Nav rail items activos */
+body.theme-light .m3-rail-item.active .m3-rail-pill {
+  background-color: #eaddff !important;
+  color: #21005d !important;
+}
+body.theme-light .m3-rail-item:hover .m3-rail-pill {
+  background-color: rgba(103, 80, 164, 0.1) !important;
+}
+
+/* Preset cards en catálogo */
+body.theme-light .m3-preset-card {
+  background-color: #ede5f8 !important;
+  border-color: rgba(103, 80, 164, 0.14) !important;
+}
+body.theme-light .m3-preset-card:hover {
+  background-color: #e4d9f5 !important;
+  border-color: var(--md-sys-color-primary) !important;
+  box-shadow: 0 6px 18px rgba(103, 80, 164, 0.18) !important;
+}
+
+/* Search bar */
+body.theme-light .m3-search-bar {
+  background-color: #faf7ff !important;
+  border-color: rgba(103, 80, 164, 0.2) !important;
+}
+body.theme-light .m3-search-bar:focus-within {
+  border-color: var(--md-sys-color-primary) !important;
+  box-shadow: 0 0 0 3px rgba(103, 80, 164, 0.14) !important;
+}
+
+/* Chips */
+body.theme-light .m3-chip {
+  background-color: #ede5f8 !important;
+  border-color: rgba(103, 80, 164, 0.18) !important;
+  color: #49454f !important;
+}
+body.theme-light .m3-chip:hover {
+  background-color: #e4d9f5 !important;
+  color: #1d1b20 !important;
+}
+body.theme-light .m3-chip.active {
+  background-color: #eaddff !important;
+  color: #21005d !important;
+  border-color: transparent !important;
+}
+
+/* Plan chips */
+body.theme-light .m3-plan-chip {
+  background-color: #ede5f8 !important;
+  border-color: rgba(103, 80, 164, 0.2) !important;
+  color: #1d1b20 !important;
+}
+body.theme-light .m3-plan-chip:hover {
+  background-color: #e4d9f5 !important;
+  border-color: var(--md-sys-color-primary) !important;
+}
+body.theme-light .m3-plan-chip.active {
+  background-color: #eaddff !important;
+  color: #21005d !important;
+  border-color: var(--md-sys-color-primary) !important;
+}
+
+/* Insight cards en modo claro */
+body.theme-light .m3-insight-card {
+  background: linear-gradient(135deg, #ede5f8 0%, #e6ddf5 100%) !important;
+  border-color: rgba(103, 80, 164, 0.18) !important;
+}
+body.theme-light .m3-insight-card:hover {
+  border-color: rgba(103, 80, 164, 0.35) !important;
+  box-shadow: 0 10px 24px rgba(103, 80, 164, 0.14) !important;
 }
 
