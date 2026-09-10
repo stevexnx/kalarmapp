@@ -1959,7 +1959,7 @@ async function viewSharedSubsWithFriend(friendId, friendName, friendUserId = nul
     `;
   }
   if (subtitle) {
-    subtitle.textContent = `Consulta tus suscripciones, las de tu amigo y solicita pagar en conjunto.`;
+    subtitle.textContent = `Consulta los servicios que compartes con ${friendName} y sus cuotas divididas.`;
   }
   if (content) {
     content.innerHTML = `<div class="text-center py-8 text-xs text-[#cac4d0]">Cargando suscripciones...</div>`;
@@ -1981,51 +1981,69 @@ async function viewSharedSubsWithFriend(friendId, friendName, friendUserId = nul
     const isLinked = Boolean(data.is_linked);
     const linkedUserId = data.friend?.linked_user_id || friendUserId || null;
 
+    // Suscripciones que actualmente están divididas con este amigo:
+    // Provienen de common_subs del backend o filtradas por shared_friend_ids
+    const currentFriendId = parseInt(friendId);
+    const dividedSubs = mySubs.filter(s => {
+      if (!s.is_shared) return false;
+      const ids = (s.shared_friend_ids || '').toString().split(',').map(x => parseInt(x.trim())).filter(Boolean);
+      return ids.includes(currentFriendId);
+    });
+
+    // Suscripciones que aún no están divididas con este amigo
+    const otherSubs = mySubs.filter(s => !dividedSubs.some(ds => ds.id === s.id));
+
     let html = '';
 
-    // 1. Sección: Mis Suscripciones (Oportunidad de solicitarle pagar en conjunto)
+    // 1. SECCIÓN PRINCIPAL: Suscripciones que tienes divididas con este amigo
     html += `
       <div class="space-y-3">
         <div class="flex items-center justify-between">
           <h4 class="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5 font-google-sans">
-            <i data-lucide="user" class="w-3.5 h-3.5 text-[#d0bcff]"></i> Tus Suscripciones (${mySubs.length})
+            <i data-lucide="split" class="w-3.5 h-3.5 text-[#a8d5b5]"></i> Suscripciones Divididas (${dividedSubs.length})
           </h4>
-          <span class="text-[10px] text-[#cac4d0]">Invita a pagar en conjunto</span>
+          <span class="text-[10px] text-[#a8d5b5] font-medium bg-[#2b5037]/40 px-2 py-0.5 rounded-full border border-[#a8d5b5]/30">Compartidas con ${escapeHtml(friendName)}</span>
         </div>
     `;
 
-    if (mySubs.length === 0) {
+    if (dividedSubs.length === 0) {
       html += `
-        <div class="p-4 rounded-xl bg-[#211f26] border border-[#49454f]/30 text-center text-xs text-[#cac4d0]">
-          No tienes suscripciones activas registradas aún.
+        <div class="p-4 rounded-xl bg-[#211f26] border border-[#49454f]/30 text-center text-xs text-[#cac4d0] space-y-1.5">
+          <p>No tienes suscripciones divididas con <strong>${escapeHtml(friendName)}</strong> actualmente.</p>
+          <p class="text-[11px] text-[#938f99]">Puedes seleccionar una de tus otras suscripciones más abajo para dividir el gasto.</p>
         </div>
       `;
     } else {
       html += `<div class="space-y-2">`;
-      html += mySubs.map(s => {
+      html += dividedSubs.map(s => {
         const curSym = CURRENCY_SYMBOLS[s.currency] || s.currency || '$';
-        const splitAmount = (s.friend_share || (s.price / (s.shared_with_count || 2))).toFixed(2);
+        const friendShare = (s.friend_share || (s.price / (s.shared_with_count || 2))).toFixed(2);
+        const myShare = (s.my_share_price || (s.price / (s.shared_with_count || 2))).toFixed(2);
+
         return `
-          <div class="p-3 bg-[#211f26] border border-[#49454f]/40 rounded-xl flex items-center justify-between gap-3 hover:border-[#d0bcff]/40 transition">
+          <div class="p-3 bg-[#211f26] border border-[#a8d5b5]/30 rounded-xl flex items-center justify-between gap-3 hover:border-[#a8d5b5]/60 transition">
             <div class="flex items-center gap-3 min-w-0">
-              <div class="w-9 h-9 rounded-xl flex items-center justify-center font-bold text-xs shrink-0" style="background-color: ${s.color || '#d0bcff'}; color: #141218">
+              <div class="w-9 h-9 rounded-xl flex items-center justify-center font-bold text-xs shrink-0" style="background-color: ${s.color || '#a8d5b5'}; color: #141218">
                 ${escapeHtml(s.name.charAt(0).toUpperCase())}
               </div>
               <div class="min-w-0">
-                <h5 class="text-xs font-bold text-white truncate font-google-sans">${escapeHtml(s.name)}</h5>
-                <div class="text-[11px] text-[#cac4d0] truncate">
+                <div class="flex items-center gap-1.5">
+                  <h5 class="text-xs font-bold text-white truncate font-google-sans">${escapeHtml(s.name)}</h5>
+                  <span class="text-[9px] px-1.5 py-0.2 rounded-full bg-[#2b5037] text-[#a8d5b5] font-semibold">Dividida</span>
+                </div>
+                <div class="text-[11px] text-[#cac4d0] truncate mt-0.5">
                   Total: <span class="font-mono text-white">${curSym}${formatNumber(s.price)}</span> / ${CYCLE_LABELS[s.billing_cycle] || s.billing_cycle}
+                  <span class="text-[#938f99] ml-1">(${s.shared_with_count || 2} personas)</span>
                 </div>
               </div>
             </div>
-            <div class="flex items-center gap-2 shrink-0">
-              <div class="text-right hidden sm:block">
-                <span class="text-[9px] uppercase text-[#cac4d0] block">Parte sugerida</span>
-                <span class="text-xs font-bold text-[#a8d5b5] font-mono">${curSym}${formatNumber(splitAmount)}</span>
+            <div class="flex items-center gap-2.5 shrink-0">
+              <div class="text-right">
+                <span class="text-[9px] uppercase text-[#a8d5b5] block font-semibold">Cuota de ${escapeHtml(friendName)}</span>
+                <span class="text-xs font-bold text-[#a8d5b5] font-mono">${curSym}${formatNumber(friendShare)}</span>
               </div>
-              <button onclick="closeSharedSubsModal(); openSplitPayModalForFriend(${friendId}, '${escapeHtml(friendName)}', ${linkedUserId || 'null'}, ${s.id}, ${splitAmount});" class="m3-btn-filled text-[11px] py-1.5 px-3 flex items-center gap-1.5 shadow-sm" title="Solicitar pagar en conjunto">
-                <i data-lucide="split" class="w-3.5 h-3.5"></i>
-                <span>Dividir Pago</span>
+              <button onclick="closeSharedSubsModal(); openModal(state.subscriptions.find(x => x.id === ${s.id}));" class="p-1.5 rounded-lg bg-[#36343b] hover:bg-[#49454f] text-[#cac4d0] hover:text-white transition" title="Editar suscripción dividida">
+                <i data-lucide="settings" class="w-3.5 h-3.5"></i>
               </button>
             </div>
           </div>
@@ -2034,6 +2052,45 @@ async function viewSharedSubsWithFriend(friendId, friendName, friendUserId = nul
       html += `</div>`;
     }
     html += `</div>`;
+
+    // 2. SECCIÓN ADICIONAL: Otras suscripciones disponibles para dividir
+    if (otherSubs.length > 0) {
+      html += `
+        <div class="pt-3 border-t border-[#49454f]/40 space-y-2.5">
+          <div class="flex items-center justify-between">
+            <h4 class="text-xs font-semibold text-[#cac4d0] uppercase tracking-wider flex items-center gap-1.5 font-google-sans">
+              <i data-lucide="plus-circle" class="w-3.5 h-3.5 text-[#d0bcff]"></i> Otras suscripciones disponibles (${otherSubs.length})
+            </h4>
+            <span class="text-[10px] text-[#938f99]">Dividir nuevo servicio</span>
+          </div>
+          <div class="space-y-1.5">
+            ${otherSubs.slice(0, 5).map(s => {
+              const curSym = CURRENCY_SYMBOLS[s.currency] || s.currency || '$';
+              const splitAmount = (s.price / 2).toFixed(2);
+              return `
+                <div class="p-2.5 bg-[#1d1b20] border border-[#49454f]/30 rounded-xl flex items-center justify-between gap-3 hover:border-[#d0bcff]/40 transition">
+                  <div class="flex items-center gap-2.5 min-w-0">
+                    <div class="w-7 h-7 rounded-lg flex items-center justify-center font-bold text-[10px] shrink-0" style="background-color: ${s.color || '#d0bcff'}; color: #141218">
+                      ${escapeHtml(s.name.charAt(0).toUpperCase())}
+                    </div>
+                    <div class="min-w-0">
+                      <div class="text-xs font-medium text-white truncate">${escapeHtml(s.name)}</div>
+                      <div class="text-[10px] text-[#938f99] font-mono">${curSym}${formatNumber(s.price)} / ${CYCLE_LABELS[s.billing_cycle] || s.billing_cycle}</div>
+                    </div>
+                  </div>
+                  <button onclick="closeSharedSubsModal(); openSplitPayModalForFriend(${friendId}, '${escapeHtml(friendName)}', ${linkedUserId || 'null'}, ${s.id}, ${splitAmount});" class="m3-btn-outline text-[11px] py-1 px-2.5 flex items-center gap-1 hover:bg-[#d0bcff]/10 hover:border-[#d0bcff]/50" title="Dividir esta suscripción">
+                    <i data-lucide="split" class="w-3 h-3 text-[#d0bcff]"></i>
+                    <span>Dividir</span>
+                  </button>
+                </div>
+              `;
+            }).join('')}
+            ${otherSubs.length > 5 ? `<div class="text-[10px] text-center text-[#938f99] pt-1">+${otherSubs.length - 5} suscripciones más disponibles</div>` : ''}
+          </div>
+        </div>
+      `;
+    }
+
 
     // 2. Sección: Suscripciones del Amigo (Si está conectado en SubTracker)
     html += `
