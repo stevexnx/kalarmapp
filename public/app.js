@@ -1062,6 +1062,7 @@ function initEventListeners() {
   // Split Pay (Pago en Conjunto)
   document.getElementById('btnCloseSplitPayModal')?.addEventListener('click', closeSplitPayModal);
   document.getElementById('btnCancelSplitPayModal')?.addEventListener('click', closeSplitPayModal);
+  document.getElementById('btnCloseSplitPayDetailModal')?.addEventListener('click', closeSplitPayDetailModal);
   document.getElementById('splitPayForm')?.addEventListener('submit', handleSplitPaySubmit);
   document.getElementById('splitPaySubSelect')?.addEventListener('change', handleSplitPaySubChange);
   document.getElementById('btnTabSplitReceived')?.addEventListener('click', () => setSplitPayTab('received'));
@@ -1742,6 +1743,9 @@ function renderSplitPayRequests() {
       const otherPerson = isReceived
         ? (req.creator_display_name || req.creator_name || req.creator_username || 'Usuario')
         : (req.friend_display_name || req.friend_name || req.friend_username || 'Amigo');
+      const otherUsername = isReceived
+        ? (req.creator_username ? `@${req.creator_username}` : '')
+        : (req.friend_username ? `@${req.friend_username}` : '');
       const subName = req.subscription_name || req.sub_name || 'Suscripción';
       const reqAmount = typeof req.amount === 'number' ? req.amount : parseFloat(req.amount || 0);
 
@@ -1751,16 +1755,17 @@ function renderSplitPayRequests() {
       }
 
       return `
-        <div class="p-3.5 bg-[#211f26] border border-[#49454f]/40 rounded-2xl flex flex-col justify-between space-y-3">
+        <div onclick="openSplitPayDetailModal(${req.id})" class="p-3.5 bg-[#211f26] border border-[#49454f]/40 hover:border-[#d0bcff]/70 hover:bg-[#28262f] cursor-pointer rounded-2xl flex flex-col justify-between space-y-3 transition shadow-sm group">
           <div>
             <div class="flex items-start justify-between gap-2">
-              <div>
-                <span class="text-[10px] text-[#cac4d0] uppercase tracking-wider block">
-                  ${isReceived ? `Solicitado por ${escapeHtml(otherPerson)}` : `Enviado a ${escapeHtml(otherPerson)}`}
+              <div class="min-w-0">
+                <span class="text-[10px] text-[#cac4d0] uppercase tracking-wider block truncate">
+                  ${isReceived ? `De: ${escapeHtml(otherPerson)}` : `Para: ${escapeHtml(otherPerson)}`}
+                  ${otherUsername ? `<span class="text-[#d0bcff] font-mono lowercase text-[10px]"> (${escapeHtml(otherUsername)})</span>` : ''}
                 </span>
-                <h4 class="text-xs font-bold text-white font-google-sans mt-0.5">${escapeHtml(subName)}</h4>
+                <h4 class="text-xs font-bold text-white font-google-sans mt-0.5 group-hover:text-[#d0bcff] transition truncate">${escapeHtml(subName)}</h4>
               </div>
-              <span class="text-[10px] px-2 py-0.5 rounded-full border font-semibold ${st.badge}">
+              <span class="text-[10px] px-2 py-0.5 rounded-full border font-semibold shrink-0 ${st.badge}">
                 ${st.text}
               </span>
             </div>
@@ -1778,14 +1783,14 @@ function renderSplitPayRequests() {
             ` : ''}
 
             ${req.notes ? `
-              <p class="mt-1.5 text-[11px] text-[#938f99] italic bg-[#141218] p-2 rounded-xl border border-[#49454f]/30">
+              <p class="mt-1.5 text-[11px] text-[#938f99] italic bg-[#141218] p-2 rounded-xl border border-[#49454f]/30 line-clamp-2">
                 "${escapeHtml(req.notes)}"
               </p>
             ` : ''}
           </div>
 
           ${isReceived && req.status === 'pending' ? `
-            <div class="pt-2 border-t border-[#49454f]/30 flex items-center gap-2">
+            <div class="pt-2 border-t border-[#49454f]/30 flex items-center gap-2" onclick="event.stopPropagation()">
               <button onclick="respondSplitPay(${req.id}, 'paid')" class="flex-1 m3-btn-filled text-xs py-1.5 px-3 flex items-center justify-center gap-1">
                 <i data-lucide="check-circle" class="w-3.5 h-3.5"></i> Confirmar
               </button>
@@ -1796,7 +1801,7 @@ function renderSplitPayRequests() {
           ` : ''}
 
           ${!isReceived && req.status === 'pending' ? `
-            <div class="pt-2 border-t border-[#49454f]/30 flex flex-col gap-2">
+            <div class="pt-2 border-t border-[#49454f]/30 flex flex-col gap-2" onclick="event.stopPropagation()">
               <div class="flex items-center gap-2">
                 <button onclick="respondSplitPay(${req.id}, 'paid')" class="flex-1 m3-btn-filled text-xs py-1.5 px-3 flex items-center justify-center gap-1" title="Confirmar que el amigo pagó su parte">
                   <i data-lucide="check-circle" class="w-3.5 h-3.5"></i> Confirmar
@@ -1824,36 +1829,307 @@ function renderSplitPayRequests() {
   initIcons();
 }
 
+function openSplitPayDetailModal(requestId) {
+  const allReqs = [...(state.splitPayRequests?.received || []), ...(state.splitPayRequests?.sent || [])];
+  const req = allReqs.find(r => r.id === requestId);
+  if (!req) return;
+
+  const modal = document.getElementById('splitPayDetailModal');
+  const content = document.getElementById('splitPayDetailContent');
+  const actions = document.getElementById('splitPayDetailActions');
+  if (!modal || !content) return;
+
+  const isReceived = req.friend_user_id === state.user?.id;
+  const otherPerson = isReceived
+    ? (req.creator_display_name || req.creator_name || req.creator_username || 'Usuario')
+    : (req.friend_display_name || req.friend_name || req.friend_username || 'Amigo');
+  const otherUsername = isReceived
+    ? (req.creator_username ? `@${req.creator_username}` : '')
+    : (req.friend_username ? `@${req.friend_username}` : '');
+  const subName = req.subscription_name || req.sub_name || 'Suscripción';
+  const curSym = CURRENCY_SYMBOLS[req.currency] || req.currency || '$';
+  const reqAmount = typeof req.amount === 'number' ? req.amount : parseFloat(req.amount || 0);
+
+  const statusMap = {
+    pending: { text: 'Pendiente de Pago', badge: 'bg-amber-400/20 text-amber-300 border-amber-500/30' },
+    paid: { text: 'Pagada / Confirmada', badge: 'bg-[#2b5037] text-[#a8d5b5] border-[#a8d5b5]/30' },
+    declined: { text: 'Rechazada / Cancelada', badge: 'bg-rose-500/20 text-rose-300 border-rose-500/30' }
+  };
+  const st = statusMap[req.status] || { text: req.status || 'Pendiente', badge: 'bg-zinc-700 text-zinc-300' };
+
+  let dueDateFormatted = 'No especificada';
+  if (req.due_date) {
+    dueDateFormatted = typeof formatDateFriendly === 'function' ? formatDateFriendly(req.due_date) : req.due_date;
+  }
+  let createdDateFormatted = '';
+  if (req.created_at) {
+    createdDateFormatted = typeof formatDateFriendly === 'function' ? formatDateFriendly(req.created_at.split('T')[0]) : req.created_at;
+  }
+
+  content.innerHTML = `
+    <!-- Tarjeta resumen del servicio -->
+    <div class="p-3.5 bg-[#1d1b20] border border-[#49454f]/40 rounded-2xl space-y-3">
+      <div class="flex items-start justify-between gap-3">
+        <div class="flex items-center gap-2.5 min-w-0">
+          <div class="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm shrink-0" style="background-color: ${req.subscription_color || '#d0bcff'}; color: #141218">
+            ${escapeHtml(subName.charAt(0).toUpperCase())}
+          </div>
+          <div class="min-w-0">
+            <h4 class="text-sm font-bold text-white truncate font-google-sans">${escapeHtml(subName)}</h4>
+            <div class="text-[11px] text-[#cac4d0]">
+              ${req.subscription_category ? escapeHtml(req.subscription_category) : 'Suscripción compartida'}
+            </div>
+          </div>
+        </div>
+        <span class="text-[10px] px-2.5 py-1 rounded-full border font-semibold shrink-0 ${st.badge}">
+          ${st.text}
+        </span>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2 pt-2 border-t border-[#49454f]/30">
+        <div>
+          <span class="text-[10px] text-[#cac4d0] block uppercase tracking-wider">Tu Cuota Requerida</span>
+          <span class="text-base font-extrabold text-[#a8d5b5] font-mono">${curSym}${formatNumber(reqAmount)}</span>
+        </div>
+        ${req.subscription_price ? `
+          <div>
+            <span class="text-[10px] text-[#cac4d0] block uppercase tracking-wider">Precio Total Original</span>
+            <span class="text-xs font-bold text-white font-mono mt-0.5 block">${curSym}${formatNumber(req.subscription_price)} / ${CYCLE_LABELS[req.subscription_billing_cycle] || req.subscription_billing_cycle || 'mes'}</span>
+          </div>
+        ` : ''}
+      </div>
+    </div>
+
+    <!-- Detalles del Remitente / Destinatario -->
+    <div class="p-3.5 bg-[#1d1b20] border border-[#49454f]/40 rounded-2xl space-y-2.5">
+      <div class="flex items-center justify-between">
+        <span class="text-[#cac4d0]">${isReceived ? 'Enviado por:' : 'Destinatario:'}</span>
+        <span class="text-white font-bold flex items-center gap-1">
+          <span>${escapeHtml(otherPerson)}</span>
+          ${otherUsername ? `<span class="text-[#d0bcff] font-mono font-normal">(${escapeHtml(otherUsername)})</span>` : ''}
+        </span>
+      </div>
+      <div class="flex items-center justify-between">
+        <span class="text-[#cac4d0]">Fecha de vencimiento:</span>
+        <span class="text-white font-medium flex items-center gap-1 font-mono">
+          <i data-lucide="calendar" class="w-3.5 h-3.5 text-[#d0bcff]"></i> ${dueDateFormatted}
+        </span>
+      </div>
+      ${createdDateFormatted ? `
+        <div class="flex items-center justify-between">
+          <span class="text-[#cac4d0]">Fecha de solicitud:</span>
+          <span class="text-[#cac4d0] font-mono">${createdDateFormatted}</span>
+        </div>
+      ` : ''}
+      ${req.notes ? `
+        <div class="pt-2 border-t border-[#49454f]/30">
+          <span class="text-[10px] text-[#cac4d0] uppercase tracking-wider block mb-1">Nota o mensaje adjunto:</span>
+          <div class="p-2.5 bg-[#141218] rounded-xl border border-[#49454f]/30 text-white italic text-[11px]">
+            "${escapeHtml(req.notes)}"
+          </div>
+        </div>
+      ` : ''}
+    </div>
+  `;
+
+  if (actions) {
+    if (req.status === 'pending') {
+      actions.innerHTML = `
+        <button type="button" onclick="closeSplitPayDetailModal()" class="m3-btn-outline text-xs py-1.5 px-3">Cerrar</button>
+        <button type="button" onclick="closeSplitPayDetailModal(); respondSplitPay(${req.id}, 'declined')" class="m3-btn-outline text-xs py-1.5 px-3 text-rose-300 border-rose-500/30 hover:bg-rose-500/10">
+          Declinar
+        </button>
+        <button type="button" onclick="closeSplitPayDetailModal(); respondSplitPay(${req.id}, 'paid')" class="m3-btn-filled text-xs py-1.5 px-4 flex items-center gap-1.5 font-bold">
+          <i data-lucide="check-circle" class="w-3.5 h-3.5"></i> Confirmar
+        </button>
+      `;
+    } else {
+      actions.innerHTML = `
+        <button type="button" onclick="closeSplitPayDetailModal()" class="m3-btn-filled text-xs py-1.5 px-4">Cerrar</button>
+      `;
+    }
+  }
+
+  modal.classList.remove('hidden');
+  initIcons();
+}
+
+function closeSplitPayDetailModal() {
+  document.getElementById('splitPayDetailModal')?.classList.add('hidden');
+}
+
 async function respondSplitPay(requestId, action) {
+  const allReqs = [...(state.splitPayRequests?.received || []), ...(state.splitPayRequests?.sent || [])];
+  const req = allReqs.find(r => r.id === requestId);
   const isPaid = action === 'paid' || action === 'pay' || action === 'accept';
-  const confirmMsg = isPaid 
-    ? '¿Deseas confirmar este pago en conjunto? Se registrará automáticamente en los pagos de la suscripción.'
-    : '¿Deseas declinar o cancelar esta solicitud de pago en conjunto?';
-  
-  showM3Confirm({
-    title: isPaid ? 'Confirmar Pago' : 'Declinar Solicitud',
-    message: confirmMsg,
-    confirmText: isPaid ? 'Confirmar' : 'Declinar',
-    isDanger: !isPaid,
-    onConfirm: async () => {
-      try {
-        const res = await fetch('/api/friends/split-requests/respond', {
+  const isReceived = req ? (req.friend_user_id === state.user?.id) : (state.splitPayTab === 'received');
+
+  if (!isPaid) {
+    // Declinar o cancelar solicitud
+    showM3Confirm({
+      title: 'Declinar Solicitud',
+      message: '¿Deseas declinar o cancelar esta solicitud de pago en conjunto?',
+      confirmText: 'Declinar',
+      isDanger: true,
+      onConfirm: async () => {
+        try {
+          const res = await fetch('/api/friends/split-requests/respond', {
+            method: 'POST',
+            headers: getAuthHeaders(),
+            body: JSON.stringify({ request_id: requestId, action: 'declined' })
+          });
+          const result = await res.json();
+          if (result.success) {
+            showToast('Solicitud declinada', 'success');
+            await loadFriends();
+          } else {
+            showToast(result.error || 'Error al procesar la solicitud', 'error');
+          }
+        } catch (err) {
+          showToast('Error al conectar con el servidor', 'error');
+        }
+      }
+    });
+    return;
+  }
+
+  // Si es confirmar (pagar)
+  if (!isReceived) {
+    // Creador confirmando que el amigo le pagó
+    showM3Confirm({
+      title: 'Confirmar Recepción de Pago',
+      message: '¿Confirmas que recibiste el pago de este cobro en conjunto? Se registrará automáticamente en el balance de pagos.',
+      confirmText: 'Confirmar',
+      isDanger: false,
+      onConfirm: async () => {
+        try {
+          const res = await fetch('/api/friends/split-requests/respond', {
+            method: 'POST',
+            headers: getAuthHeaders(),
+            body: JSON.stringify({ request_id: requestId, action: 'paid' })
+          });
+          const result = await res.json();
+          if (result.success) {
+            showToast('¡Pago registrado exitosamente!', 'success');
+            await loadFriends();
+          } else {
+            showToast(result.error || 'Error al procesar la solicitud', 'error');
+          }
+        } catch (err) {
+          showToast('Error al conectar con el servidor', 'error');
+        }
+      }
+    });
+    return;
+  }
+
+  // Solicitud RECIBIDA confirmada: debe registrar el pago y sincronizar suscripción
+  const subName = (req ? (req.subscription_name || req.sub_name) : 'Suscripción').trim();
+  const existingSub = state.subscriptions.find(s => s.name.trim().toLowerCase() === subName.toLowerCase());
+
+  if (existingSub) {
+    // Ya cuenta con una suscripción de ese servicio: mostrar alerta y preguntar si desea sobreescribir
+    showM3Confirm({
+      title: 'Suscripción ya existente',
+      message: `Ya cuentas con una suscripción registrada para "${existingSub.name}". ¿Deseas confirmar el pago y sobreescribir los datos de tu suscripción con esta cuota compartida (${req.currency} ${formatNumber(req.amount)}) asociada a tu amigo?`,
+      confirmText: 'Sí, sobreescribir',
+      cancelText: 'Solo confirmar pago',
+      isDanger: false,
+      onConfirm: async () => {
+        await executeConfirmSplitPay(requestId, req, existingSub.id);
+      },
+      onCancel: async () => {
+        // Solo confirmar el pago sin sobreescribir la suscripción
+        await executeConfirmSplitPay(requestId, req, null);
+      }
+    });
+  } else {
+    // No existe: confirmar y agregar automáticamente la suscripción asociada al amigo
+    showM3Confirm({
+      title: 'Confirmar y Agregar Suscripción',
+      message: `¿Deseas confirmar este pago en conjunto de ${req.currency} ${formatNumber(req.amount)} para "${subName}"? Se registrará el pago y se agregará la suscripción a tu cuenta asociada a tu amigo.`,
+      confirmText: 'Confirmar',
+      isDanger: false,
+      onConfirm: async () => {
+        await executeConfirmSplitPay(requestId, req, 'new');
+      }
+    });
+  }
+}
+
+async function executeConfirmSplitPay(requestId, req, subMode) {
+  try {
+    const res = await fetch('/api/friends/split-requests/respond', {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ request_id: requestId, action: 'paid' })
+    });
+    const result = await res.json();
+    if (!result.success) {
+      showToast(result.error || 'Error al confirmar pago', 'error');
+      return;
+    }
+
+    // Si se solicitó sobreescribir o crear nueva suscripción en la cuenta del usuario:
+    if (subMode && req) {
+      const creatorUserId = req.creator_id;
+      // Localizar amigo en la agenda del usuario receptor
+      const matchedFriend = (state.friends || []).find(f => f.linked_user_id === creatorUserId);
+      const friendIdStr = matchedFriend ? String(matchedFriend.id) : '';
+
+      const subName = (req.subscription_name || req.sub_name || 'Suscripción').trim();
+      const amount = typeof req.amount === 'number' ? req.amount : parseFloat(req.amount || 0);
+      const totalOriginalPrice = req.subscription_price ? parseFloat(req.subscription_price) : amount;
+      const billingCycle = req.subscription_billing_cycle || 'monthly';
+      const nextDate = req.due_date || req.subscription_next_billing_date || new Date().toISOString().split('T')[0];
+      const category = req.subscription_category || 'Servicios Compartidos';
+      const color = req.subscription_color || '#d0bcff';
+      const icon = req.subscription_icon || '';
+      const notes = req.notes ? `Dividida con ${req.creator_display_name || req.creator_name || 'amigo'}. Nota: ${req.notes}` : `Dividida con ${req.creator_display_name || req.creator_name || 'amigo'}`;
+
+      const subPayload = {
+        name: subName,
+        price: totalOriginalPrice > amount ? totalOriginalPrice : amount,
+        currency: req.currency || 'USD',
+        billing_cycle: billingCycle,
+        next_billing_date: nextDate,
+        category: category,
+        payment_method: 'Tarjeta / Pago Compartido',
+        status: 'active',
+        notes: notes,
+        url: req.subscription_url || '',
+        icon: icon,
+        color: color,
+        is_trial: 0,
+        trial_end_date: null,
+        is_shared: 1,
+        shared_with_count: 2,
+        my_share_price: amount,
+        shared_friend_ids: friendIdStr
+      };
+
+      if (typeof subMode === 'number') {
+        // Sobreescribir existente
+        await fetch(`/api/subscriptions/${subMode}`, {
+          method: 'PUT',
+          headers: getAuthHeaders(),
+          body: JSON.stringify(subPayload)
+        });
+      } else if (subMode === 'new') {
+        // Crear nueva
+        await fetch('/api/subscriptions', {
           method: 'POST',
           headers: getAuthHeaders(),
-          body: JSON.stringify({ request_id: requestId, action: isPaid ? 'paid' : 'declined' })
+          body: JSON.stringify(subPayload)
         });
-        const result = await res.json();
-        if (result.success) {
-          showToast(isPaid ? '¡Pago confirmado exitosamente!' : 'Solicitud declinada', 'success');
-          await loadFriends();
-        } else {
-          showToast(result.error || 'Error al procesar la solicitud', 'error');
-        }
-      } catch (err) {
-        showToast('Error al conectar con el servidor', 'error');
       }
     }
-  });
+
+    showToast('¡Pago confirmado y suscripción sincronizada!', 'success');
+    await loadAllData();
+  } catch (err) {
+    showToast('Error al conectar con el servidor', 'error');
+  }
 }
 
 function openSplitPayModalForFriend(friendId, friendName, friendUserId, preselectedSubId = null, customAmount = null) {
@@ -4952,4 +5228,7 @@ window.respondSplitPay = respondSplitPay;
 window.setSplitPayTab = setSplitPayTab;
 window.renderSplitPayRequests = renderSplitPayRequests;
 window.openSplitPayModalForFriend = openSplitPayModalForFriend;
+window.openSplitPayDetailModal = openSplitPayDetailModal;
+window.closeSplitPayDetailModal = closeSplitPayDetailModal;
+window.executeConfirmSplitPay = executeConfirmSplitPay;
 

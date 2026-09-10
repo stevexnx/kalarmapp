@@ -1127,7 +1127,15 @@ def get_split_pay_requests(user_id: int, db_path=None):
                u.display_name as creator_name,
                u.avatar_color as creator_avatar_color,
                s.name as subscription_name,
-               s.name as sub_name
+               s.name as sub_name,
+               s.category as subscription_category,
+               s.billing_cycle as subscription_billing_cycle,
+               s.color as subscription_color,
+               s.icon as subscription_icon,
+               s.url as subscription_url,
+               s.price as subscription_price,
+               s.next_billing_date as subscription_next_billing_date,
+               s.payment_method as subscription_payment_method
         FROM shared_pay_requests sp
         LEFT JOIN users u ON sp.creator_id = u.id
         LEFT JOIN subscriptions s ON sp.subscription_id = s.id
@@ -1144,7 +1152,15 @@ def get_split_pay_requests(user_id: int, db_path=None):
                u.display_name as friend_name,
                u.avatar_color as friend_avatar_color,
                s.name as subscription_name,
-               s.name as sub_name
+               s.name as sub_name,
+               s.category as subscription_category,
+               s.billing_cycle as subscription_billing_cycle,
+               s.color as subscription_color,
+               s.icon as subscription_icon,
+               s.url as subscription_url,
+               s.price as subscription_price,
+               s.next_billing_date as subscription_next_billing_date,
+               s.payment_method as subscription_payment_method
         FROM shared_pay_requests sp
         LEFT JOIN users u ON sp.friend_user_id = u.id
         LEFT JOIN subscriptions s ON sp.subscription_id = s.id

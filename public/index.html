@@ -1333,7 +1333,29 @@
     </div>
   </div>
 
-  <!-- ================= MODAL: AGREGAR / EDITAR SUSCRIPCIÓN ================= -->
+  <!-- ================= MODAL: DETALLES DE SOLICITUD DE PAGO EN CONJUNTO ================= -->
+  <div id="splitPayDetailModal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-black/75 backdrop-blur-sm p-4 flex items-center justify-center">
+    <div class="relative w-full max-w-md m3-dialog p-6 space-y-4 animate-scale-up">
+      <div class="flex items-center justify-between border-b border-[#49454f]/40 pb-3">
+        <h3 class="text-base font-bold text-white flex items-center gap-2 font-google-sans">
+          <i data-lucide="split" class="w-5 h-5 text-[#d0bcff]"></i>
+          Detalles de Pago en Conjunto
+        </h3>
+        <button id="btnCloseSplitPayDetailModal" class="text-[#cac4d0] hover:text-white p-1 rounded-full hover:bg-[#2b2930]">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div id="splitPayDetailContent" class="space-y-3.5 text-xs">
+        <!-- Renderizado dinámicamente -->
+      </div>
+
+      <div id="splitPayDetailActions" class="pt-3 border-t border-[#49454f]/40 flex justify-end gap-2">
+        <!-- Botones dinámicos según estado y si es recibida o enviada -->
+      </div>
+    </div>
+  </div>
+
   <div id="subscriptionModal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-black/70 backdrop-blur-sm p-4 sm:p-6 flex items-center justify-center">
     <div class="relative w-full max-w-4xl m3-dialog overflow-hidden transition-all my-6 animate-scale-up max-h-[92vh] flex flex-col">
       
