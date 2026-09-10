@@ -44,7 +44,7 @@ const state = {
   splitPayTab: 'received', // 'received' | 'sent'
   stats: cachedStats,
   settings: cachedSettings,
-  currency: (cachedSettings?.base_currency && CURRENCY_SYMBOLS[cachedSettings.base_currency]) || '$',
+  currency: '$', // se actualiza en loadSettings()
   baseCurrencyCode: cachedSettings?.base_currency || 'USD',
   chartMode: 'annual', // 'annual' | 'monthly'
   viewMode: 'grid',    // 'grid' | 'table'
@@ -542,7 +542,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const badge = document.getElementById('friendsBadgeCount');
         if (badge) badge.textContent = state.friends.length;
         const railBadge = document.getElementById('railFriendsBadge');
-        if (railBadge) railFriendsBadge.textContent = state.friends.length;
+        if (railBadge) railBadge.textContent = state.friends.length;
       }
       if (state.stats) {
         renderKPIs();
