@@ -4,9 +4,16 @@
  */
 
 // Estado global de la aplicación
+const initialToken = localStorage.getItem('subtracker_token') || sessionStorage.getItem('subtracker_token') || '';
+let initialUser = null;
+try {
+  const cachedUser = localStorage.getItem('subtracker_user');
+  if (cachedUser) initialUser = JSON.parse(cachedUser);
+} catch (e) {}
+
 const state = {
-  user: null,
-  token: sessionStorage.getItem('subtracker_token') || localStorage.getItem('subtracker_token') || '',
+  user: initialUser,
+  token: initialToken,
   subscriptions: [],
   friends: [],
   friendBalances: [],
@@ -499,6 +506,15 @@ function convertCurrency(amount, fromCurr, toCurr) {
 
 // ================= INICIALIZACIÓN =================
 document.addEventListener('DOMContentLoaded', async () => {
+  if (state.token) {
+    hideWelcomeLanding();
+    if (state.user) {
+      renderUserProfile();
+    }
+  } else {
+    showWelcomeLanding();
+  }
+
   initPWA();
   initPrivacyMode();
   initIcons();
@@ -560,6 +576,7 @@ async function checkAuth() {
   state.token = localStorage.getItem('subtracker_token') || sessionStorage.getItem('subtracker_token') || '';
   if (!state.token) {
     state.user = null;
+    localStorage.removeItem('subtracker_user');
     renderUserProfile();
     showWelcomeLanding();
     return;
@@ -572,22 +589,31 @@ async function checkAuth() {
       state.token = '';
       localStorage.removeItem('subtracker_token');
       sessionStorage.removeItem('subtracker_token');
+      localStorage.removeItem('subtracker_user');
     } else {
       const result = await res.json();
       if (result.success && result.user) {
         state.user = result.user;
         // Mantener sincronizado en localStorage para sobrevivir recargas
         localStorage.setItem('subtracker_token', state.token);
+        localStorage.setItem('subtracker_user', JSON.stringify(result.user));
       } else {
         state.user = null;
         state.token = '';
         localStorage.removeItem('subtracker_token');
         sessionStorage.removeItem('subtracker_token');
+        localStorage.removeItem('subtracker_user');
       }
     }
   } catch (err) {
     console.error('Error comprobando sesión (red/servidor):', err);
-    // En caso de fallo transitorio de red, NO borramos el token de localStorage para no forzar logout
+    // En caso de fallo transitorio de red, NO borramos el token ni el usuario para no forzar logout
+    if (!state.user) {
+      try {
+        const cached = localStorage.getItem('subtracker_user');
+        if (cached) state.user = JSON.parse(cached);
+      } catch (e) {}
+    }
   } finally {
     renderUserProfile();
     if (!state.user) {
@@ -904,6 +930,7 @@ async function handleAuthSubmit(e) {
         // Guardar siempre en localStorage y sessionStorage para garantizar persistencia al recargar
         localStorage.setItem('subtracker_token', result.token);
         sessionStorage.setItem('subtracker_token', result.token);
+        localStorage.setItem('subtracker_user', JSON.stringify(result.user));
 
         showToast(`¡Bienvenido de nuevo, ${state.user.display_name}!`, 'success');
         document.getElementById('authModal')?.classList.add('hidden');
@@ -932,6 +959,7 @@ async function handleAuthSubmit(e) {
 
         localStorage.setItem('subtracker_token', result.token);
         sessionStorage.setItem('subtracker_token', result.token);
+        localStorage.setItem('subtracker_user', JSON.stringify(result.user));
 
         showToast(`¡Cuenta creada con éxito!`, 'success');
         document.getElementById('authModal')?.classList.add('hidden');
@@ -963,6 +991,7 @@ async function handleLogout() {
   state.user = null;
   localStorage.removeItem('subtracker_token');
   sessionStorage.removeItem('subtracker_token');
+  localStorage.removeItem('subtracker_user');
 
   // Limpiar modales abiertos
   document.getElementById('profileModal')?.classList.add('hidden');
