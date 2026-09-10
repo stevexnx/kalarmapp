@@ -1121,10 +1121,6 @@ function initEventListeners() {
     filterSharedFriendsCheckboxes();
   });
 
-  document.getElementById('subSharedCount')?.addEventListener('input', () => {
-    updateSharedCalculation(true);
-  });
-
   // Cálculo en vivo
   document.getElementById('subPrice')?.addEventListener('input', () => {
     const isShared = document.getElementById('subIsShared')?.checked;
@@ -1146,7 +1142,7 @@ function initEventListeners() {
   document.getElementById('subMySharePrice')?.addEventListener('input', () => {
     const isShared = document.getElementById('subIsShared')?.checked;
     if (isShared) {
-      updateSharedCalculation(true);
+      updateSharedCalculation();
     } else {
       updateModalLiveCalculation();
     }
@@ -3796,16 +3792,6 @@ function filterSharedFriendsCheckboxes() {
   }
 }
 
-// Control de incremento/decremento de integrantes
-function stepSharedCount(delta) {
-  const countInput = document.getElementById('subSharedCount');
-  if (!countInput) return;
-  let val = parseInt(countInput.value) || 1;
-  val = Math.max(1, Math.min(50, val + delta));
-  countInput.value = val;
-  updateSharedCalculation(true);
-}
-
 // Toggle para mostrar/ocultar el input de cuota personalizada manual
 function toggleCustomSharePriceFields() {
   const container = document.getElementById('customShareContainer');
@@ -3821,10 +3807,11 @@ function toggleCustomSharePriceFields() {
   }
 }
 
-function updateSharedCalculation(manualStep = false) {
+function updateSharedCalculation() {
   const checkedCbs = document.querySelectorAll('#sharedFriendsCheckboxList .friend-checkbox:checked');
   const checkedCount = checkedCbs.length;
   const countInput = document.getElementById('subSharedCount');
+  const totalBadge = document.getElementById('sharedTotalCountBadge');
   const myShareInput = document.getElementById('subMySharePrice');
   const countBadge = document.getElementById('sharedFriendsSelectedCount');
 
@@ -3832,15 +3819,13 @@ function updateSharedCalculation(manualStep = false) {
     countBadge.textContent = `${checkedCount} amigo${checkedCount === 1 ? '' : 's'} seleccionado${checkedCount === 1 ? '' : 's'}`;
   }
 
-  // Si no fue modificado explícitamente por el stepper, autoajustamos totalIntegrantes a tú (1) + amigos seleccionados
-  let totalIntegrantes = parseInt(countInput?.value) || 2;
-  if (!manualStep) {
-    totalIntegrantes = Math.max(1, checkedCount + 1);
-    if (countInput) {
-      countInput.value = totalIntegrantes;
-    }
-  } else {
-    totalIntegrantes = Math.max(1, totalIntegrantes);
+  // Total de integrantes = estrictamente tú (1) + amigos seleccionados (aumenta y se reduce automáticamente)
+  const totalIntegrantes = Math.max(1, checkedCount + 1);
+  if (countInput) {
+    countInput.value = totalIntegrantes;
+  }
+  if (totalBadge) {
+    totalBadge.textContent = totalIntegrantes;
   }
 
   const price = parseFloat(document.getElementById('subPrice')?.value) || 0;

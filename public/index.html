@@ -1581,13 +1581,14 @@
                   </span>
                 </div>
 
-                <!-- Stepper de Integrantes Totales (tú + amigos + familiares adicionales) -->
+                <!-- Total Integrantes (Tú + amigos seleccionados) automático -->
                 <div class="flex items-center gap-2">
                   <span class="text-[11px] text-[#cac4d0]">Total integrantes:</span>
-                  <div class="flex items-center bg-[#141218] rounded-lg border border-[#49454f]/50 p-0.5">
-                    <button type="button" onclick="stepSharedCount(-1)" class="w-6 h-6 flex items-center justify-center text-[#cac4d0] hover:text-white hover:bg-[#2b2930] rounded transition font-bold text-xs" title="Menos integrantes">-</button>
-                    <input type="number" id="subSharedCount" min="1" max="50" value="2" class="w-9 text-center bg-transparent font-mono text-xs font-bold text-white focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none">
-                    <button type="button" onclick="stepSharedCount(1)" class="w-6 h-6 flex items-center justify-center text-[#cac4d0] hover:text-white hover:bg-[#2b2930] rounded transition font-bold text-xs" title="Más integrantes">+</button>
+                  <input type="hidden" id="subSharedCount" value="1">
+                  <div class="flex items-center gap-1.5 bg-[#141218] rounded-xl border border-[#49454f]/50 px-2.5 py-1 text-xs">
+                    <i data-lucide="users-2" class="w-3.5 h-3.5 text-[#d0bcff]"></i>
+                    <span id="sharedTotalCountBadge" class="font-bold text-white font-mono">1</span>
+                    <span class="text-[10px] text-[#cac4d0]">(tú + amigos)</span>
                   </div>
                 </div>
               </div>
