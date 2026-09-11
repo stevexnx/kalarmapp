@@ -1190,6 +1190,37 @@ function initEventListeners() {
   document.getElementById('btnCustomSubscription')?.addEventListener('click', openCustomSubscription);
   document.getElementById('subscriptionForm')?.addEventListener('submit', handleFormSubmit);
 
+  // Modal: Resumen de Suscripción (Click en tarjeta)
+  document.getElementById('btnCloseSubDetailModal')?.addEventListener('click', closeSubscriptionSummary);
+  document.getElementById('subscriptionDetailModal')?.addEventListener('click', (e) => {
+    if (e.target.id === 'subscriptionDetailModal') closeSubscriptionSummary();
+  });
+  document.getElementById('btnSubDetailEdit')?.addEventListener('click', () => {
+    if (state.selectedSummarySubId) {
+      const subId = state.selectedSummarySubId;
+      closeSubscriptionSummary();
+      editSubscription(subId);
+    }
+  });
+  document.getElementById('btnSubDetailCancel')?.addEventListener('click', () => {
+    if (state.selectedSummarySubId) {
+      const sub = (state.subscriptions || []).find(s => s.id === state.selectedSummarySubId);
+      const subId = state.selectedSummarySubId;
+      const subName = sub ? sub.name : 'esta suscripción';
+      closeSubscriptionSummary();
+      deleteSubscription(subId, subName);
+    }
+  });
+  document.getElementById('btnSubDetailToggleStatus')?.addEventListener('click', () => {
+    if (state.selectedSummarySubId) {
+      const sub = (state.subscriptions || []).find(s => s.id === state.selectedSummarySubId);
+      if (sub) {
+        toggleSubscriptionStatus(sub.id, sub.status);
+        closeSubscriptionSummary();
+      }
+    }
+  });
+
   // Checkboxes de Formulario
   document.getElementById('subIsTrial')?.addEventListener('change', (e) => {
     document.getElementById('trialFieldsContainer')?.classList.toggle('hidden', !e.target.checked);
@@ -3153,7 +3184,7 @@ function createCardHtml(sub) {
   const iconHtml = getServiceOfficialIcon(sub.name, sub.color);
 
   return `
-    <div class="m3-card p-5 relative overflow-hidden flex flex-col justify-between m3-elevation-1">
+    <div class="m3-card sub-card-interactive p-5 relative overflow-hidden flex flex-col justify-between m3-elevation-1" onclick="showSubscriptionSummary(${sub.id})" title="Ver resumen de ${escapeHtml(sub.name)}">
       <div class="absolute top-0 left-0 right-0 h-1.5" style="background-color: ${sub.color || 'var(--md-sys-color-primary)'}"></div>
 
       <div>
@@ -3166,7 +3197,6 @@ function createCardHtml(sub) {
               <h4 class="text-sm font-bold text-white tracking-tight flex items-center gap-1.5 font-google-sans">
                 <span>${escapeHtml(sub.name)}</span>
                 ${sub.alias ? `<span class="text-[10px] font-medium px-2 py-0.5 rounded-full bg-[#381e72]/80 border border-[#d0bcff]/40 text-[#d0bcff] font-sans" title="Alias: ${escapeHtml(sub.alias)}">${escapeHtml(sub.alias)}</span>` : ''}
-                ${sub.url ? `<a href="${escapeHtml(sub.url)}" target="_blank" rel="noopener" class="text-[#cac4d0] hover:text-[#d0bcff] transition"><i data-lucide="external-link" class="w-3 h-3"></i></a>` : ''}
               </h4>
               <div class="flex flex-wrap items-center gap-1.5 mt-1">
                 <span class="m3-badge-secondary">
@@ -3179,9 +3209,11 @@ function createCardHtml(sub) {
             </div>
           </div>
 
+          <!-- Indicador visual sutil de interactividad -->
           <div class="flex items-center gap-1 text-[#cac4d0]">
-            <button onclick="editSubscription(${sub.id})" title="Editar" class="p-1.5 hover:text-white hover:bg-[#2b2930] rounded-full transition"><i data-lucide="edit-3" class="w-3.5 h-3.5"></i></button>
-            <button onclick="deleteSubscription(${sub.id}, '${escapeHtml(sub.name)}')" title="Eliminar" class="p-1.5 hover:text-[#f2b8b5] hover:bg-[#2b2930] rounded-full transition"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+            <span class="p-1 text-[#cac4d0] group-hover:text-white transition" title="Ver detalles">
+              <i data-lucide="chevron-right" class="w-4 h-4"></i>
+            </span>
           </div>
         </div>
 
@@ -3194,7 +3226,7 @@ function createCardHtml(sub) {
           </div>
           <div class="text-right">
             <span class="${badgeClass}">${daysText}</span>
-            <button onclick="markAsPaidAndAdvance(${sub.id})" class="block text-[11px] text-[#d0bcff] hover:underline mt-1 font-semibold">Marcar Pagado</button>
+            <button onclick="event.stopPropagation(); markAsPaidAndAdvance(${sub.id})" class="block text-[11px] text-[#d0bcff] hover:underline mt-1 font-semibold cursor-pointer">Marcar Pagado</button>
           </div>
         </div>
 
@@ -3236,11 +3268,14 @@ function createCardHtml(sub) {
       </div>
 
       <div class="mt-4 pt-3 border-t border-[#49454f]/30 flex items-center justify-between text-xs">
-        <button onclick="toggleSubscriptionStatus(${sub.id}, '${sub.status}')" class="text-xs font-medium text-[#cac4d0] hover:text-white flex items-center gap-1.5 transition">
+        <button onclick="event.stopPropagation(); toggleSubscriptionStatus(${sub.id}, '${sub.status}')" class="text-xs font-medium text-[#cac4d0] hover:text-white flex items-center gap-1.5 transition cursor-pointer">
           <i data-lucide="${sub.status === 'active' ? 'pause-circle' : 'play-circle'}" class="w-3.5 h-3.5"></i>
           <span>${sub.status === 'active' ? 'Pausar' : 'Reactivar'}</span>
         </button>
-        <span class="text-[11px] text-[#938f99] font-mono">#${sub.id}</span>
+        <span class="text-[11px] text-[#cac4d0] font-sans flex items-center gap-1 opacity-80">
+          <span>Ver resumen</span>
+          <i data-lucide="arrow-up-right" class="w-3 h-3"></i>
+        </span>
       </div>
     </div>
   `;
@@ -3263,7 +3298,7 @@ function createTableRowHtml(sub) {
   const iconHtml = getServiceOfficialIcon(sub.name, sub.color, 'w-3.5 h-3.5');
 
   return `
-    <tr class="hover:bg-[#211f26] transition">
+    <tr class="hover:bg-[#211f26] transition cursor-pointer" onclick="showSubscriptionSummary(${sub.id})" title="Ver resumen de ${escapeHtml(sub.name)}">
       <td class="px-4 py-3.5">
         <div class="flex items-center gap-2.5">
           <div class="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 shadow-sm" style="background: linear-gradient(135deg, ${sub.color || '#d0bcff'}22, ${sub.color || '#d0bcff'}44); border: 1px solid ${sub.color || '#d0bcff'}55">
@@ -3305,10 +3340,9 @@ function createTableRowHtml(sub) {
         </div>
       </td>
       <td class="px-4 py-3.5">${statusBadge}</td>
-      <td class="px-4 py-3.5 text-right space-x-1">
-        <button onclick="markAsPaidAndAdvance(${sub.id})" title="Marcar como pagado" class="p-1.5 hover:bg-[#2b2930] rounded-full text-[#cac4d0] hover:text-[#a8d5b5] transition"><i data-lucide="receipt" class="w-4 h-4"></i></button>
-        <button onclick="editSubscription(${sub.id})" title="Editar" class="p-1.5 hover:bg-[#2b2930] rounded-full text-[#cac4d0] hover:text-white transition"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
-        <button onclick="deleteSubscription(${sub.id}, '${escapeHtml(sub.name)}')" title="Eliminar" class="p-1.5 hover:bg-[#2b2930] rounded-full text-[#cac4d0] hover:text-[#f2b8b5] transition"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+      <td class="px-4 py-3.5 text-right space-x-1" onclick="event.stopPropagation()">
+        <button onclick="markAsPaidAndAdvance(${sub.id})" title="Marcar como pagado" class="p-1.5 hover:bg-[#2b2930] rounded-full text-[#cac4d0] hover:text-[#a8d5b5] transition cursor-pointer"><i data-lucide="receipt" class="w-4 h-4"></i></button>
+        <button onclick="showSubscriptionSummary(${sub.id})" title="Ver resumen" class="p-1.5 hover:bg-[#2b2930] rounded-full text-[#cac4d0] hover:text-white transition cursor-pointer"><i data-lucide="eye" class="w-4 h-4"></i></button>
       </td>
     </tr>
   `;
@@ -6057,4 +6091,199 @@ window.openNotificationsDrawer = openNotificationsDrawer;
 window.closeNotificationsDrawer = closeNotificationsDrawer;
 window.renderNotificationsDrawer = renderNotificationsDrawer;
 window.updateNotificationsBadge = updateNotificationsBadge;
+
+// ================= MODAL: RESUMEN DE SUSCRIPCIÓN (CLICK EN TARJETA) =================
+function showSubscriptionSummary(subId) {
+  const sub = (state.subscriptions || []).find(s => s.id === parseInt(subId));
+  if (!sub) return;
+
+  state.selectedSummarySubId = sub.id;
+
+  const modal = document.getElementById('subscriptionDetailModal');
+  const headerBar = document.getElementById('subDetailHeaderBar');
+  const iconBox = document.getElementById('subDetailIconBox');
+  const nameEl = document.getElementById('subDetailName');
+  const statusBadgeEl = document.getElementById('subDetailStatusBadge');
+  const aliasEl = document.getElementById('subDetailAlias');
+  const categoryEl = document.getElementById('subDetailCategory');
+  const priceEl = document.getElementById('subDetailPrice');
+  const origPriceEl = document.getElementById('subDetailOriginalPrice');
+  const myShareEl = document.getElementById('subDetailMyShare');
+  const annualCostEl = document.getElementById('subDetailAnnualCost');
+  const cycleLabelEl = document.getElementById('subDetailCycleLabel');
+  const nextBillingEl = document.getElementById('subDetailNextBilling');
+  const daysBadgeEl = document.getElementById('subDetailDaysBadge');
+  const paymentMethodEl = document.getElementById('subDetailPaymentMethod');
+  const trialRow = document.getElementById('subDetailTrialRow');
+  const trialEndEl = document.getElementById('subDetailTrialEnd');
+  const sharedRow = document.getElementById('subDetailSharedRow');
+  const sharedWithEl = document.getElementById('subDetailSharedWith');
+  const urlRow = document.getElementById('subDetailUrlRow');
+  const urlLinkEl = document.getElementById('subDetailUrlLink');
+  const urlTextEl = document.getElementById('subDetailUrlText');
+  const notesRow = document.getElementById('subDetailNotesRow');
+  const notesTextEl = document.getElementById('subDetailNotesText');
+  const statusBtn = document.getElementById('btnSubDetailToggleStatus');
+  const statusIcon = document.getElementById('subDetailStatusIcon');
+  const statusText = document.getElementById('subDetailStatusText');
+
+  const baseCurr = state.baseCurrencyCode || 'USD';
+  const baseSymbol = state.currency || '$';
+  const subCurr = sub.currency || 'USD';
+  const subSymbol = CURRENCY_SYMBOLS[subCurr] || '$';
+  const cycleLabel = CYCLE_LABELS[sub.billing_cycle] || sub.billing_cycle;
+  const { text: daysText, badgeClass } = getCutOffBadgeInfo(sub.days_until_billing);
+
+  const isDifferentCurrency = subCurr !== baseCurr;
+  const convertedPrice = sub.converted_price !== undefined ? sub.converted_price : convertCurrency(sub.price, subCurr, baseCurr);
+  const convertedMonthly = sub.converted_monthly_cost !== undefined ? sub.converted_monthly_cost : convertCurrency(sub.monthly_cost, subCurr, baseCurr);
+  const convertedAnnual = sub.converted_annual_cost !== undefined ? sub.converted_annual_cost : convertCurrency(sub.annual_cost, subCurr, baseCurr);
+
+  // Barra superior de color de la marca
+  if (headerBar) headerBar.style.backgroundColor = sub.color || '#d0bcff';
+
+  // Icono del servicio
+  if (iconBox) {
+    iconBox.innerHTML = getServiceOfficialIcon(sub.name, sub.color, 'w-6 h-6');
+    iconBox.style.background = `linear-gradient(135deg, ${sub.color || '#d0bcff'}25, ${sub.color || '#d0bcff'}45)`;
+    iconBox.style.border = `1px solid ${sub.color || '#d0bcff'}60`;
+  }
+
+  // Nombre y Estado
+  if (nameEl) nameEl.textContent = sub.name;
+  if (statusBadgeEl) statusBadgeEl.innerHTML = getStatusBadge(sub.status);
+
+  // Alias
+  if (aliasEl) {
+    if (sub.alias) {
+      aliasEl.textContent = `Alias: "${sub.alias}"`;
+      aliasEl.classList.remove('hidden');
+    } else {
+      aliasEl.classList.add('hidden');
+    }
+  }
+
+  // Categoría
+  if (categoryEl) categoryEl.textContent = `Categoría: ${sub.category || 'General'}`;
+
+  // Precios
+  if (priceEl) {
+    priceEl.textContent = `${baseSymbol}${formatNumber(convertedPrice)} / ${cycleLabel.toLowerCase()}`;
+  }
+
+  if (origPriceEl) {
+    if (isDifferentCurrency) {
+      origPriceEl.textContent = `Precio original: ${subSymbol}${formatNumber(sub.price)} ${subCurr}`;
+      origPriceEl.classList.remove('hidden');
+    } else {
+      origPriceEl.classList.add('hidden');
+    }
+  }
+
+  if (myShareEl) {
+    if (sub.is_shared) {
+      const share = sub.my_share_price || sub.monthly_cost;
+      myShareEl.textContent = `Tu parte calculada: ${baseSymbol}${formatNumber(share)}/mes`;
+      myShareEl.classList.remove('hidden');
+    } else {
+      myShareEl.classList.add('hidden');
+    }
+  }
+
+  // Costo Anual y ciclo
+  if (annualCostEl) {
+    annualCostEl.textContent = `${baseSymbol}${formatNumber(convertedAnnual)} / año`;
+  }
+  if (cycleLabelEl) {
+    cycleLabelEl.textContent = `Equivalente a ≈ ${baseSymbol}${formatNumber(convertedMonthly)}/mes`;
+  }
+
+  // Próximo cobro
+  if (nextBillingEl) {
+    nextBillingEl.textContent = formatDateFriendly(sub.next_billing_date);
+  }
+  if (daysBadgeEl) {
+    daysBadgeEl.textContent = daysText;
+    daysBadgeEl.className = `ml-1.5 text-[10px] px-2 py-0.5 rounded-full font-bold ${badgeClass}`;
+  }
+
+  // Método de pago
+  if (paymentMethodEl) {
+    paymentMethodEl.textContent = sub.payment_method || 'No especificado';
+  }
+
+  // Prueba Gratuita
+  if (trialRow) {
+    if (sub.is_trial) {
+      trialRow.classList.remove('hidden');
+      if (trialEndEl) trialEndEl.textContent = `Finaliza el ${formatDateFriendly(sub.trial_end_date)}`;
+    } else {
+      trialRow.classList.add('hidden');
+    }
+  }
+
+  // Cuenta Compartida
+  if (sharedRow) {
+    if (sub.is_shared) {
+      sharedRow.classList.remove('hidden');
+      if (sharedWithEl) {
+        sharedWithEl.textContent = `Dividida entre ${sub.shared_with_count || 2} personas`;
+      }
+    } else {
+      sharedRow.classList.add('hidden');
+    }
+  }
+
+  // Enlace oficial
+  if (urlRow) {
+    if (sub.url && sub.url.length > 3) {
+      urlRow.classList.remove('hidden');
+      if (urlLinkEl) urlLinkEl.href = sub.url;
+      if (urlTextEl) {
+        try {
+          const u = new URL(sub.url.startsWith('http') ? sub.url : `https://${sub.url}`);
+          urlTextEl.textContent = u.hostname.replace('www.', '');
+        } catch (_) {
+          urlTextEl.textContent = 'Ir al servicio';
+        }
+      }
+    } else {
+      urlRow.classList.add('hidden');
+    }
+  }
+
+  // Notas
+  if (notesRow) {
+    if (sub.notes && sub.notes.trim().length > 0) {
+      notesRow.classList.remove('hidden');
+      if (notesTextEl) notesTextEl.textContent = sub.notes;
+    } else {
+      notesRow.classList.add('hidden');
+    }
+  }
+
+  // Botón de pausar / reactivar
+  if (statusBtn && statusIcon && statusText) {
+    if (sub.status === 'active') {
+      statusIcon.setAttribute('data-lucide', 'pause-circle');
+      statusText.textContent = 'Pausar';
+    } else {
+      statusIcon.setAttribute('data-lucide', 'play-circle');
+      statusText.textContent = 'Reactivar';
+    }
+  }
+
+  modal?.classList.remove('hidden');
+  initIcons();
+}
+
+function closeSubscriptionSummary() {
+  const modal = document.getElementById('subscriptionDetailModal');
+  modal?.classList.add('hidden');
+  state.selectedSummarySubId = null;
+}
+
+window.showSubscriptionSummary = showSubscriptionSummary;
+window.closeSubscriptionSummary = closeSubscriptionSummary;
+
 

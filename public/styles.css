@@ -1166,4 +1166,28 @@ body.theme-light #notificationsDrawer .drawer-filter-chip.active {
   color: #21005d !important;
 }
 
+/* Tarjetas de Suscripción interactivas */
+.sub-card-interactive {
+  cursor: pointer;
+  transition: transform 0.2s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.2s cubic-bezier(0.2, 0, 0, 1), border-color 0.2s ease;
+}
+.sub-card-interactive:hover {
+  transform: translateY(-2px);
+  border-color: rgba(208, 188, 255, 0.4);
+  box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.5);
+}
+body.theme-light .sub-card-interactive:hover {
+  border-color: #6750a4 !important;
+  box-shadow: 0 8px 24px rgba(103, 80, 164, 0.12) !important;
+}
+
+/* Adaptaciones de modo claro para el Modal de Resumen */
+body.theme-light #subscriptionDetailModal .bg-\[\#141218\]\/80 {
+  background-color: #f0f0f0 !important;
+}
+body.theme-light #subscriptionDetailModal .bg-\[\#211f26\] {
+  background-color: #f8f8f8 !important;
+}
+
+
 

@@ -48,7 +48,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Roboto+Flex:opsz,wght@8..144,300..800&family=Google+Sans:wght@400;500;700&family=Google+Sans+Text:wght@400;500;700&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="/styles.css?v=2.6.5">
+  <link rel="stylesheet" href="/styles.css?v=2.6.6">
 </head>
 <body class="min-h-full flex antialiased selection:bg-[#d0bcff] selection:text-[#381e72] bg-[#141218] text-[#e6e0e9]">
 
@@ -1388,6 +1388,133 @@
     </div>
   </div>
 
+  <!-- ================= MODAL: RESUMEN DE SUSCRIPCIÓN (CLICK EN TARJETA) ================= -->
+  <div id="subscriptionDetailModal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-black/75 backdrop-blur-sm p-4 flex items-center justify-center">
+    <div class="relative w-full max-w-lg m3-dialog overflow-hidden transition-all my-6 animate-scale-up flex flex-col shadow-2xl">
+      <!-- Encabezado con color de la marca -->
+      <div id="subDetailHeaderBar" class="h-2 w-full bg-[#d0bcff]"></div>
+
+      <div class="p-6 space-y-5">
+        <!-- Top: Icono, Nombre, Alias y Botón Cerrar -->
+        <div class="flex items-start justify-between gap-3">
+          <div class="flex items-center gap-3 min-w-0">
+            <div id="subDetailIconBox" class="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-md">
+              <!-- Icono dinámico -->
+            </div>
+            <div class="min-w-0">
+              <div class="flex items-center gap-2 flex-wrap">
+                <h3 id="subDetailName" class="text-base sm:text-lg font-bold text-white font-google-sans truncate">Servicio</h3>
+                <span id="subDetailStatusBadge"></span>
+              </div>
+              <p id="subDetailAlias" class="text-xs text-[#d0bcff] font-medium mt-0.5 truncate hidden"></p>
+              <p id="subDetailCategory" class="text-[11px] text-[#cac4d0] mt-0.5"></p>
+            </div>
+          </div>
+
+          <button id="btnCloseSubDetailModal" class="p-2 rounded-full text-[#cac4d0] hover:text-white hover:bg-[#2b2930] transition cursor-pointer shrink-0">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+
+        <!-- Bloque de Montos y Ciclo -->
+        <div class="grid grid-cols-2 gap-3 p-4 bg-[#141218]/80 rounded-2xl border border-[#49454f]/30">
+          <div>
+            <span class="text-[10px] uppercase tracking-wider font-semibold text-[#cac4d0] block">Costo Recurrente</span>
+            <div id="subDetailPrice" class="text-base sm:text-lg font-bold text-white font-mono privacy-blur mt-0.5">$0.00</div>
+            <span id="subDetailOriginalPrice" class="text-[11px] text-[#d0bcff] font-medium privacy-blur block"></span>
+            <span id="subDetailMyShare" class="text-[11px] text-[#a8d5b5] font-medium privacy-blur block"></span>
+          </div>
+          <div class="text-right">
+            <span class="text-[10px] uppercase tracking-wider font-semibold text-[#d0bcff] flex items-center justify-end gap-1 font-google-sans">
+              <i data-lucide="sparkles" class="w-3 h-3"></i> Costo Anual
+            </span>
+            <div id="subDetailAnnualCost" class="text-base sm:text-lg font-extrabold text-[#e8def8] font-mono privacy-blur mt-0.5">$0.00</div>
+            <span id="subDetailCycleLabel" class="text-[11px] text-[#cac4d0] block">Mensual</span>
+          </div>
+        </div>
+
+        <!-- Información de Fechas y Detalles -->
+        <div class="space-y-2.5 text-xs">
+          <!-- Fecha de próximo corte -->
+          <div class="flex items-center justify-between p-3 bg-[#211f26] rounded-xl border border-[#49454f]/30">
+            <span class="text-[#cac4d0] flex items-center gap-2">
+              <i data-lucide="calendar" class="w-4 h-4 text-[#d0bcff]"></i>
+              Próximo cobro:
+            </span>
+            <div class="text-right">
+              <span id="subDetailNextBilling" class="font-bold text-white">--/--/----</span>
+              <span id="subDetailDaysBadge" class="ml-1.5 text-[10px] px-2 py-0.5 rounded-full font-bold"></span>
+            </div>
+          </div>
+
+          <!-- Método de pago -->
+          <div class="flex items-center justify-between p-3 bg-[#211f26] rounded-xl border border-[#49454f]/30">
+            <span class="text-[#cac4d0] flex items-center gap-2">
+              <i data-lucide="credit-card" class="w-4 h-4 text-[#d0bcff]"></i>
+              Método de pago:
+            </span>
+            <span id="subDetailPaymentMethod" class="font-medium text-white">No especificado</span>
+          </div>
+
+          <!-- Prueba Gratuita (si aplica) -->
+          <div id="subDetailTrialRow" class="hidden flex items-center justify-between p-3 bg-rose-950/30 border border-rose-500/30 rounded-xl text-rose-200">
+            <span class="flex items-center gap-2">
+              <i data-lucide="timer" class="w-4 h-4 text-rose-400"></i>
+              Prueba gratuita:
+            </span>
+            <span id="subDetailTrialEnd" class="font-bold text-white">Vence el --</span>
+          </div>
+
+          <!-- Cuentas Compartidas (si aplica) -->
+          <div id="subDetailSharedRow" class="hidden flex items-center justify-between p-3 bg-emerald-950/30 border border-emerald-500/30 rounded-xl text-emerald-200">
+            <span class="flex items-center gap-2">
+              <i data-lucide="users" class="w-4 h-4 text-[#a8d5b5]"></i>
+              Cuenta dividida:
+            </span>
+            <span id="subDetailSharedWith" class="font-bold text-white">Entre 2 personas</span>
+          </div>
+
+          <!-- URL oficial -->
+          <div id="subDetailUrlRow" class="hidden flex items-center justify-between p-3 bg-[#211f26] rounded-xl border border-[#49454f]/30">
+            <span class="text-[#cac4d0] flex items-center gap-2">
+              <i data-lucide="globe" class="w-4 h-4 text-[#d0bcff]"></i>
+              Enlace del servicio:
+            </span>
+            <a id="subDetailUrlLink" href="#" target="_blank" rel="noopener" class="text-[#d0bcff] hover:underline flex items-center gap-1 font-medium truncate max-w-[200px]">
+              <span id="subDetailUrlText">Abrir sitio</span>
+              <i data-lucide="external-link" class="w-3 h-3"></i>
+            </a>
+          </div>
+
+          <!-- Notas -->
+          <div id="subDetailNotesRow" class="hidden p-3 bg-[#211f26] rounded-xl border border-[#49454f]/30">
+            <span class="text-[10px] uppercase font-semibold text-[#cac4d0] block mb-1">Notas personales:</span>
+            <p id="subDetailNotesText" class="text-xs text-[#e6e0e9] italic leading-relaxed"></p>
+          </div>
+        </div>
+
+        <!-- Botones de Acción del Resumen: Editar y Cancelar / Borrar -->
+        <div class="pt-3 border-t border-[#49454f]/40 flex flex-col sm:flex-row items-center justify-between gap-2.5">
+          <button type="button" id="btnSubDetailCancel" class="w-full sm:w-auto m3-btn-danger py-2 px-4 text-xs flex items-center justify-center gap-2 cursor-pointer">
+            <i data-lucide="trash-2" class="w-4 h-4"></i>
+            <span>Cancelar Suscripción</span>
+          </button>
+
+          <div class="w-full sm:w-auto flex items-center gap-2 justify-end">
+            <button type="button" id="btnSubDetailToggleStatus" class="m3-btn-outline py-2 px-3.5 text-xs flex items-center gap-1.5 cursor-pointer">
+              <i data-lucide="pause-circle" id="subDetailStatusIcon" class="w-3.5 h-3.5"></i>
+              <span id="subDetailStatusText">Pausar</span>
+            </button>
+            <button type="button" id="btnSubDetailEdit" class="m3-btn-filled py-2 px-4 text-xs flex items-center gap-1.5 cursor-pointer">
+              <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+              <span>Editar</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div id="subscriptionModal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-black/70 backdrop-blur-sm p-4 sm:p-6 flex items-center justify-center">
     <div class="relative w-full max-w-4xl m3-dialog overflow-hidden transition-all my-6 animate-scale-up max-h-[92vh] flex flex-col">
       
@@ -2197,6 +2324,6 @@
     </div>
   </aside>
 
-  <script src="/app.js?v=2.6.5"></script>
+  <script src="/app.js?v=2.6.6"></script>
 </body>
 </html>
