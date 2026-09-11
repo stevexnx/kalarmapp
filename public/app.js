@@ -6191,56 +6191,6 @@ window.renderNotificationsDrawer = renderNotificationsDrawer;
 window.updateNotificationsBadge = updateNotificationsBadge;
 
 // ================= MODAL: RESUMEN DE SUSCRIPCIÓN (CLICK EN TARJETA) =================
-function showSubscriptionSummary(subId) {
-  const sub = (state.subscriptions || []).find(s => s.id === parseInt(subId));
-  if (!sub) return;
-
-  state.selectedSummarySubId = sub.id;
-
-  const modal = document.getElementById('subscriptionDetailModal');
-  const headerBar = document.getElementById('subDetailHeaderBar');
-  const iconBox = document.getElementById('subDetailIconBox');
-  const nameEl = document.getElementById('subDetailName');
-  const statusBadgeEl = document.getElementById('subDetailStatusBadge');
-  const aliasEl = document.getElementById('subDetailAlias');
-  const categoryEl = document.getElementById('subDetailCategory');
-  const priceEl = document.getElementById('subDetailPrice');
-  const origPriceEl = document.getElementById('subDetailOriginalPrice');
-  const myShareEl = document.getElementById('subDetailMyShare');
-  const annualCostEl = document.getElementById('subDetailAnnualCost');
-  const cycleLabelEl = document.getElementById('subDetailCycleLabel');
-  const nextBillingEl = document.getElementById('subDetailNextBilling');
-  const daysBadgeEl = document.getElementById('subDetailDaysBadge');
-  const paymentMethodEl = document.getElementById('subDetailPaymentMethod');
-  const trialRow = document.getElementById('subDetailTrialRow');
-  const trialEndEl = document.getElementById('subDetailTrialEnd');
-  const sharedRow = document.getElementById('subDetailSharedRow');
-  const sharedWithEl = document.getElementById('subDetailSharedWith');
-  const urlRow = document.getElementById('subDetailUrlRow');
-  const urlLinkEl = document.getElementById('subDetailUrlLink');
-  const urlTextEl = document.getElementById('subDetailUrlText');
-  const notesRow = document.getElementById('subDetailNotesRow');
-  const notesTextEl = document.getElementById('subDetailNotesText');
-  const statusBtn = document.getElementById('btnSubDetailToggleStatus');
-  const statusIcon = document.getElementById('subDetailStatusIcon');
-  const statusText = document.getElementById('subDetailStatusText');
-
-  const baseCurr = state.baseCurrencyCode || 'USD';
-  const baseSymbol = state.currency || '$';
-  const subCurr = sub.currency || 'USD';
-  const subSymbol = CURRENCY_SYMBOLS[subCurr] || '$';
-  const cycleLabel = CYCLE_LABELS[sub.billing_cycle] || sub.billing_cycle;
-  const { text: daysText, badgeClass } = getCutOffBadgeInfo(sub.days_until_billing);
-
-  const isDifferentCurrency = subCurr !== baseCurr;
-  const convertedPrice = sub.converted_price !== undefined ? sub.converted_price : convertCurrency(sub.price, subCurr, baseCurr);
-  const convertedMonthly = sub.converted_monthly_cost !== undefined ? sub.converted_monthly_cost : convertCurrency(sub.monthly_cost, subCurr, baseCurr);
-  const convertedAnnual = sub.converted_annual_cost !== undefined ? sub.converted_annual_cost : convertCurrency(sub.annual_cost, subCurr, baseCurr);
-
-  // Barra superior de color de la marca
-  if (headerBar) headerBar.style.backgroundColor = sub.color || '#d0bcff';
-
-  // Icono del servicio
 function switchSubDetailTab(tabName = 'details') {
   document.querySelectorAll('.sub-detail-tab-btn').forEach(btn => {
     const isActive = btn.dataset.tab === tabName;
