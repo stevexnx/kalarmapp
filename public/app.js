@@ -6508,8 +6508,9 @@ async function openWhatsAppReminderPrompt(phone, friendName, amount, subNames = 
 
 // ================= FASE 3: SMART FINANCIAL INSIGHTS & CASHFLOW PREDICTOR =================
 function renderSmartFinancialInsights() {
+  if (!state.stats) return;
+
   const container = document.getElementById('smartFinancialInsightsSection');
-  if (!container || !state.stats) return;
 
   const subs = state.subscriptions || [];
   const s = state.stats;
@@ -6612,47 +6613,49 @@ function renderSmartFinancialInsights() {
     });
   }
 
-  if (insights.length === 0) {
-    container.classList.add('hidden');
-    container.innerHTML = '';
-    return;
-  }
-
-  container.classList.remove('hidden');
-  container.innerHTML = `
-    <div class="grid grid-cols-1 ${insights.length > 1 ? 'md:grid-cols-2' : ''} gap-3">
-      ${insights.map((ins, idx) => `
-        <div class="m3-insight-card p-4 flex flex-col justify-between space-y-3">
-          <div>
-            <div class="flex items-center justify-between gap-2">
-              <span class="text-[10px] px-2 py-0.5 rounded-full border font-bold ${ins.badgeClass}">
-                ${ins.badge}
-              </span>
-              <div class="w-7 h-7 rounded-lg ${ins.iconBg} flex items-center justify-center shrink-0">
-                <i data-lucide="${ins.icon}" class="w-3.5 h-3.5"></i>
-              </div>
-            </div>
-            <h4 class="text-xs sm:text-sm font-bold text-white mt-2 font-google-sans leading-tight">
-              ${ins.title}
-            </h4>
-            <p class="text-[11px] text-[#cac4d0] mt-1 leading-relaxed">
-              ${ins.description}
-            </p>
-          </div>
-          <div class="pt-2 border-t border-[#49454f]/30 flex justify-end">
-            <button onclick="handleInsightAction(${idx})" class="m3-btn-tonal text-[11px] py-1 px-3 flex items-center gap-1.5">
-              <span>${ins.actionText}</span>
-              <i data-lucide="arrow-right" class="w-3 h-3"></i>
-            </button>
-          </div>
-        </div>
-      `).join('')}
-    </div>
-  `;
-
-  // Guardar acciones de insights en window para interacción
+  // Guardar siempre acciones de insights en window para interacción en el drawer lateral
   window._currentInsights = insights;
-  initIcons();
+
+  if (container) {
+    if (insights.length === 0) {
+      container.classList.add('hidden');
+      container.innerHTML = '';
+      return;
+    }
+
+    container.classList.remove('hidden');
+    container.innerHTML = `
+      <div class="grid grid-cols-1 ${insights.length > 1 ? 'md:grid-cols-2' : ''} gap-3">
+        ${insights.map((ins, idx) => `
+          <div class="m3-insight-card p-4 flex flex-col justify-between space-y-3">
+            <div>
+              <div class="flex items-center justify-between gap-2">
+                <span class="text-[10px] px-2 py-0.5 rounded-full border font-bold ${ins.badgeClass}">
+                  ${ins.badge}
+                </span>
+                <div class="w-7 h-7 rounded-lg ${ins.iconBg} flex items-center justify-center shrink-0">
+                  <i data-lucide="${ins.icon}" class="w-3.5 h-3.5"></i>
+                </div>
+              </div>
+              <h4 class="text-xs sm:text-sm font-bold text-white mt-2 font-google-sans leading-tight">
+                ${ins.title}
+              </h4>
+              <p class="text-[11px] text-[#cac4d0] mt-1 leading-relaxed">
+                ${ins.description}
+              </p>
+            </div>
+            <div class="pt-2 border-t border-[#49454f]/30 flex justify-end">
+              <button onclick="handleInsightAction(${idx})" class="m3-btn-tonal text-[11px] py-1 px-3 flex items-center gap-1.5">
+                <span>${ins.actionText}</span>
+                <i data-lucide="arrow-right" class="w-3 h-3"></i>
+              </button>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+    initIcons();
+  }
 }
 
 function handleInsightAction(index) {
@@ -6713,7 +6716,8 @@ function updateNotificationsBadge() {
 
   const trialsCount = (state.stats.trials_expiring_soon || []).length;
   const upcomingCount = (state.stats.upcoming_7_days || []).length;
-  const totalAlerts = trialsCount + upcomingCount;
+  const budgetAlert = (state.stats.budget_status === 'danger' || state.stats.budget_status === 'warning') ? 1 : 0;
+  const totalAlerts = trialsCount + upcomingCount + budgetAlert;
 
   if (badge) {
     if (totalAlerts > 0) {
@@ -6754,6 +6758,67 @@ function renderNotificationsDrawer(activeFilter = 'all') {
   const insights = window._currentInsights || [];
 
   let html = '';
+
+  // 0. SECCIÓN: PRESUPUESTO MENSUAL
+  if (activeFilter === 'all' || activeFilter === 'budget') {
+    const s = state.stats;
+    const cur = state.currency || '$';
+    const spent = s.total_monthly_cost || 0;
+    const limit = s.monthly_budget || 150;
+    const pct = Math.min(100, Math.max(0, s.budget_used_percentage || 0));
+    const remaining = s.budget_remaining !== undefined ? s.budget_remaining : (limit - spent);
+    const isDanger = s.budget_status === 'danger' || remaining < 0;
+    const isWarning = s.budget_status === 'warning' || (pct >= 80 && pct < 100);
+
+    const statusPillClass = isDanger 
+      ? 'bg-rose-500/20 text-rose-300 border-rose-500/40 animate-pulse'
+      : (isWarning ? 'bg-amber-500/20 text-amber-300 border-amber-500/30' : 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30');
+    
+    const statusText = isDanger
+      ? `¡Excedido por ${cur}${formatNumber(Math.abs(remaining))}!`
+      : (isWarning ? `Cerca del límite (${pct}%)` : `En Presupuesto (${pct}%)`);
+
+    const barColorClass = isDanger ? 'bg-rose-500' : (isWarning ? 'bg-amber-400' : 'bg-emerald-400');
+    const borderColorClass = isDanger ? 'border-rose-500/40' : (isWarning ? 'border-amber-500/40' : 'border-[#49454f]/40');
+
+    html += `
+      <div class="space-y-2">
+        <div class="flex items-center justify-between">
+          <span class="text-[11px] font-bold uppercase tracking-wider text-[#d0bcff] flex items-center gap-1.5">
+            <i data-lucide="target" class="w-3.5 h-3.5"></i>
+            Presupuesto Mensual
+          </span>
+        </div>
+        <div class="p-3.5 rounded-2xl bg-[#141218]/80 border ${borderColorClass} space-y-2.5 shadow-sm">
+          <div class="flex items-start justify-between gap-2">
+            <div>
+              <span class="text-xs font-bold text-white font-google-sans">Meta del Mes</span>
+              <p class="text-[11px] text-[#cac4d0] mt-0.5">
+                Consumido: <span class="font-bold text-white font-mono">${cur}${formatNumber(spent)}</span> de <span class="font-bold text-[#cac4d0] font-mono">${cur}${formatNumber(limit)}</span>
+              </p>
+            </div>
+            <span class="text-[10px] px-2 py-0.5 rounded-full border font-bold ${statusPillClass}">
+              ${statusText}
+            </span>
+          </div>
+
+          <div class="w-full bg-[#2b2930] rounded-full h-2 overflow-hidden p-0.5 border border-[#49454f]/30">
+            <div class="h-full rounded-full transition-all duration-500 ${barColorClass}" style="width: ${pct}%"></div>
+          </div>
+
+          <div class="flex items-center justify-between pt-1 border-t border-[#49454f]/20 text-[11px]">
+            <span class="text-[#cac4d0]">
+              ${remaining >= 0 ? `Disponible: <strong class="text-emerald-300 font-mono">${cur}${formatNumber(remaining)}</strong>` : `Excedido: <strong class="text-rose-300 font-mono">${cur}${formatNumber(Math.abs(remaining))}</strong>`}
+            </span>
+            <button onclick="closeNotificationsDrawer(); openSettingsModal('general');" class="m3-btn-tonal text-[10px] py-1 px-2.5 flex items-center gap-1">
+              <span>Ajustar meta</span>
+              <i data-lucide="chevron-right" class="w-3 h-3"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+  }
 
   // 1. SECCIÓN: PRUEBAS GRATIS POR VENCER
   if (activeFilter === 'all' || activeFilter === 'trials') {
