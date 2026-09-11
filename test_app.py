@@ -230,6 +230,35 @@ class TestDatabaseOperations(unittest.TestCase):
         self.assertIn("Servicio Calendario", ics)
         self.assertIn("CANCELAR PRUEBA", ics)
 
+    def test_card_display_settings(self):
+        # Verificar que por defecto las 3 opciones están desactivadas (False)
+        settings = db.get_settings(user_id=1, db_path=self.temp_db_path)
+        self.assertFalse(settings.get('show_timeline', False))
+        self.assertFalse(settings.get('show_daily_cost', False))
+        self.assertFalse(settings.get('show_original_currency', False))
+
+        # Actualizar a True
+        updated = db.update_settings({
+            'show_timeline': '1',
+            'show_daily_cost': True,
+            'show_original_currency': 'true'
+        }, user_id=1, db_path=self.temp_db_path)
+
+        self.assertTrue(updated['show_timeline'])
+        self.assertTrue(updated['show_daily_cost'])
+        self.assertTrue(updated['show_original_currency'])
+
+        # Desactivar nuevamente
+        updated2 = db.update_settings({
+            'show_timeline': '0',
+            'show_daily_cost': False,
+            'show_original_currency': '0'
+        }, user_id=1, db_path=self.temp_db_path)
+
+        self.assertFalse(updated2['show_timeline'])
+        self.assertFalse(updated2['show_daily_cost'])
+        self.assertFalse(updated2['show_original_currency'])
+
 class TestServerAPI(unittest.TestCase):
     @classmethod
     def setUpClass(cls):

@@ -74,7 +74,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Roboto+Flex:opsz,wght@8..144,300..800&family=Google+Sans:wght@400;500;700&family=Google+Sans+Text:wght@400;500;700&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="/styles.css?v=2.7.8">
+  <link rel="stylesheet" href="/styles.css?v=2.7.9">
 </head>
 <body class="min-h-full flex antialiased selection:bg-[#d0bcff] selection:text-[#381e72] bg-[#141218] text-[#e6e0e9]">
 
@@ -2281,6 +2281,53 @@
             </div>
           </div>
 
+          <!-- Opciones de Visualización en Tarjetas -->
+          <div class="p-4 rounded-2xl bg-[#1d1b20] border border-[#49454f]/40 space-y-3">
+            <div class="flex items-center gap-2 text-white font-semibold font-google-sans">
+              <i data-lucide="layout-grid" class="w-4 h-4 text-[#d0bcff]"></i>
+              <span>Visualización en Tarjetas</span>
+            </div>
+            <p class="text-[11px] text-[#cac4d0]">Personaliza la información y elementos visuales mostrados en las tarjetas de suscripción.</p>
+
+            <div class="space-y-3 pt-1">
+              <!-- Interruptor 1: Barra de progreso del corte -->
+              <div class="flex items-center justify-between py-1 border-b border-[#49454f]/20">
+                <div class="pr-2">
+                  <span class="text-xs font-medium text-white block">Barra de progreso de corte</span>
+                  <span class="text-[10px] text-[#938f99]">Muestra la micro-barra con el porcentaje transcurrido del período.</span>
+                </div>
+                <label class="m3-switch shrink-0" title="Activar/desactivar barra de progreso">
+                  <input type="checkbox" id="settingShowTimeline">
+                  <div class="m3-switch-track"><div class="m3-switch-thumb"></div></div>
+                </label>
+              </div>
+
+              <!-- Interruptor 2: Gasto aproximado por día -->
+              <div class="flex items-center justify-between py-1 border-b border-[#49454f]/20">
+                <div class="pr-2">
+                  <span class="text-xs font-medium text-white block">Gasto equivalente por día</span>
+                  <span class="text-[10px] text-[#938f99]">Calcula y muestra el costo aproximado por día (~$X.XX/día).</span>
+                </div>
+                <label class="m3-switch shrink-0" title="Activar/desactivar costo diario">
+                  <input type="checkbox" id="settingShowDailyCost">
+                  <div class="m3-switch-track"><div class="m3-switch-thumb"></div></div>
+                </label>
+              </div>
+
+              <!-- Interruptor 3: Precio y moneda original -->
+              <div class="flex items-center justify-between py-1">
+                <div class="pr-2">
+                  <span class="text-xs font-medium text-white block">Precio en moneda original</span>
+                  <span class="text-[10px] text-[#938f99]">Muestra el valor y divisa original si difiere de tu divisa base.</span>
+                </div>
+                <label class="m3-switch shrink-0" title="Activar/desactivar moneda original">
+                  <input type="checkbox" id="settingShowOriginalCurrency">
+                  <div class="m3-switch-track"><div class="m3-switch-thumb"></div></div>
+                </label>
+              </div>
+            </div>
+          </div>
+
           <div class="pt-2 border-t border-[#49454f]/40 flex justify-end gap-2.5">
             <button type="button" class="m3-btn-outline" onclick="closeSettingsModal()">Cerrar</button>
             <button type="submit" class="m3-btn-filled py-2 px-6 text-xs font-bold shadow-md">
@@ -2577,6 +2624,6 @@
     </div>
   </aside>
 
-  <script src="/app.js?v=2.7.8"></script>
+  <script src="/app.js?v=2.7.9"></script>
 </body>
 </html>

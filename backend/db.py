@@ -1680,6 +1680,8 @@ def get_settings(user_id=1, db_path=None):
                 result[key] = rates
             except Exception:
                 result[key] = dict(DEFAULT_EXCHANGE_RATES)
+        elif key in ('show_timeline', 'show_daily_cost', 'show_original_currency'):
+            result[key] = (str(val).lower() in ('true', '1'))
         elif key == 'monthly_budget':
             try:
                 result[key] = float(val)
@@ -1687,6 +1689,11 @@ def get_settings(user_id=1, db_path=None):
                 result[key] = 150.0
         else:
             result[key] = val
+
+    for bool_key in ('show_timeline', 'show_daily_cost', 'show_original_currency'):
+        if bool_key not in result:
+            result[bool_key] = False
+
     return result
 
 def update_settings(data: dict, user_id=1, db_path=None):
@@ -1695,7 +1702,9 @@ def update_settings(data: dict, user_id=1, db_path=None):
     cursor = conn.cursor()
 
     for k, v in data.items():
-        if k == 'exchange_rates' and isinstance(v, dict):
+        if k in ('show_timeline', 'show_daily_cost', 'show_original_currency'):
+            val_str = '1' if (v is True or str(v).lower() in ('1', 'true')) else '0'
+        elif k == 'exchange_rates' and isinstance(v, dict):
             val_str = json.dumps(v)
         else:
             val_str = str(v)

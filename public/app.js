@@ -3624,9 +3624,12 @@ function createCardHtml(sub) {
     }
   }
 
+  const showTimeline = Boolean(state.settings?.show_timeline === true || state.settings?.show_timeline === '1' || state.settings?.show_timeline === 'true');
+  const showDailyCost = Boolean(state.settings?.show_daily_cost === true || state.settings?.show_daily_cost === '1' || state.settings?.show_daily_cost === 'true');
+  const showOriginalCurrency = Boolean(state.settings?.show_original_currency === true || state.settings?.show_original_currency === '1' || state.settings?.show_original_currency === 'true');
+
   const dailyEquiv = getDailyEquivalent(displayPrice, sub.billing_cycle);
   const timeline = getBillingTimelineProgress(sub);
-  const humanCutOffMessage = getCutOffHumanMessage(sub.days_until_billing);
 
   const paymentMethodBadge = sub.payment_method ? `
     <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-[#2b2930] text-[#e6e0e9] text-[10px] font-medium border border-[#49454f]/30 shrink-0" title="Método de pago: ${escapeHtml(sub.payment_method)}">
@@ -3685,10 +3688,11 @@ function createCardHtml(sub) {
   const opacityClass = isInactive ? 'opacity-70 hover:opacity-100 transition-opacity' : '';
 
   return `
-    <div class="m3-card sub-card-interactive p-5 relative overflow-hidden flex flex-col justify-between m3-elevation-1 ${opacityClass}" onclick="showSubscriptionSummary(${sub.id})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();showSubscriptionSummary(${sub.id})}" tabindex="0" role="button" aria-label="Ver resumen de ${escapeHtml(sub.name)}" title="Ver resumen de ${escapeHtml(sub.name)}">
+    <div class="m3-card sub-card-interactive p-5 relative overflow-hidden flex flex-col justify-between h-full m3-elevation-1 ${opacityClass}" onclick="showSubscriptionSummary(${sub.id})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();showSubscriptionSummary(${sub.id})}" tabindex="0" role="button" aria-label="Ver resumen de ${escapeHtml(sub.name)}" title="Ver resumen de ${escapeHtml(sub.name)}">
       <div class="absolute top-0 left-0 right-0 h-1.5" style="background-color: ${safeColor}"></div>
 
-      <div class="space-y-3.5">
+      <!-- Cuerpo principal de la tarjeta -->
+      <div class="flex-1 flex flex-col space-y-3">
         <!-- Cabecera: Icono + Nombre + Burbuja Interactiva de Estado -->
         <div class="flex items-start justify-between gap-2.5">
           <div class="flex items-center gap-3 min-w-0">
@@ -3715,7 +3719,7 @@ function createCardHtml(sub) {
           </div>
         </div>
 
-        <!-- Fecha de Corte con Mensaje Contextual y Micro-Barra de Tiempo -->
+        <!-- Fecha de Corte -->
         <div class="p-3 bg-[#1d1b20] rounded-2xl border border-[#49454f]/30 space-y-2">
           <div class="flex items-center justify-between gap-2">
             <div>
@@ -3730,16 +3734,8 @@ function createCardHtml(sub) {
             <span class="${badgeClass}">${daysText}</span>
           </div>
 
-          <!-- Mensaje amigable de cuánto falta para el corte -->
-          ${humanCutOffMessage ? `
-            <div class="text-[11px] font-medium text-[#cac4d0] flex items-center gap-1.5 pt-0.5">
-              <span class="w-1.5 h-1.5 rounded-full ${sub.days_until_billing <= 3 ? 'bg-rose-400 animate-pulse' : (sub.days_until_billing <= 7 ? 'bg-amber-400' : 'bg-emerald-400')}"></span>
-              <span>${humanCutOffMessage}</span>
-            </div>
-          ` : ''}
-
-          ${timeline ? `
-            <div class="w-full bg-[#2b2930] h-1.5 rounded-full overflow-hidden" title="Progreso del período (${timeline.percent}%)">
+          ${(showTimeline && timeline) ? `
+            <div class="w-full bg-[#2b2930] h-1.5 rounded-full overflow-hidden mt-1" title="Progreso del período (${timeline.percent}%)">
               <div class="h-full rounded-full transition-all duration-500 ${timeline.colorClass}" style="width: ${timeline.percent}%"></div>
             </div>
           ` : ''}
@@ -3757,10 +3753,10 @@ function createCardHtml(sub) {
                   ${baseSymbol}${formatNumber(displayPrice)}
                 </span>
                 <span class="text-xs font-semibold ${isSharedSub ? 'text-[#a8d5b5]' : 'text-[#d0bcff]'}">/${cycleSuffix}</span>
-                ${dailyEquiv ? `
+                ${(showDailyCost && dailyEquiv) ? `
                   <span class="text-[10px] text-[#938f99] font-mono privacy-blur ml-1.5 font-normal" title="Equivalente aproximado diario">(~${baseSymbol}${dailyEquiv}/día)</span>
                 ` : ''}
-                ${isDifferentCurrency ? `
+                ${(showOriginalCurrency && isDifferentCurrency) ? `
                   <span class="text-[10px] text-[#938f99] font-mono privacy-blur ml-1">
                     (orig. ${subSymbol}${formatNumber(originalDisplayPrice)} ${subCurr})
                   </span>
@@ -3778,18 +3774,18 @@ function createCardHtml(sub) {
             </div>
           ` : ''}
         </div>
+      </div>
 
-        <!-- Footer de la Tarjeta: Split Pay / Notas a la izquierda y Botón Marcar Pagado a la derecha -->
-        <div class="flex items-center justify-between gap-2 pt-1 border-t border-[#49454f]/20">
-          <div class="min-w-0 flex-1">
-            ${sharedFriendsHtml ? sharedFriendsHtml : (sub.notes ? `<span class="truncate max-w-[150px] italic text-[11px] text-[#938f99] block" title="${escapeHtml(sub.notes)}">"${escapeHtml(sub.notes)}"</span>` : `<span class="text-[10px] text-[#938f99] uppercase tracking-wider font-medium">${escapeHtml(sub.category)}</span>`)}
-          </div>
-
-          <button onclick="event.stopPropagation(); markAsPaidAndAdvance(${sub.id}, this)" class="m3-btn-paid-pill shrink-0 ml-auto" title="Marcar período como pagado y avanzar a la siguiente fecha">
-            <i data-lucide="receipt" class="w-3.5 h-3.5 text-[#a8d5b5]"></i>
-            <span>Marcar Pagado</span>
-          </button>
+      <!-- Footer de la Tarjeta: Siempre anclado al fondo, botón en la misma posición fija -->
+      <div class="mt-auto pt-3 border-t border-[#49454f]/20 flex items-center justify-between gap-2 min-h-[38px]">
+        <div class="min-w-0 flex-1">
+          ${sharedFriendsHtml ? sharedFriendsHtml : (sub.notes ? `<span class="truncate max-w-[150px] italic text-[11px] text-[#938f99] block" title="${escapeHtml(sub.notes)}">"${escapeHtml(sub.notes)}"</span>` : `<span class="text-[10px] text-[#938f99] uppercase tracking-wider font-medium">${escapeHtml(sub.category)}</span>`)}
         </div>
+
+        <button onclick="event.stopPropagation(); markAsPaidAndAdvance(${sub.id}, this)" class="m3-btn-paid-pill shrink-0 ml-auto" title="Marcar período como pagado y avanzar a la siguiente fecha">
+          <i data-lucide="receipt" class="w-3.5 h-3.5 text-[#a8d5b5]"></i>
+          <span>Marcar Pagado</span>
+        </button>
       </div>
     </div>
   `;
@@ -5440,6 +5436,20 @@ function openSettingsModal(defaultTab = 'general') {
     if (budgetInput) budgetInput.value = state.settings.monthly_budget || 150;
     if (currencySelect) currencySelect.value = state.settings.base_currency || 'USD';
     if (webhookInput) webhookInput.value = state.settings.discord_webhook || '';
+
+    const showTimelineCheck = document.getElementById('settingShowTimeline');
+    const showDailyCostCheck = document.getElementById('settingShowDailyCost');
+    const showOrigCurrCheck = document.getElementById('settingShowOriginalCurrency');
+
+    if (showTimelineCheck) {
+      showTimelineCheck.checked = Boolean(state.settings.show_timeline === true || state.settings.show_timeline === '1' || state.settings.show_timeline === 'true');
+    }
+    if (showDailyCostCheck) {
+      showDailyCostCheck.checked = Boolean(state.settings.show_daily_cost === true || state.settings.show_daily_cost === '1' || state.settings.show_daily_cost === 'true');
+    }
+    if (showOrigCurrCheck) {
+      showOrigCurrCheck.checked = Boolean(state.settings.show_original_currency === true || state.settings.show_original_currency === '1' || state.settings.show_original_currency === 'true');
+    }
   }
   renderUserProfile();
   const currentTheme = localStorage.getItem('subtracker_theme') || 'dark';
@@ -5457,7 +5467,10 @@ async function handleSettingsGeneralSubmit(e) {
   e.preventDefault();
   const data = {
     monthly_budget: parseFloat(document.getElementById('settingBudget').value) || 150,
-    base_currency: document.getElementById('settingBaseCurrency').value
+    base_currency: document.getElementById('settingBaseCurrency').value,
+    show_timeline: document.getElementById('settingShowTimeline')?.checked ? '1' : '0',
+    show_daily_cost: document.getElementById('settingShowDailyCost')?.checked ? '1' : '0',
+    show_original_currency: document.getElementById('settingShowOriginalCurrency')?.checked ? '1' : '0'
   };
 
   try {
