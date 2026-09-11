@@ -3515,12 +3515,61 @@ function renderSubscriptions() {
   initIcons();
 }
 
+function getCycleShortSuffix(cycle) {
+  switch (cycle) {
+    case 'weekly': return 'sem';
+    case 'monthly': return 'mes';
+    case 'quarterly': return 'trim';
+    case 'biannual': return 'semestre';
+    case 'annual': return 'año';
+    default: return cycle || 'mes';
+  }
+}
+
+function getPaymentMethodIcon(method) {
+  if (!method) return 'credit-card';
+  const m = method.toLowerCase();
+  if (m.includes('paypal')) return 'wallet';
+  if (m.includes('apple') || m.includes('google')) return 'smartphone';
+  if (m.includes('efectivo') || m.includes('cash')) return 'banknote';
+  if (m.includes('banco') || m.includes('transfer')) return 'building-2';
+  return 'credit-card';
+}
+
+function getBillingTimelineProgress(sub) {
+  const daysLeft = sub.days_until_billing;
+  if (daysLeft === null || daysLeft === undefined) return null;
+
+  let totalDays = 30;
+  if (sub.billing_cycle === 'weekly') totalDays = 7;
+  else if (sub.billing_cycle === 'quarterly') totalDays = 90;
+  else if (sub.billing_cycle === 'biannual') totalDays = 180;
+  else if (sub.billing_cycle === 'annual') totalDays = 365;
+
+  if (daysLeft <= 0) {
+    return { percent: 100, colorClass: 'bg-rose-500' };
+  }
+
+  const elapsed = Math.max(0, totalDays - daysLeft);
+  const percent = Math.min(100, Math.max(6, Math.round((elapsed / totalDays) * 100)));
+
+  let colorClass = 'bg-emerald-400';
+  if (daysLeft <= 3) {
+    colorClass = 'bg-rose-400';
+  } else if (daysLeft <= 7) {
+    colorClass = 'bg-amber-400';
+  }
+
+  return { percent, colorClass };
+}
+
 function createCardHtml(sub) {
   const baseCurr = state.baseCurrencyCode || 'USD';
   const baseSymbol = state.currency;
   const subCurr = sub.currency || 'USD';
   const subSymbol = CURRENCY_SYMBOLS[subCurr] || '$';
-  const cycleLabel = CYCLE_LABELS[sub.billing_cycle] || sub.billing_cycle;
+  const cycleSuffix = getCycleShortSuffix(sub.billing_cycle);
+  const cycleLabel = CYCLE_LABELS[sub.billing_cycle] || sub.billing_cycle || 'Mensual';
   const { text: daysText, badgeClass } = getCutOffBadgeInfo(sub.days_until_billing);
 
   const isDifferentCurrency = subCurr !== baseCurr;
@@ -3528,11 +3577,38 @@ function createCardHtml(sub) {
   const convertedMonthly = sub.converted_monthly_cost !== undefined ? sub.converted_monthly_cost : convertCurrency(sub.monthly_cost, subCurr, baseCurr);
   const convertedAnnual = sub.converted_annual_cost !== undefined ? sub.converted_annual_cost : convertCurrency(sub.annual_cost, subCurr, baseCurr);
 
+  // Cálculo del cobro correspondiente exacto
+  const isSharedSub = Boolean(sub.is_shared);
+  const sharedPeopleCount = sub.shared_with_count || 2;
+  let displayPrice = convertedPrice;
+  let originalDisplayPrice = sub.price;
+
+  if (isSharedSub) {
+    if (sub.billing_cycle === 'annual') {
+      displayPrice = convertedAnnual;
+      originalDisplayPrice = sub.annual_cost || (sub.price / sharedPeopleCount);
+    } else if (sub.billing_cycle === 'monthly') {
+      displayPrice = convertedMonthly;
+      originalDisplayPrice = sub.monthly_cost || (sub.price / sharedPeopleCount);
+    } else {
+      displayPrice = convertedPrice / sharedPeopleCount;
+      originalDisplayPrice = sub.price / sharedPeopleCount;
+    }
+  }
+
+  const timeline = getBillingTimelineProgress(sub);
+  const paymentMethodBadge = sub.payment_method ? `
+    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-[#2b2930] text-[#e6e0e9] text-[10px] font-medium border border-[#49454f]/30 shrink-0" title="Método de pago: ${escapeHtml(sub.payment_method)}">
+      <i data-lucide="${getPaymentMethodIcon(sub.payment_method)}" class="w-3 h-3 text-[#d0bcff]"></i>
+      <span class="max-w-[85px] truncate">${escapeHtml(sub.payment_method)}</span>
+    </span>
+  ` : '';
+
   let trialBadge = sub.is_trial ? `<span class="m3-badge-error flex items-center gap-1"><i data-lucide="timer" class="w-3 h-3"></i> Trial</span>` : '';
 
   // Renderizar burbujas de amigos en Split Pay si la cuenta es compartida
   let sharedFriendsHtml = '';
-  if (sub.is_shared) {
+  if (isSharedSub) {
     const friendIds = (sub.shared_friend_ids || '').toString().split(',').map(x => parseInt(x.trim())).filter(Boolean);
     const matchedFriends = (state.friends || []).filter(f => friendIds.includes(f.id));
 
@@ -3560,13 +3636,13 @@ function createCardHtml(sub) {
               </div>
             ` : ''}
           </div>
-          <span class="text-[10px] text-[#a8d5b5] font-medium font-sans">Split Pay</span>
+          <span class="text-[10px] text-[#a8d5b5] font-semibold font-sans">Split Pay</span>
         </div>
       `;
     } else {
       sharedFriendsHtml = `
         <span class="m3-badge-success text-[10px] flex items-center gap-1">
-          <i data-lucide="users" class="w-3 h-3"></i> Dividido /${sub.shared_with_count || 2}
+          <i data-lucide="users" class="w-3 h-3"></i> Dividido /${sharedPeopleCount}
         </span>
       `;
     }
@@ -3608,52 +3684,68 @@ function createCardHtml(sub) {
           </div>
         </div>
 
-        <!-- Fecha de Corte -->
-        <div class="p-3 bg-[#1d1b20] rounded-2xl border border-[#49454f]/30 flex items-center justify-between">
-          <div>
-            <span class="text-[10px] uppercase tracking-wider font-semibold text-[#cac4d0] flex items-center gap-1">
-              <i data-lucide="calendar" class="w-3 h-3 text-[#cac4d0]"></i> Fecha de Corte
-            </span>
-            <div class="text-xs font-semibold text-[#e6e0e9] mt-0.5">${formatDateFriendly(sub.next_billing_date)}</div>
+        <!-- Fecha de Corte con Botón Pagado y Micro-Barra de Tiempo -->
+        <div class="p-3 bg-[#1d1b20] rounded-2xl border border-[#49454f]/30 space-y-2">
+          <div class="flex items-center justify-between gap-2">
+            <div>
+              <span class="text-[10px] uppercase tracking-wider font-semibold text-[#cac4d0] flex items-center gap-1">
+                <i data-lucide="calendar" class="w-3 h-3 text-[#cac4d0]"></i> Fecha de Corte
+              </span>
+              <div class="text-xs font-bold text-[#e6e0e9] mt-0.5 font-google-sans">
+                ${formatDateFriendly(sub.next_billing_date)}
+              </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+              <span class="${badgeClass}">${daysText}</span>
+              <button onclick="event.stopPropagation(); markAsPaidAndAdvance(${sub.id})" class="m3-btn-paid-pill" title="Marcar período como pagado y avanzar a la siguiente fecha">
+                <i data-lucide="check" class="w-3 h-3"></i>
+                <span>Pagado</span>
+              </button>
+            </div>
           </div>
-          <div class="text-right">
-            <span class="${badgeClass}">${daysText}</span>
-            <button onclick="event.stopPropagation(); markAsPaidAndAdvance(${sub.id})" class="block text-[11px] text-[#d0bcff] hover:underline mt-1 font-semibold cursor-pointer">Marcar Pagado</button>
-          </div>
+
+          ${timeline ? `
+            <div class="w-full bg-[#2b2930] h-1.5 rounded-full overflow-hidden" title="Progreso del período (${timeline.percent}%)">
+              <div class="h-full rounded-full transition-all duration-500 ${timeline.colorClass}" style="width: ${timeline.percent}%"></div>
+            </div>
+          ` : ''}
         </div>
 
-        <!-- Montos: Cobro Recurrente + Costo Anual -->
-        <div class="grid grid-cols-2 gap-2 bg-[#211f26] border border-[#49454f]/40 rounded-2xl p-3">
-          <div>
-            <span class="text-[10px] uppercase font-semibold tracking-wider text-[#cac4d0] block">Cobro Recurrente</span>
-            ${isDifferentCurrency ? `
-              <span class="text-xs font-bold text-white font-mono privacy-blur">${baseSymbol}${formatNumber(convertedPrice)} <span class="text-[10px] font-normal text-[#cac4d0]">/${cycleLabel.toLowerCase()}</span></span>
-              <span class="block text-[11px] font-medium text-[#d0bcff] privacy-blur">orig. ${subSymbol}${formatNumber(sub.price)} ${subCurr}</span>
-              ${sub.is_shared ? `<span class="block text-[10px] text-[#a8d5b5] font-medium mt-0.5 privacy-blur">Tu parte: ${baseSymbol}${formatNumber(convertedMonthly)}/m</span>` : ''}
-            ` : `
-              <span class="text-xs font-bold text-white font-mono privacy-blur">${baseSymbol}${formatNumber(sub.price)} <span class="text-[10px] font-normal text-[#cac4d0]">/${cycleLabel.toLowerCase()}</span></span>
-              ${sub.is_shared ? `<span class="block text-[10px] text-[#a8d5b5] font-medium mt-0.5 privacy-blur">Tu parte: ${baseSymbol}${formatNumber(sub.monthly_cost)}/m</span>` : ''}
-            `}
+        <!-- Monto del Cobro Correspondiente (Hero Price Unificado) -->
+        <div class="bg-[#211f26] border border-[#49454f]/35 rounded-2xl p-3.5 space-y-2">
+          <div class="flex items-start justify-between gap-2">
+            <div>
+              <span class="text-[10px] uppercase font-bold tracking-wider ${isSharedSub ? 'text-[#a8d5b5]' : 'text-[#cac4d0]'} flex items-center gap-1">
+                ${isSharedSub ? `<i data-lucide="users" class="w-3 h-3 text-[#a8d5b5]"></i> Tu Cuota ${cycleLabel}` : `Cobro ${cycleLabel}`}
+              </span>
+              <div class="flex items-baseline gap-1 mt-0.5">
+                <span class="text-xl font-extrabold text-white font-mono tracking-tight privacy-blur">
+                  ${baseSymbol}${formatNumber(displayPrice)}
+                </span>
+                <span class="text-xs font-semibold ${isSharedSub ? 'text-[#a8d5b5]' : 'text-[#d0bcff]'}">/${cycleSuffix}</span>
+                ${isDifferentCurrency ? `
+                  <span class="text-[10px] text-[#938f99] font-mono privacy-blur ml-1">
+                    (orig. ${subSymbol}${formatNumber(originalDisplayPrice)} ${subCurr})
+                  </span>
+                ` : ''}
+              </div>
+            </div>
+
+            ${paymentMethodBadge}
           </div>
 
-          <div class="text-right">
-            <span class="text-[10px] uppercase font-bold tracking-wider text-[#d0bcff] block flex items-center justify-end gap-0.5 font-google-sans">
-              <i data-lucide="sparkles" class="w-2.5 h-2.5"></i> Costo Anual
-            </span>
-            <span class="text-sm font-extrabold text-[#e8def8] tracking-tight block font-mono privacy-blur">
-              ${baseSymbol}${formatNumber(convertedAnnual)} <span class="text-[10px] font-medium text-[#cac4d0]">/año</span>
-            </span>
-            ${isDifferentCurrency ? `
-              <span class="text-[10px] text-[#cac4d0] block font-mono privacy-blur">(${subSymbol}${formatNumber(sub.annual_cost)} ${subCurr})</span>
-            ` : `
-              <span class="text-[10px] text-[#cac4d0] block font-mono privacy-blur">(${baseSymbol}${formatNumber(convertedMonthly)}/mes)</span>
-            `}
-          </div>
+          ${isSharedSub ? `
+            <div class="flex items-center justify-between text-[11px] text-[#cac4d0] pt-1.5 border-t border-[#49454f]/25">
+              <span class="truncate">Total servicio: <span class="font-mono font-semibold text-[#e6e0e9] privacy-blur">${baseSymbol}${formatNumber(convertedPrice)}/${cycleSuffix}</span></span>
+              <span class="text-[10px] text-[#d0bcff] font-semibold shrink-0 ml-2">/${sharedPeopleCount} personas</span>
+            </div>
+          ` : ''}
         </div>
 
         <!-- Fila de Amigos en Split Pay y Notas (si aplican) -->
         ${(sharedFriendsHtml || sub.notes) ? `
-          <div class="flex items-center justify-between text-[11px] text-[#cac4d0] pt-1">
+          <div class="flex items-center justify-between text-[11px] text-[#cac4d0] pt-0.5">
             <div>
               ${sharedFriendsHtml}
             </div>
