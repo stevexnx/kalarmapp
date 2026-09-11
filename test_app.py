@@ -259,6 +259,30 @@ class TestDatabaseOperations(unittest.TestCase):
         self.assertFalse(updated2['show_daily_cost'])
         self.assertFalse(updated2['show_original_currency'])
 
+    def test_advanced_settings(self):
+        # Verificar valores por defecto
+        settings = db.get_settings(user_id=1, db_path=self.temp_db_path)
+        self.assertFalse(settings.get('privacy_mode_default', False))
+        self.assertEqual(settings.get('notification_lead_days', 3), 3)
+
+        # Actualizar valores
+        updated = db.update_settings({
+            'privacy_mode_default': '1',
+            'notification_lead_days': '7'
+        }, user_id=1, db_path=self.temp_db_path)
+
+        self.assertTrue(updated['privacy_mode_default'])
+        self.assertEqual(updated['notification_lead_days'], 7)
+
+        # Desactivar / cambiar valores
+        updated2 = db.update_settings({
+            'privacy_mode_default': False,
+            'notification_lead_days': 1
+        }, user_id=1, db_path=self.temp_db_path)
+
+        self.assertFalse(updated2['privacy_mode_default'])
+        self.assertEqual(updated2['notification_lead_days'], 1)
+
 class TestServerAPI(unittest.TestCase):
     @classmethod
     def setUpClass(cls):

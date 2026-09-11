@@ -1680,8 +1680,13 @@ def get_settings(user_id=1, db_path=None):
                 result[key] = rates
             except Exception:
                 result[key] = dict(DEFAULT_EXCHANGE_RATES)
-        elif key in ('show_timeline', 'show_daily_cost', 'show_original_currency'):
+        elif key in ('show_timeline', 'show_daily_cost', 'show_original_currency', 'privacy_mode_default'):
             result[key] = (str(val).lower() in ('true', '1'))
+        elif key == 'notification_lead_days':
+            try:
+                result[key] = int(val)
+            except Exception:
+                result[key] = 3
         elif key == 'monthly_budget':
             try:
                 result[key] = float(val)
@@ -1690,9 +1695,12 @@ def get_settings(user_id=1, db_path=None):
         else:
             result[key] = val
 
-    for bool_key in ('show_timeline', 'show_daily_cost', 'show_original_currency'):
+    for bool_key in ('show_timeline', 'show_daily_cost', 'show_original_currency', 'privacy_mode_default'):
         if bool_key not in result:
             result[bool_key] = False
+
+    if 'notification_lead_days' not in result:
+        result['notification_lead_days'] = 3
 
     return result
 
@@ -1702,8 +1710,10 @@ def update_settings(data: dict, user_id=1, db_path=None):
     cursor = conn.cursor()
 
     for k, v in data.items():
-        if k in ('show_timeline', 'show_daily_cost', 'show_original_currency'):
+        if k in ('show_timeline', 'show_daily_cost', 'show_original_currency', 'privacy_mode_default'):
             val_str = '1' if (v is True or str(v).lower() in ('1', 'true')) else '0'
+        elif k == 'notification_lead_days':
+            val_str = str(int(v) if str(v).isdigit() else 3)
         elif k == 'exchange_rates' and isinstance(v, dict):
             val_str = json.dumps(v)
         else:

@@ -1698,6 +1698,14 @@ function initEventListeners() {
       }
     }
   });
+
+  // Cierre de dropdown de divisa al hacer click afuera
+  document.addEventListener('click', (e) => {
+    const container = document.getElementById('customCurrencyDropdownContainer');
+    if (container && !container.contains(e.target)) {
+      toggleCurrencyDropdown(false);
+    }
+  });
 }
 
 
@@ -1717,6 +1725,7 @@ async function loadSettings() {
       state.currency = CURRENCY_SYMBOLS[state.baseCurrencyCode] || '$';
       const navBadge = document.getElementById('navBaseCurrencyBadge');
       if (navBadge) navBadge.textContent = `${state.baseCurrencyCode} (${state.currency})`;
+      initPrivacyMode();
     }
   } catch (err) {
     console.error('Error cargando ajustes:', err);
@@ -5433,20 +5442,127 @@ function switchSettingsTab(tabName) {
   initIcons();
 }
 
+const CURRENCY_CONFIG = [
+  { code: 'USD', symbol: '$', flag: '🇺🇸', name: 'Dólar Estadounidense' },
+  { code: 'DOP', symbol: 'RD$', flag: '🇩🇴', name: 'Peso Dominicano' },
+  { code: 'EUR', symbol: '€', flag: '🇪🇺', name: 'Euro' },
+  { code: 'MXN', symbol: '$', flag: '🇲🇽', name: 'Peso Mexicano' },
+  { code: 'COP', symbol: '$', flag: '🇨🇴', name: 'Peso Colombiano' },
+  { code: 'CLP', symbol: '$', flag: '🇨🇱', name: 'Peso Chileno' },
+  { code: 'ARS', symbol: '$', flag: '🇦🇷', name: 'Peso Argentino' },
+  { code: 'GBP', symbol: '£', flag: '🇬🇧', name: 'Libra Esterlina' }
+];
+
+function renderCurrencyDropdownOptions(selectedCode) {
+  const menu = document.getElementById('customCurrencyMenu');
+  if (!menu) return;
+  menu.innerHTML = CURRENCY_CONFIG.map(c => {
+    const isSelected = c.code === selectedCode;
+    return `
+      <div onclick="selectBaseCurrency('${c.code}')" class="flex items-center justify-between p-2.5 rounded-xl hover:bg-[#2b2930] transition cursor-pointer ${isSelected ? 'bg-[#381e72]/50 text-[#d0bcff]' : 'text-white'}">
+        <div class="flex items-center gap-2.5 min-w-0">
+          <span class="text-base leading-none shrink-0">${c.flag}</span>
+          <div class="min-w-0">
+            <span class="font-bold text-xs font-mono">${c.code} (${c.symbol})</span>
+            <span class="text-[11px] text-[#cac4d0] block truncate">${c.name}</span>
+          </div>
+        </div>
+        ${isSelected ? '<i data-lucide="check" class="w-4 h-4 text-[#d0bcff] shrink-0"></i>' : ''}
+      </div>
+    `;
+  }).join('');
+  initIcons();
+}
+
+function toggleCurrencyDropdown(forceOpen = null) {
+  const menu = document.getElementById('customCurrencyMenu');
+  const chevron = document.getElementById('currencyDropdownChevron');
+  if (!menu) return;
+  const isHidden = menu.classList.contains('hidden');
+  const shouldOpen = forceOpen !== null ? forceOpen : isHidden;
+
+  if (shouldOpen) {
+    menu.classList.remove('hidden');
+    chevron?.classList.add('rotate-180');
+  } else {
+    menu.classList.add('hidden');
+    chevron?.classList.remove('rotate-180');
+  }
+}
+
+function selectBaseCurrency(code) {
+  const hiddenInput = document.getElementById('settingBaseCurrency');
+  if (hiddenInput) hiddenInput.value = code;
+
+  const found = CURRENCY_CONFIG.find(c => c.code === code) || CURRENCY_CONFIG[0];
+  const flagElem = document.getElementById('selectedCurrencyFlag');
+  const codeElem = document.getElementById('selectedCurrencyCode');
+  const nameElem = document.getElementById('selectedCurrencyName');
+
+  if (flagElem) flagElem.textContent = found.flag;
+  if (codeElem) codeElem.textContent = `${found.code} (${found.symbol})`;
+  if (nameElem) nameElem.textContent = found.name;
+
+  toggleCurrencyDropdown(false);
+  renderCurrencyDropdownOptions(code);
+  updateCurrencyExchangeInfo(code);
+}
+
+function updateCurrencyExchangeInfo(code) {
+  const infoElem = document.getElementById('currencyExchangeRateText');
+  if (!infoElem) return;
+  const rates = state.settings?.exchange_rates || {
+    'USD': 1.0, 'DOP': 60.0, 'EUR': 0.92, 'MXN': 19.5, 'ARS': 980.0, 'CLP': 920.0, 'COP': 4100.0, 'GBP': 0.78
+  };
+  if (code === 'USD') {
+    infoElem.textContent = `1 USD ≈ ${rates.DOP} DOP • 1 USD ≈ ${rates.EUR} EUR • 1 USD ≈ ${rates.MXN} MXN`;
+  } else {
+    const fromUsd = convertCurrency(1, 'USD', code);
+    const fromEur = convertCurrency(1, 'EUR', code);
+    infoElem.textContent = `1 USD ≈ ${formatNumber(fromUsd)} ${code} • 1 EUR ≈ ${formatNumber(fromEur)} ${code}`;
+  }
+}
+
+function updateBackupStorageSummary() {
+  const summaryElem = document.getElementById('backupStorageSummary');
+  if (!summaryElem) return;
+  const activeSubs = (state.subscriptions || []).filter(s => s.status === 'active').length;
+  const totalSubs = (state.subscriptions || []).length;
+  const totalPayments = (state.payments || []).length;
+  const totalFriends = (state.friends || []).length;
+
+  summaryElem.textContent = `${totalSubs} servicios (${activeSubs} activos) • ${totalPayments} pagos registrados • ${totalFriends} amigos vinculados`;
+}
+
+function selectLeadDays(days) {
+  const input = document.getElementById('settingNotificationLeadDays');
+  if (input) input.value = days;
+  const chips = document.querySelectorAll('.lead-day-chip');
+  chips.forEach(chip => {
+    const chipDays = parseInt(chip.getAttribute('data-days'));
+    if (chipDays === days) {
+      chip.classList.add('active');
+    } else {
+      chip.classList.remove('active');
+    }
+  });
+}
+
 function openSettingsModal(defaultTab = 'general') {
   const modal = document.getElementById('settingsModal');
   if (state.settings) {
     const budgetInput = document.getElementById('settingBudget');
-    const currencySelect = document.getElementById('settingBaseCurrency');
     const webhookInput = document.getElementById('settingDiscordWebhook');
 
     if (budgetInput) budgetInput.value = state.settings.monthly_budget || 150;
-    if (currencySelect) currencySelect.value = state.settings.base_currency || 'USD';
     if (webhookInput) webhookInput.value = state.settings.discord_webhook || '';
+
+    selectBaseCurrency(state.settings.base_currency || 'USD');
 
     const showTimelineCheck = document.getElementById('settingShowTimeline');
     const showDailyCostCheck = document.getElementById('settingShowDailyCost');
     const showOrigCurrCheck = document.getElementById('settingShowOriginalCurrency');
+    const privacyDefaultCheck = document.getElementById('settingPrivacyModeDefault');
 
     if (showTimelineCheck) {
       showTimelineCheck.checked = Boolean(state.settings.show_timeline === true || state.settings.show_timeline === '1' || state.settings.show_timeline === 'true');
@@ -5457,7 +5573,16 @@ function openSettingsModal(defaultTab = 'general') {
     if (showOrigCurrCheck) {
       showOrigCurrCheck.checked = Boolean(state.settings.show_original_currency === true || state.settings.show_original_currency === '1' || state.settings.show_original_currency === 'true');
     }
+    if (privacyDefaultCheck) {
+      privacyDefaultCheck.checked = Boolean(state.settings.privacy_mode_default === true || state.settings.privacy_mode_default === '1' || state.settings.privacy_mode_default === 'true');
+    }
+
+    selectLeadDays(parseInt(state.settings.notification_lead_days) || 3);
+  } else {
+    selectBaseCurrency('USD');
   }
+
+  updateBackupStorageSummary();
   renderUserProfile();
   const currentTheme = localStorage.getItem('subtracker_theme') || 'dark';
   syncThemeSettingsUI(currentTheme === 'light');
@@ -5467,6 +5592,7 @@ function openSettingsModal(defaultTab = 'general') {
 }
 
 function closeSettingsModal() {
+  toggleCurrencyDropdown(false);
   document.getElementById('settingsModal')?.classList.add('hidden');
 }
 
@@ -5477,7 +5603,8 @@ async function handleSettingsGeneralSubmit(e) {
     base_currency: document.getElementById('settingBaseCurrency').value,
     show_timeline: document.getElementById('settingShowTimeline')?.checked ? '1' : '0',
     show_daily_cost: document.getElementById('settingShowDailyCost')?.checked ? '1' : '0',
-    show_original_currency: document.getElementById('settingShowOriginalCurrency')?.checked ? '1' : '0'
+    show_original_currency: document.getElementById('settingShowOriginalCurrency')?.checked ? '1' : '0',
+    privacy_mode_default: document.getElementById('settingPrivacyModeDefault')?.checked ? '1' : '0'
   };
 
   try {
@@ -5489,6 +5616,10 @@ async function handleSettingsGeneralSubmit(e) {
     const result = await res.json();
     if (result.success) {
       showToast('Ajustes generales guardados exitosamente', 'success');
+      const privacyDefault = document.getElementById('settingPrivacyModeDefault')?.checked;
+      if (privacyDefault !== undefined) {
+        localStorage.setItem('subtracker_privacy', privacyDefault ? 'true' : 'false');
+      }
       closeSettingsModal();
       await loadAllData();
     } else {
@@ -5503,8 +5634,10 @@ async function handleSettingsGeneralSubmit(e) {
 async function handleSettingsNotificationsSubmit(e) {
   e.preventDefault();
   const webhookUrl = document.getElementById('settingDiscordWebhook')?.value.trim() || '';
+  const leadDays = parseInt(document.getElementById('settingNotificationLeadDays')?.value) || 3;
   const data = {
-    discord_webhook: webhookUrl
+    discord_webhook: webhookUrl,
+    notification_lead_days: leadDays
   };
 
   try {
@@ -6016,7 +6149,13 @@ function closeM3Dialog(result) {
 
 // ================= FASE 1: MODO PRIVACIDAD (BLUR FINANCIERO) =================
 function initPrivacyMode() {
-  const isPrivacyActive = localStorage.getItem('subtracker_privacy') === 'true';
+  const stored = localStorage.getItem('subtracker_privacy');
+  let isPrivacyActive = false;
+  if (stored !== null) {
+    isPrivacyActive = (stored === 'true');
+  } else if (state.settings?.privacy_mode_default !== undefined) {
+    isPrivacyActive = Boolean(state.settings.privacy_mode_default === true || state.settings.privacy_mode_default === '1' || state.settings.privacy_mode_default === 'true');
+  }
   applyPrivacyMode(isPrivacyActive);
 }
 
@@ -7142,6 +7281,9 @@ function closeSubscriptionSummary() {
 window.showSubscriptionSummary = showSubscriptionSummary;
 window.closeSubscriptionSummary = closeSubscriptionSummary;
 window.switchSubDetailTab = switchSubDetailTab;
+window.toggleCurrencyDropdown = toggleCurrencyDropdown;
+window.selectBaseCurrency = selectBaseCurrency;
+window.selectLeadDays = selectLeadDays;
 
 
 

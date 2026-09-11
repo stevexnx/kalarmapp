@@ -74,7 +74,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Roboto+Flex:opsz,wght@8..144,300..800&family=Google+Sans:wght@400;500;700&family=Google+Sans+Text:wght@400;500;700&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="/styles.css?v=2.8.1">
+  <link rel="stylesheet" href="/styles.css?v=2.8.2">
 </head>
 <body class="min-h-full flex antialiased selection:bg-[#d0bcff] selection:text-[#381e72] bg-[#141218] text-[#e6e0e9]">
 
@@ -2191,26 +2191,6 @@
         </button>
       </div>
 
-      <!-- Tarjeta de Usuario Activo en Ajustes -->
-      <div id="settingsUserCard" class="hidden p-3 sm:p-3.5 bg-[#1d1b20] border border-[#49454f]/40 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div class="flex items-center gap-3 cursor-pointer group min-w-0 flex-1" onclick="closeSettingsModal(); openProfileModal();" title="Personalizar mi avatar y perfil">
-          <div id="settingsUserAvatar" class="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-[#381e72] shadow ring-2 ring-[#d0bcff]/40 shrink-0 group-hover:ring-[#d0bcff] transition" style="background-color: #d0bcff">
-            -
-          </div>
-          <div class="min-w-0 flex-1">
-            <div class="flex items-center gap-1.5 flex-wrap">
-              <div id="settingsUserDisplayName" class="text-xs sm:text-sm font-bold text-white font-google-sans group-hover:text-[#d0bcff] transition truncate">Usuario</div>
-              <span class="text-[9px] px-1.5 py-0.2 rounded-full bg-[#381e72] text-[#d0bcff] shrink-0">Editar</span>
-            </div>
-            <div id="settingsUserUsername" class="text-[11px] text-[#cac4d0] font-mono truncate">@usuario</div>
-          </div>
-        </div>
-        <button type="button" id="btnLogoutSettings" class="m3-btn-outline text-rose-300 border-rose-500/40 hover:bg-rose-500/10 text-xs py-1.5 px-3.5 flex items-center justify-center gap-1.5 shrink-0 w-full sm:w-auto">
-          <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
-          <span>Cerrar Sesión</span>
-        </button>
-      </div>
-
       <!-- Pestañas de Navegación M3 en Ajustes -->
       <div class="flex items-center gap-1 p-1 sm:p-1.5 bg-[#141218] rounded-2xl border border-[#49454f]/40 overflow-x-auto text-xs font-semibold">
         <button type="button" id="tabSettingsGeneral" class="flex-1 min-w-[95px] sm:min-w-[110px] py-2 sm:py-2.5 px-2 sm:px-3 rounded-xl bg-[#d0bcff] text-[#381e72] font-semibold transition flex items-center justify-center gap-1.5 sm:gap-2 shadow-sm shrink-0">
@@ -2242,22 +2222,38 @@
               </div>
             </div>
 
+            <!-- Divisa Base Estilizada M3 con Banderas y Cotización -->
             <div class="p-4 rounded-2xl bg-[#1d1b20] border border-[#49454f]/40 space-y-2">
               <div class="flex items-center gap-2 text-white font-semibold font-google-sans">
                 <i data-lucide="coins" class="w-4 h-4 text-[#f2c18d]"></i>
-                <label for="settingBaseCurrency">Divisa Base de la App</label>
+                <span>Divisa Base de la App</span>
               </div>
               <p class="text-[11px] text-[#cac4d0]">Moneda con la que se calcularán los totales acumulados.</p>
-              <select id="settingBaseCurrency" class="m3-text-field font-semibold">
-                <option value="USD">USD ($) - Dólar Estadounidense</option>
-                <option value="DOP">DOP (RD$) - Peso Dominicano</option>
-                <option value="EUR">EUR (€) - Euro</option>
-                <option value="MXN">MXN ($) - Peso Mexicano</option>
-                <option value="ARS">ARS ($) - Peso Argentino</option>
-                <option value="CLP">CLP ($) - Peso Chileno</option>
-                <option value="COP">COP ($) - Peso Colombiano</option>
-                <option value="GBP">GBP (£) - Libra Esterlina</option>
-              </select>
+
+              <!-- Custom Dropdown M3 -->
+              <div class="relative" id="customCurrencyDropdownContainer">
+                <input type="hidden" id="settingBaseCurrency" value="USD">
+                <button type="button" id="btnCustomCurrencyTrigger" onclick="toggleCurrencyDropdown()"
+                  class="w-full m3-text-field flex items-center justify-between py-2.5 px-3.5 bg-[#211f26] hover:bg-[#2b2930] rounded-xl border border-[#49454f]/40 transition text-left cursor-pointer group">
+                  <div class="flex items-center gap-2.5 min-w-0" id="customCurrencySelectedDisplay">
+                    <span class="text-base leading-none" id="selectedCurrencyFlag">🇺🇸</span>
+                    <span class="font-bold text-white text-xs font-mono" id="selectedCurrencyCode">USD ($)</span>
+                    <span class="text-[11px] text-[#cac4d0] truncate" id="selectedCurrencyName">Dólar Estadounidense</span>
+                  </div>
+                  <i data-lucide="chevron-down" id="currencyDropdownChevron" class="w-4 h-4 text-[#cac4d0] group-hover:text-white shrink-0 transition-transform duration-200"></i>
+                </button>
+
+                <!-- Menú Flotante M3 con Banderas -->
+                <div id="customCurrencyMenu" class="hidden absolute left-0 right-0 top-full mt-1.5 z-30 bg-[#1d1b20] border border-[#49454f]/60 rounded-2xl shadow-2xl p-1.5 max-h-60 overflow-y-auto space-y-0.5 animate-scale-up backdrop-blur-md">
+                  <!-- Inyectado dinámicamente por app.js -->
+                </div>
+              </div>
+
+              <!-- Monitor de Tipo de Cambio en Vivo -->
+              <div id="currencyExchangeRateInfo" class="text-[10px] text-[#938f99] flex items-center gap-1.5 pt-0.5">
+                <i data-lucide="trending-up" class="w-3 h-3 text-[#f2c18d] shrink-0"></i>
+                <span id="currencyExchangeRateText" class="truncate">Cargando tasas de conversión...</span>
+              </div>
             </div>
           </div>
 
@@ -2279,6 +2275,21 @@
                 </div>
               </label>
             </div>
+          </div>
+
+          <!-- Modo Privacidad por Defecto (Privacy Blur Inicial) -->
+          <div class="p-4 rounded-2xl bg-[#1d1b20] border border-[#49454f]/40 flex items-center justify-between">
+            <div class="space-y-0.5 pr-2">
+              <div class="flex items-center gap-2 text-white font-semibold font-google-sans">
+                <i data-lucide="eye-off" class="w-4 h-4 text-[#d0bcff]"></i>
+                <span>Modo Privacidad al Iniciar</span>
+              </div>
+              <p class="text-[11px] text-[#cac4d0]">Desenfoca los montos y balances automáticamente al abrir la aplicación.</p>
+            </div>
+            <label class="m3-switch shrink-0" title="Activar modo privacidad por defecto">
+              <input type="checkbox" id="settingPrivacyModeDefault">
+              <div class="m3-switch-track"><div class="m3-switch-thumb"></div></div>
+            </label>
           </div>
 
           <!-- Opciones de Visualización en Tarjetas -->
@@ -2340,6 +2351,25 @@
 
       <!-- ================= PESTAÑA 2: COPIAS DE SEGURIDAD Y EXPORTAR CALENDARIO ================= -->
       <div id="settingsTabContentBackups" class="hidden space-y-4 text-xs animate-m3-slide">
+        <!-- Widget: Estado y Resumen de Almacenamiento -->
+        <div class="p-3.5 sm:p-4 rounded-2xl bg-gradient-to-r from-[#211f26] via-[#1d1b20] to-[#1d1b20] border border-[#49454f]/40 flex items-center justify-between gap-3">
+          <div class="flex items-center gap-3 min-w-0 flex-1">
+            <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-[#a8d5b5]/15 text-[#a8d5b5] flex items-center justify-center shrink-0">
+              <i data-lucide="database" class="w-5 h-5"></i>
+            </div>
+            <div class="min-w-0 flex-1">
+              <h5 class="text-xs sm:text-sm font-bold text-white font-google-sans">Estado de tu Almacenamiento</h5>
+              <p class="text-[11px] text-[#cac4d0] mt-0.5 truncate" id="backupStorageSummary">
+                Calculando datos guardados...
+              </p>
+            </div>
+          </div>
+          <span class="text-[10px] px-2.5 py-1 rounded-full bg-[#a8d5b5]/15 text-[#a8d5b5] font-semibold border border-[#a8d5b5]/30 shrink-0 flex items-center gap-1.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-[#a8d5b5] animate-pulse"></span>
+            <span>Local DB</span>
+          </span>
+        </div>
+
         <!-- Subsección: Exportación de Calendario -->
         <div class="p-4 rounded-2xl bg-[#1d1b20] border border-[#49454f]/40 space-y-3">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -2424,6 +2454,29 @@
             </div>
             <button type="button" id="btnTestBrowserNotifications" class="m3-btn-filled py-2 px-4 text-xs font-bold w-full sm:w-auto shrink-0">
               Activar / Probar
+            </button>
+          </div>
+        </div>
+
+        <!-- Días de Anticipación para Alertas de Corte -->
+        <div class="p-4 rounded-2xl bg-[#1d1b20] border border-[#49454f]/40 space-y-2.5">
+          <div class="flex items-center gap-2 text-white font-semibold font-google-sans">
+            <i data-lucide="clock" class="w-4 h-4 text-[#f2c18d]"></i>
+            <span>Anticipación de Alertas de Corte</span>
+          </div>
+          <p class="text-[11px] text-[#cac4d0]">
+            Elige con cuántos días de anticipación prefieres recibir los avisos y recordatorios de renovación.
+          </p>
+          <input type="hidden" id="settingNotificationLeadDays" value="3">
+          <div class="flex items-center gap-2 pt-1 flex-wrap" id="notificationLeadDaysContainer">
+            <button type="button" class="lead-day-chip m3-chip cursor-pointer text-xs" data-days="1" onclick="selectLeadDays(1)">
+              <span>1 día antes</span>
+            </button>
+            <button type="button" class="lead-day-chip m3-chip active cursor-pointer text-xs" data-days="3" onclick="selectLeadDays(3)">
+              <span>3 días antes (Recomendado)</span>
+            </button>
+            <button type="button" class="lead-day-chip m3-chip cursor-pointer text-xs" data-days="7" onclick="selectLeadDays(7)">
+              <span>7 días antes</span>
             </button>
           </div>
         </div>
@@ -2624,6 +2677,6 @@
     </div>
   </aside>
 
-  <script src="/app.js?v=2.8.1"></script>
+  <script src="/app.js?v=2.8.2"></script>
 </body>
 </html>
