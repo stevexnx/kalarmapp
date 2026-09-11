@@ -5319,6 +5319,43 @@ async function markAsPaidAndAdvance(id, btnElement = null) {
   const sub = state.subscriptions.find(s => s.id === id);
   if (!sub) return;
   const amount = sub.is_shared && sub.my_share_price ? sub.my_share_price : sub.price;
+  const subCurr = sub.currency || state.baseCurrencyCode || 'USD';
+  const subSymbol = CURRENCY_SYMBOLS[subCurr] || '$';
+  const cycleName = CYCLE_LABELS[sub.billing_cycle] || sub.billing_cycle || 'período';
+
+  // Explicación de días restantes antes del corte o días transcurridos desde el vencimiento
+  const days = sub.days_until_billing;
+  let daysExplanation = '';
+  if (days !== null && days !== undefined && !isNaN(days)) {
+    if (days < 0) {
+      const abs = Math.abs(days);
+      daysExplanation = abs === 1
+        ? `⚠️ Este cobro venció ayer (hace 1 día).`
+        : `⚠️ Este cobro venció hace ${abs} días.`;
+    } else if (days === 0) {
+      daysExplanation = `🚨 La fecha de corte vence hoy.`;
+    } else if (days === 1) {
+      daysExplanation = `⏰ Queda solo 1 día antes de la fecha de corte (vence mañana).`;
+    } else {
+      daysExplanation = `📅 Faltan ${days} días antes de la fecha de corte.`;
+    }
+  } else if (sub.next_billing_date) {
+    daysExplanation = `📅 Fecha de corte programada: ${formatDate(sub.next_billing_date)}.`;
+  }
+
+  const isOverdue = days !== null && days !== undefined && days < 0;
+  const isDueToday = days === 0;
+
+  const confirmed = await showM3Confirm({
+    title: `Confirmar Pago: ${sub.name}`,
+    message: `${daysExplanation}\n\n¿Deseas registrar el pago de ${subSymbol}${formatNumber(amount)} (${sub.is_shared ? 'tu cuota' : cycleName}) y avanzar la fecha de corte al siguiente ciclo?`,
+    icon: isOverdue ? 'alert-triangle' : (isDueToday ? 'alert-circle' : 'receipt'),
+    type: isOverdue ? 'warning' : (isDueToday ? 'warning' : 'success'),
+    confirmText: 'Registrar Pago',
+    cancelText: 'Cancelar'
+  });
+
+  if (!confirmed) return;
 
   let origHtml = '';
   if (btnElement) {
