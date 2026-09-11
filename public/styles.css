@@ -1143,7 +1143,11 @@ body.theme-light .m3-insight-card:hover {
 #notificationsDrawer.open {
   transform: translateX(0) !important;
 }
+#notificationsBackdrop {
+  pointer-events: none;
+}
 #notificationsBackdrop.open {
+  pointer-events: auto;
   display: block !important;
   opacity: 1 !important;
 }

@@ -1741,6 +1741,11 @@ function initEventListeners() {
       e.preventDefault();
       toggleCommandPalette();
     } else if (e.key === 'Escape') {
+      const notifDrawer = document.getElementById('notificationsDrawer');
+      if (notifDrawer && notifDrawer.classList.contains('open')) {
+        closeNotificationsDrawer();
+        return;
+      }
       const confirmModal = document.getElementById('m3ConfirmModal');
       if (confirmModal && !confirmModal.classList.contains('hidden')) {
         closeM3Dialog(false);
@@ -6749,6 +6754,7 @@ function updateNotificationsBadge() {
 
   const trialsCount = (state.stats.trials_expiring_soon || []).length;
   const upcomingCount = (state.stats.upcoming_7_days || []).length;
+  const insightsCount = (window._currentInsights || []).length;
   const budgetAlert = (state.stats.budget_status === 'danger' || state.stats.budget_status === 'warning') ? 1 : 0;
   const totalAlerts = trialsCount + upcomingCount + budgetAlert;
 
@@ -6768,6 +6774,27 @@ function updateNotificationsBadge() {
     } else {
       drawerBadge.classList.add('hidden');
     }
+  }
+
+  // Actualizar indicadores visuales dentro de los chips de filtro del Drawer
+  const chipBudget = document.querySelector('.drawer-filter-chip[data-filter="budget"]');
+  if (chipBudget) {
+    chipBudget.innerHTML = `Presupuesto${budgetAlert ? `<span class="inline-block w-1.5 h-1.5 rounded-full bg-rose-400 animate-pulse ml-1.5"></span>` : ''}`;
+  }
+
+  const chipTrials = document.querySelector('.drawer-filter-chip[data-filter="trials"]');
+  if (chipTrials) {
+    chipTrials.innerHTML = `Pruebas${trialsCount > 0 ? `<span class="ml-1 px-1.5 py-0.2 text-[9px] rounded-full bg-rose-500/30 text-rose-300 font-bold">${trialsCount}</span>` : ''}`;
+  }
+
+  const chipUpcoming = document.querySelector('.drawer-filter-chip[data-filter="upcoming"]');
+  if (chipUpcoming) {
+    chipUpcoming.innerHTML = `Cortes${upcomingCount > 0 ? `<span class="ml-1 px-1.5 py-0.2 text-[9px] rounded-full bg-amber-500/30 text-amber-300 font-bold">${upcomingCount}</span>` : ''}`;
+  }
+
+  const chipInsights = document.querySelector('.drawer-filter-chip[data-filter="insights"]');
+  if (chipInsights) {
+    chipInsights.innerHTML = `Ahorro${insightsCount > 0 ? `<span class="ml-1 px-1.5 py-0.2 text-[9px] rounded-full bg-emerald-500/30 text-emerald-300 font-bold">${insightsCount}</span>` : ''}`;
   }
 }
 
@@ -6897,12 +6924,21 @@ function renderNotificationsDrawer(activeFilter = 'all') {
   // 2. SECCIÓN: CORTES INMINENTES EN 7 DÍAS
   if (activeFilter === 'all' || activeFilter === 'upcoming') {
     if (upcoming.length > 0) {
+      const upcomingTotal = upcoming.reduce((acc, sub) => {
+        const subCurr = sub.currency || 'USD';
+        const conv = sub.converted_price !== undefined ? sub.converted_price : convertCurrency(sub.price, subCurr, state.baseCurrencyCode);
+        return acc + conv;
+      }, 0);
+
       html += `
         <div class="space-y-2">
           <div class="flex items-center justify-between">
             <span class="text-[11px] font-bold uppercase tracking-wider text-amber-300 flex items-center gap-1.5">
               <i data-lucide="clock" class="w-3.5 h-3.5"></i>
               Cortes en 7 días (${upcoming.length})
+            </span>
+            <span class="text-[11px] font-semibold text-amber-200/90 font-mono">
+              Total: <strong class="text-white">${state.currency}${formatNumber(upcomingTotal)}</strong>
             </span>
           </div>
           ${upcoming.map(sub => {
@@ -6971,13 +7007,35 @@ function renderNotificationsDrawer(activeFilter = 'all') {
   }
 
   if (!html) {
+    let emptyTitle = '¡Todo al día!';
+    let emptyDesc = 'No tienes cobros inminentes ni pruebas por vencer pendientes de revisión.';
+    let emptyIcon = 'check-check';
+
+    if (activeFilter === 'trials') {
+      emptyTitle = 'Sin pruebas activas';
+      emptyDesc = 'No tienes periodos de prueba gratuita por vencer en los próximos días.';
+      emptyIcon = 'shield-check';
+    } else if (activeFilter === 'upcoming') {
+      emptyTitle = 'Sin cobros inminentes';
+      emptyDesc = 'No tienes vencimientos o cobros programados para los próximos 7 días.';
+      emptyIcon = 'calendar-check';
+    } else if (activeFilter === 'insights') {
+      emptyTitle = 'Planes optimizados';
+      emptyDesc = 'Tus suscripciones no presentan duplicidades ni sobrecostos detectados.';
+      emptyIcon = 'sparkles';
+    } else if (activeFilter === 'budget') {
+      emptyTitle = 'Presupuesto saludable';
+      emptyDesc = 'Tus gastos mensuales están dentro de los límites programados.';
+      emptyIcon = 'target';
+    }
+
     container.innerHTML = `
       <div class="text-center py-16 text-[#cac4d0]">
         <div class="w-12 h-12 rounded-2xl bg-[#4a4458]/30 flex items-center justify-center mx-auto mb-3 text-[#d0bcff]">
-          <i data-lucide="check-check" class="w-6 h-6"></i>
+          <i data-lucide="${emptyIcon}" class="w-6 h-6"></i>
         </div>
-        <h4 class="text-xs font-bold text-white mb-1">¡Todo al día!</h4>
-        <p class="text-[11px] text-[#cac4d0] max-w-xs mx-auto">No tienes cobros inminentes ni pruebas por vencer pendientes de revisión.</p>
+        <h4 class="text-xs font-bold text-white mb-1 font-google-sans">${emptyTitle}</h4>
+        <p class="text-[11px] text-[#cac4d0] max-w-xs mx-auto leading-relaxed">${emptyDesc}</p>
       </div>
     `;
   } else {

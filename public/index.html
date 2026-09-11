@@ -74,7 +74,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Roboto+Flex:opsz,wght@8..144,300..800&family=Google+Sans:wght@400;500;700&family=Google+Sans+Text:wght@400;500;700&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="/styles.css?v=2.8.5">
+  <link rel="stylesheet" href="/styles.css?v=2.8.6">
 </head>
 <body class="min-h-full flex antialiased selection:bg-[#d0bcff] selection:text-[#381e72] bg-[#141218] text-[#e6e0e9]">
 
@@ -2581,9 +2581,9 @@
   </div>
 
   <!-- ================= CENTRO DE NOTIFICACIONES & ALERTAS (DRAWER LATERAL M3) ================= -->
-  <div id="notificationsBackdrop" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden transition-opacity opacity-0 duration-300"></div>
+  <div id="notificationsBackdrop" onclick="closeNotificationsDrawer()" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] hidden transition-opacity opacity-0 duration-300"></div>
 
-  <aside id="notificationsDrawer" class="fixed top-0 right-0 h-full w-full sm:w-[420px] bg-[#1d1b20] border-l border-[#49454f]/40 z-50 transform translate-x-full transition-transform duration-300 ease-out flex flex-col shadow-2xl">
+  <aside id="notificationsDrawer" class="fixed top-0 right-0 h-full w-full sm:w-[420px] bg-[#1d1b20] border-l border-[#49454f]/40 z-[70] transform translate-x-full transition-transform duration-300 ease-out flex flex-col shadow-2xl">
     <!-- Header del Drawer -->
     <div class="px-5 py-4 border-b border-[#49454f]/40 flex items-center justify-between bg-[#141218]/50">
       <div class="flex items-center gap-2.5">
@@ -2598,8 +2598,8 @@
           <p class="text-[11px] text-[#cac4d0]">Alertas de corte, vencimientos e insights</p>
         </div>
       </div>
-      <button id="btnCloseNotifications" class="p-2 rounded-full text-[#cac4d0] hover:text-white hover:bg-[#2b2930] transition cursor-pointer" title="Cerrar panel">
-        <i data-lucide="x" class="w-4 h-4"></i>
+      <button type="button" id="btnCloseNotifications" onclick="closeNotificationsDrawer()" class="p-2 rounded-full text-[#cac4d0] hover:text-white hover:bg-[#2b2930] transition cursor-pointer shrink-0" title="Cerrar panel">
+        <i data-lucide="x" class="w-5 h-5 pointer-events-none"></i>
       </button>
     </div>
 
@@ -2639,6 +2639,6 @@
     </div>
   </aside>
 
-  <script src="/app.js?v=2.8.5"></script>
+  <script src="/app.js?v=2.8.6"></script>
 </body>
 </html>
