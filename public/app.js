@@ -1046,30 +1046,6 @@ async function handleChangePasswordSubmit(e) {
 let tempSelectedAvatarIcon = 'user';
 let tempSelectedAvatarColor = '#6750A4';
 
-function setProfileTab(tabName = 'appearance') {
-  const btnAppearance = document.getElementById('tabProfileAppearance');
-  const btnSecurity = document.getElementById('tabProfileSecurity');
-  const contentAppearance = document.getElementById('profileTabContentAppearance');
-  const contentSecurity = document.getElementById('profileTabContentSecurity');
-
-  if (tabName === 'appearance') {
-    btnAppearance?.classList.add('active');
-    btnAppearance?.classList.remove('text-[#cac4d0]');
-    btnSecurity?.classList.remove('active');
-    btnSecurity?.classList.add('text-[#cac4d0]');
-    contentAppearance?.classList.remove('hidden');
-    contentSecurity?.classList.add('hidden');
-  } else {
-    btnSecurity?.classList.add('active');
-    btnSecurity?.classList.remove('text-[#cac4d0]');
-    btnAppearance?.classList.remove('active');
-    btnAppearance?.classList.add('text-[#cac4d0]');
-    contentSecurity?.classList.remove('hidden');
-    contentAppearance?.classList.add('hidden');
-  }
-  initIcons();
-}
-
 function openProfileModal() {
   const modal = document.getElementById('profileModal');
   if (!modal || !state.user) return;
@@ -1080,7 +1056,7 @@ function openProfileModal() {
   const inputDisp = document.getElementById('inputProfileDisplayName');
   if (inputDisp) inputDisp.value = state.user.display_name || '';
 
-  // Actualizar datos de la pestaña de Seguridad
+  // Actualizar datos de Cuenta
   const secEmail = document.getElementById('securityTabEmail');
   if (secEmail) secEmail.textContent = state.user.email || 'Sin correo registrado';
   const secUName = document.getElementById('securityTabUsername');
@@ -1094,12 +1070,29 @@ function openProfileModal() {
   const friendsCountEl = document.getElementById('profileFriendsCount');
   if (friendsCountEl) friendsCountEl.textContent = friendsCount;
 
-  setProfileTab('appearance');
+  updateProfileAvatarPreview();
+
+  modal.classList.remove('hidden');
+  initIcons();
+}
+
+function openAvatarEditorModal() {
+  const modal = document.getElementById('avatarEditorModal');
+  if (!modal || !state.user) return;
+
+  tempSelectedAvatarIcon = state.user.avatar_icon || 'user';
+  tempSelectedAvatarColor = state.user.avatar_color || '#6750A4';
+
   renderAvatarSelectors();
   updateProfileAvatarPreview();
 
   modal.classList.remove('hidden');
   initIcons();
+}
+
+function closeAvatarEditorModal() {
+  const modal = document.getElementById('avatarEditorModal');
+  if (modal) modal.classList.add('hidden');
 }
 
 function renderAvatarSelectors() {
@@ -1142,33 +1135,69 @@ function selectAvatarColor(colorHex) {
 }
 
 function updateProfileAvatarPreview() {
-  const preview = document.getElementById('modalProfileAvatar');
+  const modalAvatar = document.getElementById('modalProfileAvatar');
+  const editorPreview = document.getElementById('avatarEditorPreview');
   const inputDisp = document.getElementById('inputProfileDisplayName');
   const name = (inputDisp && inputDisp.value.trim()) || state.user?.display_name || state.user?.username || 'U';
 
-  if (preview) {
-    preview.innerHTML = renderAvatarHtml({
-      name: name,
-      color: tempSelectedAvatarColor,
-      icon: tempSelectedAvatarIcon,
-      size: 'w-16 h-16',
-      iconSize: 'w-8 h-8',
-      extraClasses: 'shadow-xl ring-4 ring-[#d0bcff]/20'
-    });
-    initIcons();
-  }
+  const avatarHtml = renderAvatarHtml({
+    name: name,
+    color: tempSelectedAvatarColor,
+    icon: tempSelectedAvatarIcon,
+    size: 'w-16 h-16',
+    textSize: 'text-2xl',
+    iconSize: 'w-8 h-8',
+    extraClasses: 'shadow-xl ring-4 ring-[#d0bcff]/20'
+  });
+
+  if (modalAvatar) modalAvatar.innerHTML = avatarHtml;
+  if (editorPreview) editorPreview.innerHTML = avatarHtml;
+  initIcons();
 }
 
-async function handleSaveProfileAvatar() {
+async function handleSaveProfileName() {
   const inputDisp = document.getElementById('inputProfileDisplayName');
   const newDisplayName = inputDisp ? inputDisp.value.trim() : '';
+
+  if (!newDisplayName) {
+    showToast('Por favor introduce un nombre válido', 'warning');
+    return;
+  }
 
   try {
     const res = await fetch('/api/user/profile', {
       method: 'PUT',
       headers: getAuthHeaders(),
       body: JSON.stringify({
-        display_name: newDisplayName || state.user.username,
+        display_name: newDisplayName,
+        avatar_color: state.user.avatar_color || '#6750A4',
+        avatar_icon: state.user.avatar_icon || 'user'
+      })
+    });
+
+    const result = await res.json();
+    if (res.ok && result.success) {
+      state.user = result.user;
+      localStorage.setItem('subtracker_user', JSON.stringify(result.user));
+      renderUserProfile();
+      showToast('¡Nombre de perfil actualizado!', 'success');
+      await loadFriends();
+    } else {
+      showToast(result.error || 'No se pudo actualizar el nombre', 'error');
+    }
+  } catch (err) {
+    console.error('Error al guardar nombre de perfil:', err);
+    showToast('Error de conexión al actualizar nombre', 'error');
+  }
+}
+
+async function handleSaveProfileAvatar() {
+  try {
+    const res = await fetch('/api/user/profile', {
+      method: 'PUT',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({
+        display_name: state.user.display_name || state.user.username,
         avatar_color: tempSelectedAvatarColor,
         avatar_icon: tempSelectedAvatarIcon
       })
@@ -1179,15 +1208,16 @@ async function handleSaveProfileAvatar() {
       state.user = result.user;
       localStorage.setItem('subtracker_user', JSON.stringify(result.user));
       renderUserProfile();
-      showToast('¡Avatar y perfil actualizados con éxito!', 'success');
+      closeAvatarEditorModal();
+      showToast('¡Avatar actualizado con éxito!', 'success');
       // Recargar amigos para actualizar vista sincronizada
       await loadFriends();
     } else {
-      showToast(result.error || 'No se pudo actualizar el perfil', 'error');
+      showToast(result.error || 'No se pudo actualizar el avatar', 'error');
     }
   } catch (err) {
     console.error('Error al guardar avatar de perfil:', err);
-    showToast('Error de conexión al actualizar perfil', 'error');
+    showToast('Error de conexión al actualizar avatar', 'error');
   }
 }
 
@@ -1382,16 +1412,24 @@ function initEventListeners() {
 
   // Modal de Perfil de Usuario
   document.getElementById('btnOpenProfileModal')?.addEventListener('click', openProfileModal);
-  document.getElementById('tabProfileAppearance')?.addEventListener('click', () => setProfileTab('appearance'));
-  document.getElementById('tabProfileSecurity')?.addEventListener('click', () => setProfileTab('security'));
   document.getElementById('btnCloseProfileModal')?.addEventListener('click', () => {
     document.getElementById('profileModal')?.classList.add('hidden');
   });
   document.getElementById('btnCancelProfileModal')?.addEventListener('click', () => {
     document.getElementById('profileModal')?.classList.add('hidden');
   });
-  document.getElementById('btnSaveProfileAvatar')?.addEventListener('click', handleSaveProfileAvatar);
+  document.getElementById('btnSaveProfileName')?.addEventListener('click', handleSaveProfileName);
   document.getElementById('inputProfileDisplayName')?.addEventListener('input', () => updateProfileAvatarPreview());
+
+  // Apertura del Editor de Avatar (desde el botón editar sobre el avatar, el avatar mismo o la píldora)
+  document.getElementById('btnEditAvatar')?.addEventListener('click', openAvatarEditorModal);
+  document.getElementById('modalProfileAvatar')?.addEventListener('click', openAvatarEditorModal);
+  document.getElementById('btnEditAvatarPill')?.addEventListener('click', openAvatarEditorModal);
+
+  // Modal Editor de Avatar
+  document.getElementById('btnCloseAvatarEditorModal')?.addEventListener('click', closeAvatarEditorModal);
+  document.getElementById('btnCancelAvatarEditor')?.addEventListener('click', closeAvatarEditorModal);
+  document.getElementById('btnSaveProfileAvatar')?.addEventListener('click', handleSaveProfileAvatar);
 
   // Amigos y Funciones Sociales
   document.getElementById('btnOpenAddFriendModal')?.addEventListener('click', () => openFriendModal());
@@ -6506,7 +6544,8 @@ window.updateNotificationsBadge = updateNotificationsBadge;
 window.selectAvatarIcon = selectAvatarIcon;
 window.selectAvatarColor = selectAvatarColor;
 window.openProfileModal = openProfileModal;
-window.setProfileTab = setProfileTab;
+window.openAvatarEditorModal = openAvatarEditorModal;
+window.closeAvatarEditorModal = closeAvatarEditorModal;
 
 // ================= MODAL: RESUMEN DE SUSCRIPCIÓN (CLICK EN TARJETA) =================
 function switchSubDetailTab(tabName = 'details') {
