@@ -5419,8 +5419,8 @@ function switchSettingsTab(tabName) {
   const contentNot = document.getElementById('settingsTabContentNotifications');
 
   // Reset tab button states
-  const inactiveClass = 'flex-1 min-w-[120px] py-2.5 px-3 rounded-xl text-[#cac4d0] hover:text-white transition flex items-center justify-center gap-2';
-  const activeClass = 'flex-1 min-w-[120px] py-2.5 px-3 rounded-xl bg-[#d0bcff] text-[#381e72] font-semibold transition flex items-center justify-center gap-2 shadow-sm';
+  const inactiveClass = 'flex-1 min-w-[95px] sm:min-w-[110px] py-2 sm:py-2.5 px-2 sm:px-3 rounded-xl text-[#cac4d0] hover:text-white transition flex items-center justify-center gap-1.5 sm:gap-2 shrink-0';
+  const activeClass = 'flex-1 min-w-[95px] sm:min-w-[110px] py-2 sm:py-2.5 px-2 sm:px-3 rounded-xl bg-[#d0bcff] text-[#381e72] font-semibold transition flex items-center justify-center gap-1.5 sm:gap-2 shadow-sm shrink-0';
 
   if (btnGen) btnGen.className = (tabName === 'general') ? activeClass : inactiveClass;
   if (btnBkp) btnBkp.className = (tabName === 'backups') ? activeClass : inactiveClass;
