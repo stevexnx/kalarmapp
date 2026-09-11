@@ -48,7 +48,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Roboto+Flex:opsz,wght@8..144,300..800&family=Google+Sans:wght@400;500;700&family=Google+Sans+Text:wght@400;500;700&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="/styles.css?v=2.6.4">
+  <link rel="stylesheet" href="/styles.css?v=2.6.5">
 </head>
 <body class="min-h-full flex antialiased selection:bg-[#d0bcff] selection:text-[#381e72] bg-[#141218] text-[#e6e0e9]">
 
@@ -161,6 +161,12 @@
             <i data-lucide="eye" id="iconPrivacyMode" class="w-4 h-4"></i>
           </button>
 
+          <!-- Botón Notificaciones & Avisos (Campana M3 con Badge de Alertas) -->
+          <button id="btnToggleNotifications" title="Centro de Notificaciones y Alertas" class="relative inline-flex items-center justify-center p-2 rounded-full bg-[#211f26] hover:bg-[#2b2930] text-[#cac4d0] hover:text-[#d0bcff] border border-[#49454f]/50 transition cursor-pointer">
+            <i data-lucide="bell" id="iconNotificationBell" class="w-4 h-4"></i>
+            <span id="notifBadgeCount" class="hidden absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-rose-500 text-white font-bold text-[10px] flex items-center justify-center ring-2 ring-[#141218] animate-pulse">0</span>
+          </button>
+
           <!-- Botón Ajustes (móvil/tablet) -->
           <button id="btnOpenSettingsModal" title="Ajustes y Configuración" class="md:hidden inline-flex items-center justify-center p-2 text-xs rounded-full bg-[#211f26] hover:bg-[#2b2930] text-[#cac4d0] border border-[#49454f]/50 transition">
             <i data-lucide="settings" class="w-4 h-4"></i>
@@ -238,33 +244,33 @@
       <!-- BANNER CRÍTICO: PRUEBAS GRATUITAS POR VENCER (FREE TRIAL ALERT) -->
       <div id="trialAlertsBanner" class="hidden rounded-2xl p-4 sm:p-5 border bg-rose-950/40 border-rose-500/40 text-rose-200 transition-all shadow-xl shadow-rose-950/30"></div>
 
-      <!-- BARRA DE META Y CONTROL DE PRESUPUESTO MENSUAL -->
-      <div class="m3-card p-5">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-2.5">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-2xl bg-[#4a4458]/50 border border-[#49454f]/50 flex items-center justify-center text-[#e8def8]">
-              <i data-lucide="target" class="w-5 h-5"></i>
+      <!-- BARRA DE META Y CONTROL DE PRESUPUESTO MENSUAL (COMPACTA) -->
+      <div class="m3-card px-4 py-3 sm:px-5 sm:py-3.5">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-xl bg-[#4a4458]/50 border border-[#49454f]/50 flex items-center justify-center text-[#e8def8] shrink-0">
+              <i data-lucide="target" class="w-4 h-4"></i>
             </div>
-            <div>
-              <h3 class="text-xs sm:text-sm font-bold text-white flex items-center gap-2 font-google-sans">
-                Presupuesto Mensual de Suscripciones
-                <span id="budgetAlertPill" class="m3-badge-success">En Presupuesto</span>
-              </h3>
-              <p class="text-[11px] text-[#cac4d0]" id="budgetSubtitle">Calculando límites y consumo actual...</p>
+            <div class="min-w-0">
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="text-xs sm:text-sm font-bold text-white font-google-sans">Presupuesto Mensual</span>
+                <span id="budgetAlertPill" class="m3-badge-success text-[10px]">En Presupuesto</span>
+              </div>
+              <p class="text-[11px] text-[#cac4d0] truncate" id="budgetSubtitle">Calculando límites y consumo actual...</p>
             </div>
           </div>
 
-          <div class="text-left sm:text-right flex items-center sm:block gap-3">
-            <div class="text-xs text-[#cac4d0]">
+          <div class="flex items-center justify-between sm:justify-end gap-3 text-xs shrink-0">
+            <div class="text-[#cac4d0]">
               Consumido: <span id="budgetSpentAmount" class="font-bold text-white font-mono privacy-blur">$0.00</span> / <span id="budgetLimitAmount" class="font-bold text-[#cac4d0] font-mono privacy-blur">$150.00</span>
             </div>
-            <button id="btnQuickEditBudget" class="m3-btn-text text-[11px] py-0 px-1 mt-0.5">
-              Modificar presupuesto
+            <button id="btnQuickEditBudget" class="m3-btn-text text-[11px] py-0.5 px-2 hover:bg-[#4a4458]/40 rounded-full transition">
+              Modificar
             </button>
           </div>
         </div>
 
-        <div class="w-full bg-[#141218] rounded-full h-2.5 overflow-hidden p-0.5 border border-[#49454f]/50">
+        <div class="w-full bg-[#141218] rounded-full h-2 overflow-hidden p-0.5 border border-[#49454f]/50">
           <div id="budgetProgressBar" class="h-full rounded-full transition-all duration-500 bg-[#a8d5b5]" style="width: 0%"></div>
         </div>
       </div>
@@ -2135,6 +2141,62 @@
     </div>
   </div>
 
-  <script src="/app.js?v=2.6.4"></script>
+  <!-- ================= CENTRO DE NOTIFICACIONES & ALERTAS (DRAWER LATERAL M3) ================= -->
+  <div id="notificationsBackdrop" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden transition-opacity opacity-0 duration-300"></div>
+
+  <aside id="notificationsDrawer" class="fixed top-0 right-0 h-full w-full sm:w-[420px] bg-[#1d1b20] border-l border-[#49454f]/40 z-50 transform translate-x-full transition-transform duration-300 ease-out flex flex-col shadow-2xl">
+    <!-- Header del Drawer -->
+    <div class="px-5 py-4 border-b border-[#49454f]/40 flex items-center justify-between bg-[#141218]/50">
+      <div class="flex items-center gap-2.5">
+        <div class="w-8 h-8 rounded-xl bg-[#4f378b]/40 border border-[#49454f]/50 flex items-center justify-center text-[#d0bcff]">
+          <i data-lucide="bell-ring" class="w-4 h-4"></i>
+        </div>
+        <div>
+          <h3 class="text-sm font-bold text-white font-google-sans flex items-center gap-2">
+            Notificaciones
+            <span id="drawerBadgeTotal" class="hidden text-[10px] px-2 py-0.2 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/40 font-bold">0</span>
+          </h3>
+          <p class="text-[11px] text-[#cac4d0]">Alertas de corte, vencimientos e insights</p>
+        </div>
+      </div>
+      <button id="btnCloseNotifications" class="p-2 rounded-full text-[#cac4d0] hover:text-white hover:bg-[#2b2930] transition cursor-pointer" title="Cerrar panel">
+        <i data-lucide="x" class="w-4 h-4"></i>
+      </button>
+    </div>
+
+    <!-- Filtros por pestañas dentro del Drawer -->
+    <div class="px-5 py-2.5 border-b border-[#49454f]/30 flex items-center gap-1.5 overflow-x-auto bg-[#1d1b20]">
+      <button type="button" class="drawer-filter-chip active text-xs px-3 py-1 rounded-full bg-[#eaddff] text-[#21005d] font-semibold transition" data-filter="all">
+        Todos
+      </button>
+      <button type="button" class="drawer-filter-chip text-xs px-3 py-1 rounded-full bg-[#2b2930] text-[#cac4d0] hover:text-white font-medium transition" data-filter="trials">
+        Pruebas
+      </button>
+      <button type="button" class="drawer-filter-chip text-xs px-3 py-1 rounded-full bg-[#2b2930] text-[#cac4d0] hover:text-white font-medium transition" data-filter="upcoming">
+        Cortes
+      </button>
+      <button type="button" class="drawer-filter-chip text-xs px-3 py-1 rounded-full bg-[#2b2930] text-[#cac4d0] hover:text-white font-medium transition" data-filter="insights">
+        Ahorro
+      </button>
+    </div>
+
+    <!-- Contenedor scrollable de alertas -->
+    <div id="drawerNotificationsList" class="flex-1 overflow-y-auto p-5 space-y-4">
+      <!-- Inyectado dinámicamente -->
+    </div>
+
+    <!-- Footer del Drawer -->
+    <div class="p-4 border-t border-[#49454f]/40 bg-[#141218]/60 flex items-center justify-between text-[11px] text-[#cac4d0]">
+      <span class="flex items-center gap-1.5">
+        <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+        <span>Notificaciones sincronizadas</span>
+      </span>
+      <button id="btnDrawerMarkAllSeen" class="hover:text-[#d0bcff] transition underline cursor-pointer">
+        Actualizar
+      </button>
+    </div>
+  </aside>
+
+  <script src="/app.js?v=2.6.5"></script>
 </body>
 </html>

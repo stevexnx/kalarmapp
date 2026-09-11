@@ -1136,3 +1136,34 @@ body.theme-light .m3-insight-card:hover {
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08) !important;
 }
 
+/* ================= CENTRO DE NOTIFICACIONES DRAWER ================= */
+#notificationsDrawer {
+  transition: transform 0.28s cubic-bezier(0.2, 0, 0, 1);
+}
+#notificationsDrawer.open {
+  transform: translateX(0) !important;
+}
+#notificationsBackdrop.open {
+  display: block !important;
+  opacity: 1 !important;
+}
+
+/* Modo claro para el Notifications Drawer */
+body.theme-light #notificationsDrawer {
+  background-color: #ffffff !important;
+  border-left-color: #d6d6d6 !important;
+}
+body.theme-light #notificationsDrawer .bg-\[\#141218\]\/50,
+body.theme-light #notificationsDrawer .bg-\[\#141218\]\/60 {
+  background-color: #f4f4f4 !important;
+}
+body.theme-light #notificationsDrawer .drawer-filter-chip {
+  background-color: #f0f0f0 !important;
+  color: #49454f !important;
+}
+body.theme-light #notificationsDrawer .drawer-filter-chip.active {
+  background-color: #eaddff !important;
+  color: #21005d !important;
+}
+
+

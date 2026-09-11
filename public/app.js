@@ -1284,6 +1284,28 @@ function initEventListeners() {
   // Fase 1: Modo Privacidad
   document.getElementById('btnTogglePrivacyMode')?.addEventListener('click', togglePrivacyMode);
 
+  // Centro de Notificaciones & Alertas (Drawer Lateral)
+  document.getElementById('btnToggleNotifications')?.addEventListener('click', toggleNotificationsDrawer);
+  document.getElementById('btnCloseNotifications')?.addEventListener('click', closeNotificationsDrawer);
+  document.getElementById('notificationsBackdrop')?.addEventListener('click', closeNotificationsDrawer);
+  document.getElementById('btnDrawerMarkAllSeen')?.addEventListener('click', () => {
+    loadStats();
+    showToast('Notificaciones sincronizadas', 'info');
+  });
+
+  // Filtros internos del Drawer
+  document.querySelectorAll('.drawer-filter-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      document.querySelectorAll('.drawer-filter-chip').forEach(c => {
+        c.classList.remove('active', 'bg-[#eaddff]', 'text-[#21005d]', 'font-semibold');
+        c.classList.add('bg-[#2b2930]', 'text-[#cac4d0]');
+      });
+      chip.classList.add('active', 'bg-[#eaddff]', 'text-[#21005d]', 'font-semibold');
+      chip.classList.remove('bg-[#2b2930]', 'text-[#cac4d0]');
+      renderNotificationsDrawer(chip.dataset.filter || 'all');
+    });
+  });
+
   // Fase 1: Paleta de Comandos (Ctrl+K / Cmd+K)
   document.getElementById('btnOpenCommandPalette')?.addEventListener('click', openCommandPalette);
   document.getElementById('commandPaletteModal')?.addEventListener('click', (e) => {
@@ -2940,125 +2962,142 @@ function renderBudgetBar() {
 
 function renderTrialAlerts() {
   const banner = document.getElementById('trialAlertsBanner');
-  if (!banner || !state.stats) return;
+  if (!state.stats) return;
 
   const trials = state.stats.trials_expiring_soon || [];
-  if (trials.length === 0) {
-    banner.classList.add('hidden');
-    return;
+  if (banner) {
+    // Si no hay trials, esconder banner
+    if (trials.length === 0) {
+      banner.classList.add('hidden');
+    } else {
+      banner.classList.remove('hidden');
+      let itemsHtml = trials.map(t => {
+        const days = t.days_until_trial_end;
+        let urgency = days <= 1 ? '¡Cancela HOY!' : `Vence en ${days} días`;
+        const tCurr = t.currency || 'USD';
+        const tSymbol = CURRENCY_SYMBOLS[tCurr] || '$';
+        const isDiffTrial = tCurr !== state.baseCurrencyCode;
+        const convPriceTrial = t.converted_price !== undefined ? t.converted_price : convertCurrency(t.price, tCurr, state.baseCurrencyCode);
+        const priceStrTrial = isDiffTrial
+          ? `${tSymbol}${formatNumber(t.price)} <span class="text-[#d0bcff] font-bold">(≈ ${state.currency}${formatNumber(convPriceTrial)})</span>`
+          : `${state.currency}${formatNumber(t.price)}`;
+
+        return `
+          <div class="flex items-center justify-between bg-[#1d1b20] rounded-2xl p-3.5 border border-[#f2b8b5]/30">
+            <div>
+              <div class="font-bold text-white text-xs flex items-center gap-1.5 font-google-sans">
+                <span>${escapeHtml(t.name)}</span>
+                <span class="m3-badge-error animate-pulse">
+                  ${urgency}
+                </span>
+              </div>
+              <div class="text-[11px] text-[#f2b8b5]/80 mt-0.5">
+                Límite: <strong>${formatDateFriendly(t.trial_end_date)}</strong> &bull; Cobro: ${priceStrTrial}
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              ${t.url ? `<a href="${escapeHtml(t.url)}" target="_blank" class="m3-btn-outline text-[11px] py-1 px-3 text-[#f2b8b5] border-[#f2b8b5]/30 hover:bg-[#8c1d18]/20 flex items-center gap-1"><i data-lucide="external-link" class="w-3 h-3"></i> Cancelar</a>` : ''}
+              <button onclick="editSubscription(${t.id})" class="m3-btn-tonal text-[11px] py-1 px-3">Gestionar</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      banner.innerHTML = `
+        <div class="flex items-center justify-between gap-2.5 mb-2.5">
+          <div class="flex items-center gap-2.5">
+            <div class="w-7 h-7 rounded-lg bg-rose-500/20 flex items-center justify-center text-rose-400 shrink-0">
+              <i data-lucide="alert-triangle" class="w-4 h-4"></i>
+            </div>
+            <div>
+              <h3 class="text-xs sm:text-sm font-bold text-white">🚨 ¡Alerta de Pruebas Gratuitas por Vencer! (${trials.length})</h3>
+              <p class="text-[11px] text-rose-200/80">Cancela a tiempo para que no te apliquen el cobro automático recurrente.</p>
+            </div>
+          </div>
+          <button onclick="toggleNotificationsDrawer()" class="m3-btn-text text-xs text-rose-300 hover:text-white flex items-center gap-1">
+            <span>Ver panel lateral</span>
+            <i data-lucide="arrow-right" class="w-3 h-3"></i>
+          </button>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-2">${itemsHtml}</div>
+      `;
+    }
   }
 
-  banner.classList.remove('hidden');
-  let itemsHtml = trials.map(t => {
-    const days = t.days_until_trial_end;
-    let urgency = days <= 1 ? '¡Cancela HOY!' : `Vence en ${days} días`;
-    const tCurr = t.currency || 'USD';
-    const tSymbol = CURRENCY_SYMBOLS[tCurr] || '$';
-    const isDiffTrial = tCurr !== state.baseCurrencyCode;
-    const convPriceTrial = t.converted_price !== undefined ? t.converted_price : convertCurrency(t.price, tCurr, state.baseCurrencyCode);
-    const priceStrTrial = isDiffTrial
-      ? `${tSymbol}${formatNumber(t.price)} <span class="text-[#d0bcff] font-bold">(≈ ${state.currency}${formatNumber(convPriceTrial)})</span>`
-      : `${state.currency}${formatNumber(t.price)}`;
-
-    return `
-      <div class="flex items-center justify-between bg-[#1d1b20] rounded-2xl p-3.5 border border-[#f2b8b5]/30">
-        <div>
-          <div class="font-bold text-white text-xs flex items-center gap-1.5 font-google-sans">
-            <span>${escapeHtml(t.name)}</span>
-            <span class="m3-badge-error animate-pulse">
-              ${urgency}
-            </span>
-          </div>
-          <div class="text-[11px] text-[#f2b8b5]/80 mt-0.5">
-            Límite: <strong>${formatDateFriendly(t.trial_end_date)}</strong> &bull; Cobro: ${priceStrTrial}
-          </div>
-        </div>
-        <div class="flex items-center gap-2">
-          ${t.url ? `<a href="${escapeHtml(t.url)}" target="_blank" class="m3-btn-outline text-[11px] py-1 px-3 text-[#f2b8b5] border-[#f2b8b5]/30 hover:bg-[#8c1d18]/20 flex items-center gap-1"><i data-lucide="external-link" class="w-3 h-3"></i> Cancelar</a>` : ''}
-          <button onclick="editSubscription(${t.id})" class="m3-btn-tonal text-[11px] py-1 px-3">Gestionar</button>
-        </div>
-      </div>
-    `;
-  }).join('');
-
-  banner.innerHTML = `
-    <div class="flex items-center gap-2.5 mb-2.5">
-      <div class="w-7 h-7 rounded-lg bg-rose-500/20 flex items-center justify-center text-rose-400 shrink-0">
-        <i data-lucide="alert-triangle" class="w-4 h-4"></i>
-      </div>
-      <div>
-        <h3 class="text-xs sm:text-sm font-bold text-white">🚨 ¡Alerta de Pruebas Gratuitas por Vencer! (${trials.length})</h3>
-        <p class="text-[11px] text-rose-200/80">Cancela a tiempo para que no te apliquen el cobro automático recurrente.</p>
-      </div>
-    </div>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-2">${itemsHtml}</div>
-  `;
-
+  updateNotificationsBadge();
+  renderNotificationsDrawer();
   initIcons();
 }
 
 function renderUpcomingAlerts() {
   const banner = document.getElementById('cutOffAlertsBanner');
-  if (!banner || !state.stats) return;
+  if (!state.stats) return;
 
   const upcoming = state.stats.upcoming_7_days || [];
-  if (upcoming.length === 0) {
-    banner.classList.add('hidden');
-    return;
-  }
+  if (banner) {
+    if (upcoming.length === 0) {
+      banner.classList.add('hidden');
+    } else {
+      banner.classList.remove('hidden');
+      banner.className = 'rounded-2xl p-4 sm:p-5 border bg-amber-950/30 border-amber-500/40 text-amber-200 transition-all shadow-lg shadow-amber-950/20';
 
-  banner.classList.remove('hidden');
-  banner.className = 'rounded-2xl p-4 sm:p-5 border bg-amber-950/30 border-amber-500/40 text-amber-200 transition-all shadow-lg shadow-amber-950/20';
+      let itemsHtml = upcoming.map(sub => {
+        let badgeText = sub.days_until_billing === 0 ? '¡Hoy!' : (sub.days_until_billing === 1 ? 'Mañana' : `En ${sub.days_until_billing} días`);
+        let badgeClass = sub.days_until_billing === 0 ? 'bg-red-500/20 text-red-300 border border-red-500/40 font-bold animate-pulse' : 'bg-amber-500/20 text-amber-300 border border-amber-500/40 font-bold';
 
-  let itemsHtml = upcoming.map(sub => {
-    let badgeText = sub.days_until_billing === 0 ? '¡Hoy!' : (sub.days_until_billing === 1 ? 'Mañana' : `En ${sub.days_until_billing} días`);
-    let badgeClass = sub.days_until_billing === 0 ? 'bg-red-500/20 text-red-300 border border-red-500/40 font-bold animate-pulse' : 'bg-amber-500/20 text-amber-300 border border-amber-500/40 font-bold';
+        const subCurr = sub.currency || 'USD';
+        const subSymbol = CURRENCY_SYMBOLS[subCurr] || '$';
+        const isDiffSub = subCurr !== state.baseCurrencyCode;
+        const convPriceSub = sub.converted_price !== undefined ? sub.converted_price : convertCurrency(sub.price, subCurr, state.baseCurrencyCode);
+        const priceStrSub = isDiffSub
+          ? `${subSymbol}${formatNumber(sub.price)} <span class="text-amber-300 font-bold">(≈ ${state.currency}${formatNumber(convPriceSub)})</span>`
+          : `${state.currency}${formatNumber(sub.price)}`;
 
-    const subCurr = sub.currency || 'USD';
-    const subSymbol = CURRENCY_SYMBOLS[subCurr] || '$';
-    const isDiffSub = subCurr !== state.baseCurrencyCode;
-    const convPriceSub = sub.converted_price !== undefined ? sub.converted_price : convertCurrency(sub.price, subCurr, state.baseCurrencyCode);
-    const priceStrSub = isDiffSub
-      ? `${subSymbol}${formatNumber(sub.price)} <span class="text-amber-300 font-bold">(≈ ${state.currency}${formatNumber(convPriceSub)})</span>`
-      : `${state.currency}${formatNumber(sub.price)}`;
-
-    return `
-      <div class="flex items-center justify-between bg-slate-900/60 rounded-xl px-3.5 py-2.5 border border-amber-500/20">
-        <div class="flex items-center gap-2.5">
-          <span class="w-3 h-3 rounded-full" style="background-color: ${sub.color || '#F59E0B'}"></span>
-          <div>
-            <div class="text-xs font-bold text-white flex items-center gap-1.5">
-              <span>${escapeHtml(sub.name)}</span>
-              ${sub.alias ? `<span class="text-[9px] font-medium px-1.5 py-0.2 rounded-full bg-[#381e72]/80 border border-[#d0bcff]/40 text-[#d0bcff] font-sans">${escapeHtml(sub.alias)}</span>` : ''}
-              <span class="text-[10px] font-normal px-2 py-0.5 rounded-full ${badgeClass}">${badgeText}</span>
+        return `
+          <div class="flex items-center justify-between bg-slate-900/60 rounded-xl px-3.5 py-2.5 border border-amber-500/20">
+            <div class="flex items-center gap-2.5">
+              <span class="w-3 h-3 rounded-full" style="background-color: ${sub.color || '#F59E0B'}"></span>
+              <div>
+                <div class="text-xs font-bold text-white flex items-center gap-1.5">
+                  <span>${escapeHtml(sub.name)}</span>
+                  ${sub.alias ? `<span class="text-[9px] font-medium px-1.5 py-0.2 rounded-full bg-[#381e72]/80 border border-[#d0bcff]/40 text-[#d0bcff] font-sans">${escapeHtml(sub.alias)}</span>` : ''}
+                  <span class="text-[10px] font-normal px-2 py-0.5 rounded-full ${badgeClass}">${badgeText}</span>
+                </div>
+                <div class="text-[11px] text-slate-400">
+                  Corte: <span class="text-slate-300">${formatDateFriendly(sub.next_billing_date)}</span> &bull; ${priceStrSub}
+                </div>
+              </div>
             </div>
-            <div class="text-[11px] text-slate-400">
-              Corte: <span class="text-slate-300">${formatDateFriendly(sub.next_billing_date)}</span> &bull; ${priceStrSub}
+            <button onclick="markAsPaidAndAdvance(${sub.id})" title="Registrar pago y avanzar corte al siguiente ciclo" class="m3-btn-tonal text-xs py-1 px-3 flex items-center gap-1">
+              <i data-lucide="receipt" class="w-3.5 h-3.5"></i> <span>Pagado</span>
+            </button>
+          </div>
+        `;
+      }).join('');
+
+      banner.innerHTML = `
+        <div class="flex items-start sm:items-center justify-between gap-3 mb-3">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-xl bg-amber-500/20 flex items-center justify-center text-amber-400 shrink-0">
+              <i data-lucide="alarm-clock" class="w-4 h-4"></i>
+            </div>
+            <div>
+              <h3 class="text-xs sm:text-sm font-bold text-white">Fechas de corte inminentes (${upcoming.length})</h3>
+              <p class="text-[11px] text-amber-300/80">Revisa tu saldo antes de los cargos programados.</p>
             </div>
           </div>
+          <button onclick="toggleNotificationsDrawer()" class="m3-btn-text text-xs text-amber-300 hover:text-white flex items-center gap-1">
+            <span>Ver panel lateral</span>
+            <i data-lucide="arrow-right" class="w-3 h-3"></i>
+          </button>
         </div>
-        <button onclick="markAsPaidAndAdvance(${sub.id})" title="Registrar pago y avanzar corte al siguiente ciclo" class="m3-btn-tonal text-xs py-1 px-3 flex items-center gap-1">
-          <i data-lucide="receipt" class="w-3.5 h-3.5"></i> <span>Pagado</span>
-        </button>
-      </div>
-    `;
-  }).join('');
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5">${itemsHtml}</div>
+      `;
+    }
+  }
 
-  banner.innerHTML = `
-    <div class="flex items-start sm:items-center justify-between gap-3 mb-3">
-      <div class="flex items-center gap-2.5">
-        <div class="w-8 h-8 rounded-xl bg-amber-500/20 flex items-center justify-center text-amber-400 shrink-0">
-          <i data-lucide="alarm-clock" class="w-4 h-4"></i>
-        </div>
-        <div>
-          <h3 class="text-xs sm:text-sm font-bold text-white">Fechas de corte inminentes (${upcoming.length})</h3>
-          <p class="text-[11px] text-amber-300/80">Revisa tu saldo antes de los cargos programados.</p>
-        </div>
-      </div>
-    </div>
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5">${itemsHtml}</div>
-  `;
-
+  updateNotificationsBadge();
+  renderNotificationsDrawer();
   initIcons();
 }
 
@@ -5744,6 +5783,234 @@ function handleInsightAction(index) {
   }
 }
 
+// ================= CENTRO DE NOTIFICACIONES & ALERTAS (DRAWER LATERAL) =================
+function toggleNotificationsDrawer() {
+  const drawer = document.getElementById('notificationsDrawer');
+  const backdrop = document.getElementById('notificationsBackdrop');
+  if (!drawer) return;
+
+  const isOpen = drawer.classList.contains('open');
+  if (isOpen) {
+    closeNotificationsDrawer();
+  } else {
+    openNotificationsDrawer();
+  }
+}
+
+function openNotificationsDrawer() {
+  const drawer = document.getElementById('notificationsDrawer');
+  const backdrop = document.getElementById('notificationsBackdrop');
+  if (!drawer) return;
+
+  renderNotificationsDrawer();
+  drawer.classList.add('open');
+  if (backdrop) {
+    backdrop.classList.remove('hidden');
+    // Force reflow for smooth opacity transition
+    void backdrop.offsetWidth;
+    backdrop.classList.add('open');
+  }
+}
+
+function closeNotificationsDrawer() {
+  const drawer = document.getElementById('notificationsDrawer');
+  const backdrop = document.getElementById('notificationsBackdrop');
+  if (!drawer) return;
+
+  drawer.classList.remove('open');
+  if (backdrop) {
+    backdrop.classList.remove('open');
+    setTimeout(() => {
+      if (!drawer.classList.contains('open')) {
+        backdrop.classList.add('hidden');
+      }
+    }, 280);
+  }
+}
+
+function updateNotificationsBadge() {
+  const badge = document.getElementById('notifBadgeCount');
+  const drawerBadge = document.getElementById('drawerBadgeTotal');
+  if (!state.stats) return;
+
+  const trialsCount = (state.stats.trials_expiring_soon || []).length;
+  const upcomingCount = (state.stats.upcoming_7_days || []).length;
+  const totalAlerts = trialsCount + upcomingCount;
+
+  if (badge) {
+    if (totalAlerts > 0) {
+      badge.textContent = totalAlerts > 99 ? '99+' : totalAlerts;
+      badge.classList.remove('hidden');
+    } else {
+      badge.classList.add('hidden');
+    }
+  }
+
+  if (drawerBadge) {
+    if (totalAlerts > 0) {
+      drawerBadge.textContent = `${totalAlerts} pendientes`;
+      drawerBadge.classList.remove('hidden');
+    } else {
+      drawerBadge.classList.add('hidden');
+    }
+  }
+}
+
+function renderNotificationsDrawer(activeFilter = 'all') {
+  const container = document.getElementById('drawerNotificationsList');
+  if (!container) return;
+
+  if (!state.stats) {
+    container.innerHTML = `
+      <div class="text-center py-12 text-[#cac4d0]">
+        <i data-lucide="bell-off" class="w-8 h-8 mx-auto mb-2 opacity-40"></i>
+        <p class="text-xs">No hay notificaciones disponibles</p>
+      </div>
+    `;
+    initIcons();
+    return;
+  }
+
+  const trials = state.stats.trials_expiring_soon || [];
+  const upcoming = state.stats.upcoming_7_days || [];
+  const insights = window._currentInsights || [];
+
+  let html = '';
+
+  // 1. SECCIÓN: PRUEBAS GRATIS POR VENCER
+  if (activeFilter === 'all' || activeFilter === 'trials') {
+    if (trials.length > 0) {
+      html += `
+        <div class="space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-[11px] font-bold uppercase tracking-wider text-rose-300 flex items-center gap-1.5">
+              <i data-lucide="alert-triangle" class="w-3.5 h-3.5"></i>
+              Pruebas por vencer (${trials.length})
+            </span>
+          </div>
+          ${trials.map(t => {
+            const days = t.days_until_trial_end;
+            const urgency = days <= 1 ? '¡Cancela HOY!' : `Vence en ${days} días`;
+            const tCurr = t.currency || 'USD';
+            const tSymbol = CURRENCY_SYMBOLS[tCurr] || '$';
+            const isDiff = tCurr !== state.baseCurrencyCode;
+            const conv = t.converted_price !== undefined ? t.converted_price : convertCurrency(t.price, tCurr, state.baseCurrencyCode);
+            const priceText = isDiff ? `${tSymbol}${formatNumber(t.price)} (≈ ${state.currency}${formatNumber(conv)})` : `${state.currency}${formatNumber(t.price)}`;
+
+            return `
+              <div class="p-3.5 rounded-2xl bg-[#141218]/80 border border-rose-500/30 hover:border-rose-500/60 transition space-y-2.5">
+                <div class="flex items-start justify-between gap-2">
+                  <div>
+                    <h4 class="text-xs font-bold text-white font-google-sans">${escapeHtml(t.name)}</h4>
+                    <p class="text-[11px] text-rose-200/80 mt-0.5">Límite: ${formatDateFriendly(t.trial_end_date)} &bull; ${priceText}</p>
+                  </div>
+                  <span class="m3-badge-error text-[10px] shrink-0">${urgency}</span>
+                </div>
+                <div class="flex items-center justify-end gap-2 pt-1 border-t border-[#49454f]/20">
+                  ${t.url ? `<a href="${escapeHtml(t.url)}" target="_blank" class="m3-btn-outline text-[10px] py-1 px-2.5 text-rose-300 border-rose-500/30 hover:bg-rose-500/10 flex items-center gap-1"><i data-lucide="external-link" class="w-3 h-3"></i> Cancelar</a>` : ''}
+                  <button onclick="editSubscription(${t.id}); closeNotificationsDrawer();" class="m3-btn-tonal text-[10px] py-1 px-3">Gestionar</button>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      `;
+    }
+  }
+
+  // 2. SECCIÓN: CORTES INMINENTES EN 7 DÍAS
+  if (activeFilter === 'all' || activeFilter === 'upcoming') {
+    if (upcoming.length > 0) {
+      html += `
+        <div class="space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-[11px] font-bold uppercase tracking-wider text-amber-300 flex items-center gap-1.5">
+              <i data-lucide="clock" class="w-3.5 h-3.5"></i>
+              Cortes en 7 días (${upcoming.length})
+            </span>
+          </div>
+          ${upcoming.map(sub => {
+            const badgeText = sub.days_until_billing === 0 ? '¡Hoy!' : (sub.days_until_billing === 1 ? 'Mañana' : `En ${sub.days_until_billing} días`);
+            const subCurr = sub.currency || 'USD';
+            const subSymbol = CURRENCY_SYMBOLS[subCurr] || '$';
+            const isDiff = subCurr !== state.baseCurrencyCode;
+            const conv = sub.converted_price !== undefined ? sub.converted_price : convertCurrency(sub.price, subCurr, state.baseCurrencyCode);
+            const priceText = isDiff ? `${subSymbol}${formatNumber(sub.price)} (≈ ${state.currency}${formatNumber(conv)})` : `${state.currency}${formatNumber(sub.price)}`;
+
+            return `
+              <div class="p-3.5 rounded-2xl bg-[#141218]/80 border border-amber-500/30 hover:border-amber-500/60 transition flex items-center justify-between gap-3">
+                <div class="flex items-center gap-2.5 min-w-0">
+                  <span class="w-3 h-3 rounded-full shrink-0" style="background-color: ${sub.color || '#F59E0B'}"></span>
+                  <div class="min-w-0">
+                    <div class="flex items-center gap-1.5 truncate">
+                      <span class="text-xs font-bold text-white font-google-sans truncate">${escapeHtml(sub.name)}</span>
+                      <span class="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 shrink-0">${badgeText}</span>
+                    </div>
+                    <p class="text-[11px] text-[#cac4d0] truncate mt-0.5">${formatDateFriendly(sub.next_billing_date)} &bull; <strong class="text-white">${priceText}</strong></p>
+                  </div>
+                </div>
+                <button onclick="markAsPaidAndAdvance(${sub.id});" class="m3-btn-tonal text-[10px] py-1 px-2.5 shrink-0 flex items-center gap-1" title="Registrar pago y avanzar fecha">
+                  <i data-lucide="receipt" class="w-3 h-3"></i> Pagado
+                </button>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      `;
+    }
+  }
+
+  // 3. SECCIÓN: INSIGHTS & SUGERENCIAS DE AHORRO
+  if (activeFilter === 'all' || activeFilter === 'insights') {
+    if (insights.length > 0) {
+      html += `
+        <div class="space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-[11px] font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
+              <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+              Oportunidades de Ahorro (${insights.length})
+            </span>
+          </div>
+          ${insights.map((ins, idx) => `
+            <div class="p-3.5 rounded-2xl bg-[#141218]/80 border border-[#49454f]/40 hover:border-[#d0bcff]/40 transition space-y-2">
+              <div class="flex items-start justify-between gap-2">
+                <span class="text-[10px] px-2 py-0.5 rounded-full border font-bold ${ins.badgeClass}">${ins.badge}</span>
+                <div class="w-6 h-6 rounded-lg ${ins.iconBg} flex items-center justify-center shrink-0">
+                  <i data-lucide="${ins.icon}" class="w-3 h-3"></i>
+                </div>
+              </div>
+              <h5 class="text-xs font-bold text-white font-google-sans leading-snug">${ins.title}</h5>
+              <p class="text-[11px] text-[#cac4d0] leading-relaxed">${ins.description}</p>
+              <div class="pt-1.5 border-t border-[#49454f]/20 flex justify-end">
+                <button onclick="handleInsightAction(${idx}); closeNotificationsDrawer();" class="m3-btn-tonal text-[10px] py-1 px-2.5 flex items-center gap-1">
+                  <span>${ins.actionText}</span>
+                  <i data-lucide="arrow-right" class="w-3 h-3"></i>
+                </button>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+  }
+
+  if (!html) {
+    container.innerHTML = `
+      <div class="text-center py-16 text-[#cac4d0]">
+        <div class="w-12 h-12 rounded-2xl bg-[#4a4458]/30 flex items-center justify-center mx-auto mb-3 text-[#d0bcff]">
+          <i data-lucide="check-check" class="w-6 h-6"></i>
+        </div>
+        <h4 class="text-xs font-bold text-white mb-1">¡Todo al día!</h4>
+        <p class="text-[11px] text-[#cac4d0] max-w-xs mx-auto">No tienes cobros inminentes ni pruebas por vencer pendientes de revisión.</p>
+      </div>
+    `;
+  } else {
+    container.innerHTML = html;
+  }
+
+  initIcons();
+}
+
 // Funciones accesibles globalmente
 window.editSubscription = editSubscription;
 window.deleteSubscription = deleteSubscription;
@@ -5785,4 +6052,9 @@ window.executeConfirmSplitPay = executeConfirmSplitPay;
 window.cancelSplitPayRequest = cancelSplitPayRequest;
 window.toggleThemeMode = toggleThemeMode;
 window.applyThemeMode = applyThemeMode;
+window.toggleNotificationsDrawer = toggleNotificationsDrawer;
+window.openNotificationsDrawer = openNotificationsDrawer;
+window.closeNotificationsDrawer = closeNotificationsDrawer;
+window.renderNotificationsDrawer = renderNotificationsDrawer;
+window.updateNotificationsBadge = updateNotificationsBadge;
 
