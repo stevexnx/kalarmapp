@@ -555,7 +555,13 @@ const OFFICIAL_ICONS = {
   '1password': `<svg viewBox="0 0 24 24" fill="#0A85EA"><circle cx="12" cy="12" r="12"/><path fill="#FFF" d="M12 6a6 6 0 1 0 0 12 6 6 0 0 0 0-12zm-1 2.5a1 1 0 0 1 2 0v2.09a2.5 2.5 0 1 1-2 0V8.5zm1 4.5a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/></svg>`
 };
 
-function getServiceOfficialIcon(name, customColor = '#4F46E5', sizeClass = 'w-5 h-5') {
+function getServiceOfficialIcon(name, customColor = '#4F46E5', sizeClass = 'w-5 h-5', customIcon = '') {
+  if (customIcon) {
+    if (OFFICIAL_ICONS[customIcon]) {
+      return OFFICIAL_ICONS[customIcon];
+    }
+    return `<i data-lucide="${escapeHtml(customIcon)}" class="${sizeClass}" style="color: ${customColor || '#d0bcff'}"></i>`;
+  }
   if (!name) return `<i data-lucide="credit-card" class="${sizeClass}"></i>`;
   const lower = name.toLowerCase().trim();
 
@@ -3034,7 +3040,7 @@ async function viewSharedSubsWithFriend(friendId, friendName, friendUserId = nul
           <div class="p-3 bg-[#211f26] border border-[#a8d5b5]/30 rounded-xl flex items-center justify-between gap-3 hover:border-[#a8d5b5]/60 transition">
             <div class="flex items-center gap-3 min-w-0">
               <div class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 shadow-sm" style="background: linear-gradient(135deg, ${sanitizeColor(s.color, '#a8d5b5')}22, ${sanitizeColor(s.color, '#a8d5b5')}44); border: 1px solid ${sanitizeColor(s.color, '#a8d5b5')}55">
-                ${getServiceOfficialIcon(s.name, sanitizeColor(s.color, '#a8d5b5'), 'w-4 h-4')}
+                ${getServiceOfficialIcon(s.name, sanitizeColor(s.color, '#a8d5b5'), 'w-4 h-4', s.icon)}
               </div>
               <div class="min-w-0">
                 <div class="flex items-center gap-1.5">
@@ -3081,7 +3087,7 @@ async function viewSharedSubsWithFriend(friendId, friendName, friendUserId = nul
                 <div class="p-2.5 bg-[#1d1b20] border border-[#49454f]/30 rounded-xl flex items-center justify-between gap-3 hover:border-[#d0bcff]/40 transition">
                   <div class="flex items-center gap-2.5 min-w-0">
                     <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-sm" style="background: linear-gradient(135deg, ${sanitizeColor(s.color, '#d0bcff')}22, ${sanitizeColor(s.color, '#d0bcff')}44); border: 1px solid ${sanitizeColor(s.color, '#d0bcff')}55">
-                      ${getServiceOfficialIcon(s.name, sanitizeColor(s.color, '#d0bcff'), 'w-3.5 h-3.5')}
+                      ${getServiceOfficialIcon(s.name, sanitizeColor(s.color, '#d0bcff'), 'w-3.5 h-3.5', s.icon)}
                     </div>
                     <div class="min-w-0">
                       <div class="text-xs font-medium text-white truncate">${escapeHtml(s.name)}</div>
@@ -3135,7 +3141,7 @@ async function viewSharedSubsWithFriend(friendId, friendName, friendUserId = nul
           <div class="p-3 bg-[#211f26] border border-[#49454f]/40 rounded-xl flex items-center justify-between gap-3">
             <div class="flex items-center gap-3 min-w-0">
               <div class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 shadow-sm" style="background: linear-gradient(135deg, ${sanitizeColor(fs.color, '#a8d5b5')}22, ${sanitizeColor(fs.color, '#a8d5b5')}44); border: 1px solid ${sanitizeColor(fs.color, '#a8d5b5')}55">
-                ${getServiceOfficialIcon(fs.name, sanitizeColor(fs.color, '#a8d5b5'), 'w-4 h-4')}
+                ${getServiceOfficialIcon(fs.name, sanitizeColor(fs.color, '#a8d5b5'), 'w-4 h-4', fs.icon)}
               </div>
               <div class="min-w-0">
                 <h5 class="text-xs font-bold text-white truncate font-google-sans">${escapeHtml(fs.name)}</h5>
@@ -3767,7 +3773,7 @@ function createCardHtml(sub) {
     }
   }
 
-  const iconHtml = getServiceOfficialIcon(sub.name, sub.color);
+  const iconHtml = getServiceOfficialIcon(sub.name, sub.color, 'w-5 h-5', sub.icon);
   const safeColor = sanitizeColor(sub.color, '#d0bcff');
   const isInactive = sub.status === 'paused' || sub.status === 'canceled' || sub.status === 'cancelled';
   const opacityClass = isInactive ? 'opacity-70 hover:opacity-100 transition-opacity' : '';
@@ -3897,7 +3903,7 @@ function createTableRowHtml(sub) {
   const convertedMonthly = isSubConvertedFresh ? sub.converted_monthly_cost : convertCurrency(sub.monthly_cost, subCurr, baseCurr);
   const convertedAnnual = isSubConvertedFresh ? sub.converted_annual_cost : convertCurrency(sub.annual_cost, subCurr, baseCurr);
 
-  const iconHtml = getServiceOfficialIcon(sub.name, sub.color, 'w-3.5 h-3.5');
+  const iconHtml = getServiceOfficialIcon(sub.name, sub.color, 'w-3.5 h-3.5', sub.icon);
   const safeColor = sanitizeColor(sub.color, '#d0bcff');
   const isInactive = sub.status === 'paused' || sub.status === 'canceled' || sub.status === 'cancelled';
   const opacityClass = isInactive ? 'opacity-70 hover:opacity-100 transition-opacity' : '';
@@ -4505,7 +4511,7 @@ function renderCalendarDayDetails(cutsForSelectedDay) {
         <div class="flex items-start justify-between gap-2">
           <div class="flex items-center gap-2.5">
             <div class="w-9 h-9 rounded-xl flex items-center justify-center text-white font-bold text-sm shadow shrink-0" style="background: linear-gradient(135deg, ${sanitizeColor(sub.color, '#4F46E5')}22, ${sanitizeColor(sub.color, '#4F46E5')}44); border: 1px solid ${sanitizeColor(sub.color, '#4F46E5')}55">
-              ${getServiceOfficialIcon(sub.name, sanitizeColor(sub.color, '#4F46E5'), 'w-4 h-4')}
+              ${getServiceOfficialIcon(sub.name, sanitizeColor(sub.color, '#4F46E5'), 'w-4 h-4', sub.icon)}
             </div>
             <div>
               <h4 class="text-sm font-bold text-white leading-tight flex items-center gap-1.5">
@@ -4903,6 +4909,54 @@ function setQuickPaymentMethod(methodName) {
   }
 }
 
+// Presets rápidos de fecha de próximo cobro
+function setQuickBillingDate(type) {
+  const input = document.getElementById('subNextBillingDate');
+  if (!input) return;
+  const d = new Date();
+  if (type === 'today') {
+    // Hoy
+  } else if (type === 'tomorrow') {
+    d.setDate(d.getDate() + 1);
+  } else if (type === '15days') {
+    d.setDate(d.getDate() + 15);
+  } else if (type === '1month') {
+    d.setMonth(d.getMonth() + 1);
+  }
+  input.value = d.toISOString().split('T')[0];
+  updateModalLiveCalculation();
+}
+
+// Selector rápido de color
+function setQuickColor(hex) {
+  const colorInput = document.getElementById('subColor');
+  const label = document.getElementById('selectedColorHexLabel');
+  if (colorInput) {
+    colorInput.value = hex;
+  }
+  if (label) {
+    label.textContent = hex;
+  }
+}
+
+// Selector rápido de icono temático para personalizadas
+function setQuickIcon(iconName) {
+  const iconInput = document.getElementById('subIcon');
+  if (iconInput) {
+    iconInput.value = (iconInput.value === iconName) ? '' : iconName;
+  }
+  const currentVal = iconInput ? iconInput.value : '';
+  document.querySelectorAll('.quick-icon-btn').forEach(btn => {
+    if (btn.dataset.icon === currentVal) {
+      btn.classList.add('border-[#d0bcff]', 'text-[#d0bcff]', 'bg-[#4f378b]/40');
+      btn.classList.remove('text-[#cac4d0]', 'bg-[#141218]');
+    } else {
+      btn.classList.remove('border-[#d0bcff]', 'text-[#d0bcff]', 'bg-[#4f378b]/40');
+      btn.classList.add('text-[#cac4d0]', 'bg-[#141218]');
+    }
+  });
+}
+
 // Acordeón para opciones avanzadas (Color, Enlace de gestión, Notas)
 function toggleAdvancedOptionsModal(forceState = null) {
   const container = document.getElementById('subAdvancedOptionsContainer');
@@ -4972,6 +5026,9 @@ function openCustomSubscription() {
   document.getElementById('subCategory').value = 'Servicios';
   document.getElementById('subNextBillingDate').value = defaultDateStr;
   document.getElementById('subColor').value = '#d0bcff';
+  setQuickColor('#d0bcff');
+  setQuickIcon('');
+  document.getElementById('quickIconSelectorContainer')?.classList.remove('hidden');
 
   // Mostrar input editable y ocultar badge fijo; restaurar contenedor del campo Servicio *
   const badgeContainerCustom = document.getElementById('subPresetBadgeContainer');
@@ -5032,6 +5089,9 @@ function openModal(sub = null) {
     document.getElementById('subUrl').value = sub.url || '';
     document.getElementById('subNotes').value = sub.notes || '';
 
+    setQuickColor(sub.color || '#d0bcff');
+    setQuickIcon(sub.icon || '');
+
     // Comprobar si el nombre coincide con un Preset oficial
     const isPreset = PRESET_SERVICES.some(p => p.name.toLowerCase() === sub.name.toLowerCase());
     const badgeContainer = document.getElementById('subPresetBadgeContainer');
@@ -5042,15 +5102,17 @@ function openModal(sub = null) {
     if (isPreset && badgeContainer && nameInput) {
       nameInput.classList.add('hidden');
       badgeContainer.classList.remove('hidden');
+      document.getElementById('quickIconSelectorContainer')?.classList.add('hidden');
       if (badgeName) badgeName.textContent = sub.name;
       if (badgeIconBox) {
-        badgeIconBox.innerHTML = getServiceOfficialIcon(sub.name, sub.color || '#d0bcff', 'w-4 h-4');
+        badgeIconBox.innerHTML = getServiceOfficialIcon(sub.name, sub.color || '#d0bcff', 'w-4 h-4', sub.icon);
         badgeIconBox.style.background = `linear-gradient(135deg, ${sanitizeColor(sub.color, '#d0bcff')}22, ${sanitizeColor(sub.color, '#d0bcff')}44)`;
         badgeIconBox.style.border = `1px solid ${sanitizeColor(sub.color, '#d0bcff')}55`;
       }
     } else if (badgeContainer && nameInput) {
       nameInput.classList.remove('hidden');
       badgeContainer.classList.add('hidden');
+      document.getElementById('quickIconSelectorContainer')?.classList.remove('hidden');
     }
 
     if (sub.is_trial) {
@@ -5081,6 +5143,9 @@ function openModal(sub = null) {
     document.getElementById('subCurrency').value = state.baseCurrencyCode || 'USD';
     document.getElementById('subNextBillingDate').value = defaultDateStr;
     document.getElementById('subColor').value = '#d0bcff';
+    setQuickColor('#d0bcff');
+    setQuickIcon('');
+    document.getElementById('quickIconSelectorContainer')?.classList.add('hidden');
 
     // Para nuevas suscripciones, mantener colapsadas las opciones avanzadas
     toggleAdvancedOptionsModal(false);
@@ -5190,6 +5255,9 @@ function selectPresetService(serviceIndex) {
   document.getElementById('subBillingCycle').value = plan.cycle || 'monthly';
   document.getElementById('subCategory').value = service.category || 'Otros';
   document.getElementById('subColor').value = service.color || '#d0bcff';
+  setQuickColor(service.color || '#d0bcff');
+  setQuickIcon('');
+  document.getElementById('quickIconSelectorContainer')?.classList.add('hidden');
   if (service.url) {
     document.getElementById('subUrl').value = service.url;
   }
@@ -5296,6 +5364,53 @@ function updateModalLiveCalculation() {
     if (calcM) calcM.innerHTML = `${subSymbol}${formatNumber(monthly)} <span class="text-[#d0bcff] font-bold text-[11px] font-mono">(≈ ${baseSymbol}${formatNumber(monthlyConv)} ${baseCurr})</span> / mes`;
     if (calcA) calcA.innerHTML = `${subSymbol}${formatNumber(annual)} <span class="text-[#d0bcff] font-bold text-[11px] font-mono">(≈ ${baseSymbol}${formatNumber(annualConv)} ${baseCurr})</span> / año`;
   }
+
+  // Impacto en Presupuesto Mensual en vivo
+  const impactContainer = document.getElementById('modalBudgetImpactContainer');
+  const impactText = document.getElementById('modalBudgetImpactText');
+  const impactBadge = document.getElementById('modalBudgetImpactBadge');
+
+  if (impactContainer && state.stats && state.stats.monthly_budget) {
+    const budget = state.stats.monthly_budget || 150;
+    const curSpent = state.stats.total_monthly_cost || 0;
+    const monthlyInBase = subCurr === baseCurr ? monthly : convertCurrency(monthly, subCurr, baseCurr);
+    
+    // Si estamos editando, restar el costo mensual previo de esta suscripción
+    let prevMonthlyInBase = 0;
+    if (state.editingId) {
+      const existing = (state.subscriptions || []).find(s => s.id === state.editingId);
+      if (existing) {
+        const exCurr = existing.currency || 'USD';
+        prevMonthlyInBase = exCurr === baseCurr ? (existing.monthly_cost || 0) : convertCurrency(existing.monthly_cost || 0, exCurr, baseCurr);
+      }
+    }
+    
+    const newSpent = Math.max(0, curSpent - prevMonthlyInBase + monthlyInBase);
+    const newPct = Math.round((newSpent / budget) * 100);
+    const subPct = budget > 0 ? ((monthlyInBase / budget) * 100).toFixed(1) : 0;
+    const isExceeded = newSpent > budget;
+    const isClose = newPct >= 85 && !isExceeded;
+
+    impactContainer.classList.remove('hidden');
+    if (impactText) {
+      impactText.innerHTML = `Consumo: <strong class="text-white font-mono">${baseSymbol}${formatNumber(newSpent)}</strong> de <strong class="font-mono">${baseSymbol}${formatNumber(budget)}</strong> (${newPct}%)`;
+    }
+
+    if (impactBadge) {
+      if (isExceeded) {
+        impactBadge.className = 'font-bold font-mono px-2.5 py-0.5 rounded-full text-[10px] bg-rose-500/20 text-rose-300 border border-rose-500/40 animate-pulse w-fit';
+        impactBadge.textContent = `¡Excederá tu meta (+${subPct}%)!`;
+      } else if (isClose) {
+        impactBadge.className = 'font-bold font-mono px-2.5 py-0.5 rounded-full text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/40 w-fit';
+        impactBadge.textContent = `Cerca del límite (+${subPct}%)`;
+      } else {
+        impactBadge.className = 'font-bold font-mono px-2.5 py-0.5 rounded-full text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 w-fit';
+        impactBadge.textContent = `+${subPct}% de tu meta`;
+      }
+    }
+  } else if (impactContainer) {
+    impactContainer.classList.add('hidden');
+  }
 }
 
 async function handleFormSubmit(e) {
@@ -5317,6 +5432,7 @@ async function handleFormSubmit(e) {
     payment_method: document.getElementById('subPaymentMethod').value.trim(),
     status: document.getElementById('subStatus').value,
     color: document.getElementById('subColor').value,
+    icon: (document.getElementById('subIcon')?.value || '').trim(),
     url: document.getElementById('subUrl').value.trim(),
     notes: document.getElementById('subNotes').value.trim(),
     is_trial: isTrial ? 1 : 0,
@@ -7179,7 +7295,7 @@ async function showSubscriptionSummary(subId) {
 
   // Icono del servicio
   if (iconBox) {
-    iconBox.innerHTML = getServiceOfficialIcon(sub.name, sub.color, 'w-6 h-6');
+    iconBox.innerHTML = getServiceOfficialIcon(sub.name, sub.color, 'w-6 h-6', sub.icon);
     iconBox.style.background = `linear-gradient(135deg, ${safeColor}25, ${safeColor}45)`;
     iconBox.style.border = `1px solid ${safeColor}60`;
   }
