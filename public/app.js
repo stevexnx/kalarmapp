@@ -3741,35 +3741,42 @@ function createCardHtml(sub) {
           ` : ''}
         </div>
 
-        <!-- Monto del Cobro Correspondiente (Hero Price Unificado) -->
+        <!-- Monto del Cobro Correspondiente: Concepto a la izquierda, Monto destacado a la derecha -->
         <div class="bg-[#211f26] border border-[#49454f]/35 rounded-2xl p-3.5 space-y-2">
-          <div class="flex items-start justify-between gap-2">
-            <div>
+          <div class="flex items-center justify-between gap-3">
+            <!-- Lado Izquierdo: Concepto del ciclo y método de pago -->
+            <div class="min-w-0 flex-1 space-y-1">
               <span class="text-[10px] uppercase font-bold tracking-wider ${isSharedSub ? 'text-[#a8d5b5]' : 'text-[#cac4d0]'} flex items-center gap-1">
                 ${isSharedSub ? `<i data-lucide="users" class="w-3 h-3 text-[#a8d5b5]"></i> Tu Cuota ${cycleLabel}` : `Cobro ${cycleLabel}`}
               </span>
-              <div class="flex items-baseline gap-1 mt-0.5 flex-wrap">
-                <span class="text-xl font-extrabold text-white font-mono tracking-tight privacy-blur">
-                  ${baseSymbol}${formatNumber(displayPrice)}
-                </span>
-                <span class="text-xs font-semibold ${isSharedSub ? 'text-[#a8d5b5]' : 'text-[#d0bcff]'}">/${cycleSuffix}</span>
-                ${(showDailyCost && dailyEquiv) ? `
-                  <span class="text-[10px] text-[#938f99] font-mono privacy-blur ml-1.5 font-normal" title="Equivalente aproximado diario">(~${baseSymbol}${dailyEquiv}/día)</span>
-                ` : ''}
-                ${(showOriginalCurrency && isDifferentCurrency) ? `
-                  <span class="text-[10px] text-[#938f99] font-mono privacy-blur ml-1">
-                    (orig. ${subSymbol}${formatNumber(originalDisplayPrice)} ${subCurr})
-                  </span>
-                ` : ''}
-              </div>
+              ${paymentMethodBadge ? `
+                <div class="pt-0.5">
+                  ${paymentMethodBadge}
+                </div>
+              ` : ''}
             </div>
 
-            ${paymentMethodBadge}
+            <!-- Lado Derecho: Monto limpio sin redundancias -->
+            <div class="text-right shrink-0">
+              <div class="text-xl font-extrabold text-white font-mono tracking-tight privacy-blur leading-tight">
+                ${baseSymbol}${formatNumber(displayPrice)}
+              </div>
+              ${(showDailyCost && dailyEquiv) ? `
+                <div class="text-[10px] text-[#938f99] font-mono privacy-blur font-normal mt-0.5" title="Equivalente aproximado diario">
+                  ~${baseSymbol}${dailyEquiv}/día
+                </div>
+              ` : ''}
+              ${(showOriginalCurrency && isDifferentCurrency) ? `
+                <div class="text-[10px] text-[#938f99] font-mono privacy-blur mt-0.5" title="Moneda original">
+                  orig. ${subSymbol}${formatNumber(originalDisplayPrice)} ${subCurr}
+                </div>
+              ` : ''}
+            </div>
           </div>
 
           ${isSharedSub ? `
             <div class="flex items-center justify-between text-[11px] text-[#cac4d0] pt-1.5 border-t border-[#49454f]/25">
-              <span class="truncate">Total servicio: <span class="font-mono font-semibold text-[#e6e0e9] privacy-blur">${baseSymbol}${formatNumber(convertedPrice)}/${cycleSuffix}</span></span>
+              <span class="truncate">Total servicio: <span class="font-mono font-semibold text-[#e6e0e9] privacy-blur">${baseSymbol}${formatNumber(convertedPrice)}</span></span>
               <span class="text-[10px] text-[#d0bcff] font-semibold shrink-0 ml-2">/${sharedPeopleCount} personas</span>
             </div>
           ` : ''}
