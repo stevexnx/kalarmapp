@@ -1182,12 +1182,27 @@ body.theme-light .sub-card-interactive:hover {
 }
 
 /* Adaptaciones de modo claro para el Modal de Resumen */
-body.theme-light #subscriptionDetailModal .bg-\[\#141218\]\/80 {
+body.theme-light #subscriptionDetailModal .bg-\[\#141218\]\/80,
+body.theme-light #subscriptionDetailModal .bg-\[\#141218\]\/90 {
   background-color: #f0f0f0 !important;
 }
 body.theme-light #subscriptionDetailModal .bg-\[\#211f26\] {
   background-color: #f8f8f8 !important;
 }
+body.theme-light #subscriptionDetailModal .bg-\[\#1d1b20\] {
+  background-color: #ffffff !important;
+}
+body.theme-light .sub-detail-tab-btn {
+  color: #616161 !important;
+}
+body.theme-light .sub-detail-tab-btn:hover {
+  color: #1d1b20 !important;
+}
+body.theme-light .sub-detail-tab-btn.active {
+  color: #6750a4 !important;
+  border-bottom-color: #6750a4 !important;
+}
+
 
 
 

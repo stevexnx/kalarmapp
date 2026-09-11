@@ -1192,9 +1192,27 @@ function initEventListeners() {
 
   // Modal: Resumen de Suscripción (Click en tarjeta)
   document.getElementById('btnCloseSubDetailModal')?.addEventListener('click', closeSubscriptionSummary);
+  document.getElementById('btnSubDetailCloseFooter')?.addEventListener('click', closeSubscriptionSummary);
   document.getElementById('subscriptionDetailModal')?.addEventListener('click', (e) => {
     if (e.target.id === 'subscriptionDetailModal') closeSubscriptionSummary();
   });
+
+  // Pestañas internas del Resumen de Suscripción
+  document.querySelectorAll('.sub-detail-tab-btn').forEach(tabBtn => {
+    tabBtn.addEventListener('click', () => {
+      const targetTab = tabBtn.dataset.tab;
+      switchSubDetailTab(targetTab);
+    });
+  });
+
+  // Botón rápido de marcar pagado dentro del modal
+  document.getElementById('btnSubDetailPayNow')?.addEventListener('click', () => {
+    if (state.selectedSummarySubId) {
+      markAsPaidAndAdvance(state.selectedSummarySubId);
+      closeSubscriptionSummary();
+    }
+  });
+
   document.getElementById('btnSubDetailEdit')?.addEventListener('click', () => {
     if (state.selectedSummarySubId) {
       const subId = state.selectedSummarySubId;
@@ -6223,15 +6241,95 @@ function showSubscriptionSummary(subId) {
   if (headerBar) headerBar.style.backgroundColor = sub.color || '#d0bcff';
 
   // Icono del servicio
+function switchSubDetailTab(tabName = 'details') {
+  document.querySelectorAll('.sub-detail-tab-btn').forEach(btn => {
+    const isActive = btn.dataset.tab === tabName;
+    btn.classList.toggle('active', isActive);
+    btn.classList.toggle('text-[#d0bcff]', isActive);
+    btn.classList.toggle('border-[#d0bcff]', isActive);
+    btn.classList.toggle('font-semibold', isActive);
+    btn.classList.toggle('text-[#cac4d0]', !isActive);
+    btn.classList.toggle('border-transparent', !isActive);
+  });
+
+  document.querySelectorAll('.sub-tab-pane').forEach(pane => {
+    pane.classList.add('hidden');
+  });
+
+  const activePane = document.getElementById(`subTabContent${tabName.charAt(0).toUpperCase() + tabName.slice(1)}`);
+  if (activePane) {
+    activePane.classList.remove('hidden');
+  }
+}
+
+async function showSubscriptionSummary(subId) {
+  const sub = (state.subscriptions || []).find(s => s.id === parseInt(subId));
+  if (!sub) return;
+
+  state.selectedSummarySubId = sub.id;
+
+  const modal = document.getElementById('subscriptionDetailModal');
+  const headerBar = document.getElementById('subDetailHeaderBar');
+  const iconBox = document.getElementById('subDetailIconBox');
+  const nameEl = document.getElementById('subDetailName');
+  const statusDotContainer = document.getElementById('subDetailStatusDotContainer');
+  const aliasEl = document.getElementById('subDetailAlias');
+  const categoryEl = document.getElementById('subDetailCategory');
+
+  // Precios y aportes
+  const myShareEl = document.getElementById('subDetailMyShare');
+  const cycleLabelEl = document.getElementById('subDetailCycleLabel');
+  const priceEl = document.getElementById('subDetailPrice');
+  const origPriceEl = document.getElementById('subDetailOriginalPrice');
+  const annualCostEl = document.getElementById('subDetailAnnualCost');
+
+  // Próximo cobro
+  const nextBillingEl = document.getElementById('subDetailNextBilling');
+  const daysBadgeEl = document.getElementById('subDetailDaysBadge');
+  const paymentMethodEl = document.getElementById('subDetailPaymentMethod');
+
+  // Rows condicionales
+  const trialRow = document.getElementById('subDetailTrialRow');
+  const trialEndEl = document.getElementById('subDetailTrialEnd');
+  const urlRow = document.getElementById('subDetailUrlRow');
+  const urlLinkEl = document.getElementById('subDetailUrlLink');
+  const urlTextEl = document.getElementById('subDetailUrlText');
+  const notesRow = document.getElementById('subDetailNotesRow');
+  const notesTextEl = document.getElementById('subDetailNotesText');
+
+  // Pestaña Gestión
+  const statusIcon = document.getElementById('subDetailStatusIcon');
+  const statusTitle = document.getElementById('subDetailStatusTitle');
+  const statusDesc = document.getElementById('subDetailStatusDesc');
+  const cancelBtnText = document.getElementById('subDetailCancelBtnText');
+
+  const baseCurr = state.baseCurrencyCode || 'USD';
+  const baseSymbol = state.currency || '$';
+  const subCurr = sub.currency || 'USD';
+  const subSymbol = CURRENCY_SYMBOLS[subCurr] || '$';
+  const cycleLabel = CYCLE_LABELS[sub.billing_cycle] || sub.billing_cycle;
+  const { text: daysText, badgeClass } = getCutOffBadgeInfo(sub.days_until_billing);
+
+  const isDifferentCurrency = subCurr !== baseCurr;
+  const convertedPrice = sub.converted_price !== undefined ? sub.converted_price : convertCurrency(sub.price, subCurr, baseCurr);
+  const convertedMonthly = sub.converted_monthly_cost !== undefined ? sub.converted_monthly_cost : convertCurrency(sub.monthly_cost, subCurr, baseCurr);
+  const convertedAnnual = sub.converted_annual_cost !== undefined ? sub.converted_annual_cost : convertCurrency(sub.annual_cost, subCurr, baseCurr);
+
+  // Barra superior de color de la marca
+  if (headerBar) headerBar.style.backgroundColor = sub.color || '#d0bcff';
+
+  // Icono del servicio
   if (iconBox) {
     iconBox.innerHTML = getServiceOfficialIcon(sub.name, sub.color, 'w-6 h-6');
     iconBox.style.background = `linear-gradient(135deg, ${sub.color || '#d0bcff'}25, ${sub.color || '#d0bcff'}45)`;
     iconBox.style.border = `1px solid ${sub.color || '#d0bcff'}60`;
   }
 
-  // Nombre y Estado
+  // Nombre y Burbuja Interactiva de Estado en la cabecera
   if (nameEl) nameEl.textContent = sub.name;
-  if (statusBadgeEl) statusBadgeEl.innerHTML = getStatusBadge(sub.status);
+  if (statusDotContainer) {
+    statusDotContainer.innerHTML = getStatusDotHtml(sub.id, sub.status);
+  }
 
   // Alias
   if (aliasEl) {
@@ -6246,36 +6344,39 @@ function showSubscriptionSummary(subId) {
   // Categoría
   if (categoryEl) categoryEl.textContent = `Categoría: ${sub.category || 'General'}`;
 
-  // Precios
+  // ================= PESTAÑA DETALLES: FINANZAS CLARAS =================
+  if (sub.is_shared) {
+    const myShareMonthly = sub.my_share_price || sub.monthly_cost;
+    const myShareTotal = sub.billing_cycle === 'annual' ? (myShareMonthly * 12) : myShareMonthly;
+    if (myShareEl) {
+      myShareEl.textContent = `${baseSymbol}${formatNumber(myShareTotal)}`;
+    }
+    if (cycleLabelEl) {
+      cycleLabelEl.textContent = sub.billing_cycle === 'annual' ? 'por año (tu cuota)' : 'por mes (tu cuota)';
+    }
+  } else {
+    if (myShareEl) {
+      myShareEl.textContent = `${baseSymbol}${formatNumber(convertedPrice)}`;
+    }
+    if (cycleLabelEl) {
+      cycleLabelEl.textContent = `por ${cycleLabel.toLowerCase()}`;
+    }
+  }
+
+  // Costo del Plan Total
   if (priceEl) {
     priceEl.textContent = `${baseSymbol}${formatNumber(convertedPrice)} / ${cycleLabel.toLowerCase()}`;
   }
-
   if (origPriceEl) {
     if (isDifferentCurrency) {
-      origPriceEl.textContent = `Precio original: ${subSymbol}${formatNumber(sub.price)} ${subCurr}`;
+      origPriceEl.textContent = `Orig. ${subSymbol}${formatNumber(sub.price)} ${subCurr}`;
       origPriceEl.classList.remove('hidden');
     } else {
       origPriceEl.classList.add('hidden');
     }
   }
-
-  if (myShareEl) {
-    if (sub.is_shared) {
-      const share = sub.my_share_price || sub.monthly_cost;
-      myShareEl.textContent = `Tu parte calculada: ${baseSymbol}${formatNumber(share)}/mes`;
-      myShareEl.classList.remove('hidden');
-    } else {
-      myShareEl.classList.add('hidden');
-    }
-  }
-
-  // Costo Anual y ciclo
   if (annualCostEl) {
-    annualCostEl.textContent = `${baseSymbol}${formatNumber(convertedAnnual)} / año`;
-  }
-  if (cycleLabelEl) {
-    cycleLabelEl.textContent = `Equivalente a ≈ ${baseSymbol}${formatNumber(convertedMonthly)}/mes`;
+    annualCostEl.textContent = `Impacto anual: ${baseSymbol}${formatNumber(convertedAnnual)}/año`;
   }
 
   // Próximo cobro
@@ -6284,34 +6385,12 @@ function showSubscriptionSummary(subId) {
   }
   if (daysBadgeEl) {
     daysBadgeEl.textContent = daysText;
-    daysBadgeEl.className = `ml-1.5 text-[10px] px-2 py-0.5 rounded-full font-bold ${badgeClass}`;
+    daysBadgeEl.className = `text-[10px] px-2 py-0.5 rounded-full font-bold ${badgeClass}`;
   }
 
   // Método de pago
   if (paymentMethodEl) {
     paymentMethodEl.textContent = sub.payment_method || 'No especificado';
-  }
-
-  // Prueba Gratuita
-  if (trialRow) {
-    if (sub.is_trial) {
-      trialRow.classList.remove('hidden');
-      if (trialEndEl) trialEndEl.textContent = `Finaliza el ${formatDateFriendly(sub.trial_end_date)}`;
-    } else {
-      trialRow.classList.add('hidden');
-    }
-  }
-
-  // Cuenta Compartida
-  if (sharedRow) {
-    if (sub.is_shared) {
-      sharedRow.classList.remove('hidden');
-      if (sharedWithEl) {
-        sharedWithEl.textContent = `Dividida entre ${sub.shared_with_count || 2} personas`;
-      }
-    } else {
-      sharedRow.classList.add('hidden');
-    }
   }
 
   // Enlace oficial
@@ -6324,11 +6403,21 @@ function showSubscriptionSummary(subId) {
           const u = new URL(sub.url.startsWith('http') ? sub.url : `https://${sub.url}`);
           urlTextEl.textContent = u.hostname.replace('www.', '');
         } catch (_) {
-          urlTextEl.textContent = 'Ir al servicio';
+          urlTextEl.textContent = 'Ir a web';
         }
       }
     } else {
       urlRow.classList.add('hidden');
+    }
+  }
+
+  // Prueba Gratuita
+  if (trialRow) {
+    if (sub.is_trial) {
+      trialRow.classList.remove('hidden');
+      if (trialEndEl) trialEndEl.textContent = `Vence el ${formatDateFriendly(sub.trial_end_date)}`;
+    } else {
+      trialRow.classList.add('hidden');
     }
   }
 
@@ -6342,24 +6431,108 @@ function showSubscriptionSummary(subId) {
     }
   }
 
-  // Botón de pausar / reactivar
-  if (statusBtn && statusIcon && statusText) {
-    if (sub.status === 'active') {
-      statusBtn.classList.remove('hidden');
-      statusIcon.setAttribute('data-lucide', 'pause-circle');
-      statusText.textContent = 'Pausar';
-    } else if (sub.status === 'paused') {
-      statusBtn.classList.remove('hidden');
-      statusIcon.setAttribute('data-lucide', 'play-circle');
-      statusText.textContent = 'Reactivar';
+  // ================= PESTAÑA 2: SPLIT PAY & AMIGOS =================
+  const splitBadge = document.getElementById('subDetailSplitBadge');
+  const splitContainer = document.getElementById('subDetailSplitFriendsList');
+  if (splitContainer) {
+    if (sub.is_shared) {
+      const friendIds = (sub.shared_friend_ids || '').toString().split(',').map(x => parseInt(x.trim())).filter(Boolean);
+      const matchedFriends = (state.friends || []).filter(f => friendIds.includes(f.id));
+      const totalPeople = sub.shared_with_count || (matchedFriends.length + 1) || 2;
+      const sharePerPerson = (convertedPrice / totalPeople).toFixed(2);
+
+      if (splitBadge) {
+        splitBadge.textContent = matchedFriends.length;
+        splitBadge.classList.remove('hidden');
+      }
+
+      let friendsCardsHtml = '';
+      if (matchedFriends.length > 0) {
+        friendsCardsHtml = matchedFriends.map(f => {
+          const waText = encodeURIComponent(`¡Hola ${f.name}! Te escribo para coordinar la cuota de ${sub.name} de este mes (${baseSymbol}${sharePerPerson} ${baseCurr}). Fecha de corte: ${sub.next_billing_date}.`);
+          const waUrl = f.phone ? `https://wa.me/${f.phone.replace(/[^0-9]/g, '')}?text=${waText}` : null;
+
+          return `
+            <div class="p-3.5 bg-[#211f26] rounded-2xl border border-[#49454f]/30 flex items-center justify-between gap-3">
+              <div class="flex items-center gap-3 min-w-0">
+                <div class="w-9 h-9 rounded-full bg-[#381e72] border border-[#d0bcff]/40 flex items-center justify-center font-bold text-xs text-[#d0bcff] shrink-0">
+                  ${escapeHtml((f.name || 'A')[0].toUpperCase())}
+                </div>
+                <div class="min-w-0">
+                  <h5 class="text-xs font-bold text-white truncate font-google-sans">${escapeHtml(f.name)}</h5>
+                  <p class="text-[11px] text-[#cac4d0] truncate mt-0.5">Cuota asignada: <strong class="text-[#a8d5b5] font-mono">${baseSymbol}${sharePerPerson}</strong> / ${cycleLabel.toLowerCase()}</p>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-1.5 shrink-0">
+                ${waUrl ? `
+                  <a href="${waUrl}" target="_blank" rel="noopener" class="p-2 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/30 transition flex items-center gap-1 text-xs" title="Enviar recordatorio de pago a ${escapeHtml(f.name)} por WhatsApp">
+                    <i data-lucide="message-circle" class="w-4 h-4"></i>
+                    <span class="hidden sm:inline text-[10px] font-semibold">Recordar</span>
+                  </a>
+                ` : ''}
+              </div>
+            </div>
+          `;
+        }).join('');
+      } else {
+        friendsCardsHtml = `
+          <div class="p-4 bg-[#211f26] rounded-2xl border border-[#49454f]/30 text-center text-xs text-[#cac4d0]">
+            <p>Esta cuenta está dividida entre <strong>${totalPeople} personas</strong>, pero aún no has vinculado amigos específicos de tu lista de contactos.</p>
+            <button onclick="closeSubscriptionSummary(); editSubscription(${sub.id});" class="mt-2.5 m3-btn-tonal text-xs py-1 px-3">Asignar amigos</button>
+          </div>
+        `;
+      }
+
+      splitContainer.innerHTML = `
+        <div class="p-3 bg-[#141218]/80 rounded-2xl border border-[#49454f]/30 flex items-center justify-between text-xs mb-3">
+          <span class="text-[#cac4d0] flex items-center gap-1.5">
+            <i data-lucide="users" class="w-4 h-4 text-[#a8d5b5]"></i>
+            Participantes en este plan:
+          </span>
+          <span class="font-bold text-white">${totalPeople} personas (Tú + ${totalPeople - 1})</span>
+        </div>
+        ${friendsCardsHtml}
+      `;
     } else {
-      // Si está cancelada, ocultar botón pausar para evitar confusión
-      statusBtn.classList.add('hidden');
+      if (splitBadge) splitBadge.classList.add('hidden');
+      splitContainer.innerHTML = `
+        <div class="text-center py-8 px-4 text-[#cac4d0] space-y-3">
+          <div class="w-12 h-12 rounded-2xl bg-[#381e72]/40 text-[#d0bcff] flex items-center justify-center mx-auto">
+            <i data-lucide="split" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <h4 class="text-sm font-bold text-white mb-1">Esta suscripción no está dividida</h4>
+            <p class="text-xs text-[#cac4d0] max-w-sm mx-auto">Actualmente cubres el 100% de esta cuenta. Si la compartes con amigos o familiares, puedes dividir los pagos automáticamente.</p>
+          </div>
+          <button onclick="closeSubscriptionSummary(); editSubscription(${sub.id});" class="m3-btn-filled py-1.5 px-4 text-xs">
+            Dividir esta suscripción
+          </button>
+        </div>
+      `;
     }
   }
 
-  // Botón de Cancelar / Reactivar
-  const cancelBtnText = document.getElementById('subDetailCancelBtnText');
+  // ================= PESTAÑA 3: HISTORIAL DE PAGOS =================
+  loadSubPaymentHistory(sub.id);
+
+  // ================= PESTAÑA 4: GESTIÓN & ACCIONES =================
+  if (statusIcon && statusTitle && statusDesc) {
+    if (sub.status === 'active') {
+      statusIcon.setAttribute('data-lucide', 'pause-circle');
+      statusTitle.textContent = 'Pausar Suscripción';
+      statusDesc.textContent = 'Suspende temporalmente los avisos y cobros';
+    } else if (sub.status === 'paused') {
+      statusIcon.setAttribute('data-lucide', 'play-circle');
+      statusTitle.textContent = 'Reactivar Suscripción';
+      statusDesc.textContent = 'Vuelve a activar los cobros y recordatorios';
+    } else {
+      statusIcon.setAttribute('data-lucide', 'play-circle');
+      statusTitle.textContent = 'Reactivar Suscripción';
+      statusDesc.textContent = 'Restaura esta cuenta desde el estado cancelada';
+    }
+  }
+
   if (cancelBtnText) {
     if (sub.status === 'canceled' || sub.status === 'cancelled') {
       cancelBtnText.textContent = 'Reactivar Suscripción';
@@ -6368,7 +6541,72 @@ function showSubscriptionSummary(subId) {
     }
   }
 
+  // Abrir en pestaña Detalles por defecto
+  switchSubDetailTab('details');
+
   modal?.classList.remove('hidden');
+  initIcons();
+}
+
+async function loadSubPaymentHistory(subId) {
+  const listEl = document.getElementById('subDetailPaymentList');
+  const countEl = document.getElementById('subDetailPaymentCount');
+  const totalEl = document.getElementById('subDetailTotalInvested');
+  if (!listEl) return;
+
+  listEl.innerHTML = `<div class="text-center py-4 text-xs text-[#cac4d0]">Cargando historial...</div>`;
+
+  try {
+    const res = await fetch(`/api/payments?subscription_id=${subId}`, { headers: getAuthHeaders() });
+    const result = await res.json();
+    const payments = (result.success && Array.isArray(result.data)) ? result.data : [];
+
+    const baseCurr = state.baseCurrencyCode || 'USD';
+    const baseSymbol = state.currency || '$';
+
+    if (countEl) countEl.textContent = `${payments.length} pago${payments.length === 1 ? '' : 's'}`;
+
+    const totalSum = payments.reduce((acc, p) => {
+      const conv = p.converted_amount !== undefined ? p.converted_amount : convertCurrency(p.amount, p.currency || 'USD', baseCurr);
+      return acc + conv;
+    }, 0);
+
+    if (totalEl) totalEl.textContent = `${baseSymbol}${formatNumber(totalSum)}`;
+
+    if (payments.length === 0) {
+      listEl.innerHTML = `
+        <div class="text-center py-6 text-xs text-[#cac4d0]">
+          <p>No se han registrado pagos anteriores para este servicio.</p>
+          <p class="text-[11px] text-[#938f99] mt-1">Usa el botón "Marcar Pagado" en la pestaña Detalles cuando abones tu cuota.</p>
+        </div>
+      `;
+    } else {
+      listEl.innerHTML = payments.map(p => {
+        const pCurr = p.currency || 'USD';
+        const pSymbol = CURRENCY_SYMBOLS[pCurr] || '$';
+        const isDiff = pCurr !== baseCurr;
+        const conv = p.converted_amount !== undefined ? p.converted_amount : convertCurrency(p.amount, pCurr, baseCurr);
+        const priceStr = isDiff ? `${pSymbol}${formatNumber(p.amount)} (≈ ${baseSymbol}${formatNumber(conv)})` : `${baseSymbol}${formatNumber(p.amount)}`;
+
+        return `
+          <div class="p-3 bg-[#211f26] rounded-xl border border-[#49454f]/30 flex items-center justify-between text-xs">
+            <div class="flex items-center gap-2.5">
+              <div class="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-300 flex items-center justify-center shrink-0">
+                <i data-lucide="check" class="w-3.5 h-3.5"></i>
+              </div>
+              <div>
+                <span class="font-bold text-white block">${formatDateFriendly(p.payment_date)}</span>
+                <span class="text-[10px] text-[#cac4d0]">Abonado mediante ${escapeHtml(p.payment_method || 'Tarjeta')}</span>
+              </div>
+            </div>
+            <span class="font-mono font-bold text-emerald-400 text-xs">${priceStr}</span>
+          </div>
+        `;
+      }).join('');
+    }
+  } catch (err) {
+    listEl.innerHTML = `<div class="text-center py-4 text-xs text-rose-300">Error cargando historial</div>`;
+  }
   initIcons();
 }
 
@@ -6380,5 +6618,7 @@ function closeSubscriptionSummary() {
 
 window.showSubscriptionSummary = showSubscriptionSummary;
 window.closeSubscriptionSummary = closeSubscriptionSummary;
+window.switchSubDetailTab = switchSubDetailTab;
+
 
 
