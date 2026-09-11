@@ -1421,10 +1421,9 @@ function initEventListeners() {
   document.getElementById('btnSaveProfileName')?.addEventListener('click', handleSaveProfileName);
   document.getElementById('inputProfileDisplayName')?.addEventListener('input', () => updateProfileAvatarPreview());
 
-  // Apertura del Editor de Avatar (desde el botón editar sobre el avatar, el avatar mismo o la píldora)
+  // Apertura del Editor de Avatar (desde el botón lápiz sobre el avatar o haciendo clic en el avatar)
   document.getElementById('btnEditAvatar')?.addEventListener('click', openAvatarEditorModal);
   document.getElementById('modalProfileAvatar')?.addEventListener('click', openAvatarEditorModal);
-  document.getElementById('btnEditAvatarPill')?.addEventListener('click', openAvatarEditorModal);
 
   // Modal Editor de Avatar
   document.getElementById('btnCloseAvatarEditorModal')?.addEventListener('click', closeAvatarEditorModal);
