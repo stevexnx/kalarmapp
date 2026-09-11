@@ -859,15 +859,20 @@ function toggleChangePasswordForm() {
 async function handleRecoverySubmit(e) {
   e.preventDefault();
   const identifier = document.getElementById('recoveryIdentifier')?.value.trim();
+  const recoveryEmail = document.getElementById('recoveryEmail')?.value.trim();
   const newPassword = document.getElementById('recoveryNewPassword')?.value;
   const confirmPassword = document.getElementById('recoveryConfirmPassword')?.value;
 
   if (!identifier) {
-    showToast('Ingresa tu nombre de usuario o correo', 'error');
+    showToast('Ingresa tu nombre de usuario', 'error');
     return;
   }
-  if (!newPassword || newPassword.length < 4) {
-    showToast('La nueva contraseña debe tener al menos 4 caracteres', 'error');
+  if (!recoveryEmail) {
+    showToast('Ingresa tu correo registrado', 'error');
+    return;
+  }
+  if (!newPassword || newPassword.length < 8) {
+    showToast('La nueva contraseña debe tener al menos 8 caracteres', 'error');
     return;
   }
   if (newPassword !== confirmPassword) {
@@ -879,7 +884,7 @@ async function handleRecoverySubmit(e) {
     const res = await fetch('/api/auth/reset-password', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ identifier, new_password: newPassword })
+      body: JSON.stringify({ identifier, recovery_email: recoveryEmail, new_password: newPassword })
     });
     const result = await res.json();
     if (result.success) {
@@ -908,8 +913,8 @@ async function handleChangePasswordSubmit(e) {
     showToast('Ingresa tu contraseña actual', 'error');
     return;
   }
-  if (!newPassword || newPassword.length < 4) {
-    showToast('La nueva contraseña debe tener al menos 4 caracteres', 'error');
+  if (!newPassword || newPassword.length < 8) {
+    showToast('La nueva contraseña debe tener al menos 8 caracteres', 'error');
     return;
   }
   if (newPassword !== confirmPassword) {
@@ -1633,7 +1638,7 @@ function renderFriendsList() {
       <div>
         <div class="flex items-start justify-between">
           <div class="flex items-center gap-2.5 min-w-0">
-            <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs shadow shrink-0 group-hover:scale-105 transition" style="background-color: ${f.avatar_color || '#a8d5b5'}; color: #133821">
+            <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs shadow shrink-0 group-hover:scale-105 transition" style="background-color: ${sanitizeColor(f.avatar_color, '#a8d5b5')}; color: #133821">
               ${escapeHtml(f.name.charAt(0).toUpperCase())}
             </div>
             <div class="min-w-0">
@@ -2627,8 +2632,8 @@ async function viewSharedSubsWithFriend(friendId, friendName, friendUserId = nul
         return `
           <div class="p-3 bg-[#211f26] border border-[#a8d5b5]/30 rounded-xl flex items-center justify-between gap-3 hover:border-[#a8d5b5]/60 transition">
             <div class="flex items-center gap-3 min-w-0">
-              <div class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 shadow-sm" style="background: linear-gradient(135deg, ${s.color || '#a8d5b5'}22, ${s.color || '#a8d5b5'}44); border: 1px solid ${s.color || '#a8d5b5'}55">
-                ${getServiceOfficialIcon(s.name, s.color || '#a8d5b5', 'w-4 h-4')}
+              <div class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 shadow-sm" style="background: linear-gradient(135deg, ${sanitizeColor(s.color, '#a8d5b5')}22, ${sanitizeColor(s.color, '#a8d5b5')}44); border: 1px solid ${sanitizeColor(s.color, '#a8d5b5')}55">
+                ${getServiceOfficialIcon(s.name, sanitizeColor(s.color, '#a8d5b5'), 'w-4 h-4')}
               </div>
               <div class="min-w-0">
                 <div class="flex items-center gap-1.5">
@@ -2674,8 +2679,8 @@ async function viewSharedSubsWithFriend(friendId, friendName, friendUserId = nul
               return `
                 <div class="p-2.5 bg-[#1d1b20] border border-[#49454f]/30 rounded-xl flex items-center justify-between gap-3 hover:border-[#d0bcff]/40 transition">
                   <div class="flex items-center gap-2.5 min-w-0">
-                    <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-sm" style="background: linear-gradient(135deg, ${s.color || '#d0bcff'}22, ${s.color || '#d0bcff'}44); border: 1px solid ${s.color || '#d0bcff'}55">
-                      ${getServiceOfficialIcon(s.name, s.color || '#d0bcff', 'w-3.5 h-3.5')}
+                    <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-sm" style="background: linear-gradient(135deg, ${sanitizeColor(s.color, '#d0bcff')}22, ${sanitizeColor(s.color, '#d0bcff')}44); border: 1px solid ${sanitizeColor(s.color, '#d0bcff')}55">
+                      ${getServiceOfficialIcon(s.name, sanitizeColor(s.color, '#d0bcff'), 'w-3.5 h-3.5')}
                     </div>
                     <div class="min-w-0">
                       <div class="text-xs font-medium text-white truncate">${escapeHtml(s.name)}</div>
@@ -2728,8 +2733,8 @@ async function viewSharedSubsWithFriend(friendId, friendName, friendUserId = nul
         return `
           <div class="p-3 bg-[#211f26] border border-[#49454f]/40 rounded-xl flex items-center justify-between gap-3">
             <div class="flex items-center gap-3 min-w-0">
-              <div class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 shadow-sm" style="background: linear-gradient(135deg, ${fs.color || '#a8d5b5'}22, ${fs.color || '#a8d5b5'}44); border: 1px solid ${fs.color || '#a8d5b5'}55">
-                ${getServiceOfficialIcon(fs.name, fs.color || '#a8d5b5', 'w-4 h-4')}
+              <div class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 shadow-sm" style="background: linear-gradient(135deg, ${sanitizeColor(fs.color, '#a8d5b5')}22, ${sanitizeColor(fs.color, '#a8d5b5')}44); border: 1px solid ${sanitizeColor(fs.color, '#a8d5b5')}55">
+                ${getServiceOfficialIcon(fs.name, sanitizeColor(fs.color, '#a8d5b5'), 'w-4 h-4')}
               </div>
               <div class="min-w-0">
                 <h5 class="text-xs font-bold text-white truncate font-google-sans">${escapeHtml(fs.name)}</h5>
@@ -3116,7 +3121,7 @@ function renderUpcomingAlerts() {
         return `
           <div class="flex items-center justify-between bg-slate-900/60 rounded-xl px-3.5 py-2.5 border border-amber-500/20">
             <div class="flex items-center gap-2.5">
-              <span class="w-3 h-3 rounded-full" style="background-color: ${sub.color || '#F59E0B'}"></span>
+              <span class="w-3 h-3 rounded-full" style="background-color: ${sanitizeColor(sub.color, '#F59E0B')}"></span>
               <div>
                 <div class="text-xs font-bold text-white flex items-center gap-1.5">
                   <span>${escapeHtml(sub.name)}</span>
@@ -3246,18 +3251,19 @@ function createCardHtml(sub) {
   }
 
   const iconHtml = getServiceOfficialIcon(sub.name, sub.color);
+  const safeColor = sanitizeColor(sub.color, '#d0bcff');
   const isInactive = sub.status === 'paused' || sub.status === 'canceled' || sub.status === 'cancelled';
   const opacityClass = isInactive ? 'opacity-70 hover:opacity-100 transition-opacity' : '';
 
   return `
-    <div class="m3-card sub-card-interactive p-5 relative overflow-hidden flex flex-col justify-between m3-elevation-1 ${opacityClass}" onclick="showSubscriptionSummary(${sub.id})" title="Ver resumen de ${escapeHtml(sub.name)}">
-      <div class="absolute top-0 left-0 right-0 h-1.5" style="background-color: ${sub.color || 'var(--md-sys-color-primary)'}"></div>
+    <div class="m3-card sub-card-interactive p-5 relative overflow-hidden flex flex-col justify-between m3-elevation-1 ${opacityClass}" onclick="showSubscriptionSummary(${sub.id})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();showSubscriptionSummary(${sub.id})}" tabindex="0" role="button" aria-label="Ver resumen de ${escapeHtml(sub.name)}" title="Ver resumen de ${escapeHtml(sub.name)}">
+      <div class="absolute top-0 left-0 right-0 h-1.5" style="background-color: ${safeColor}"></div>
 
       <div class="space-y-3.5">
         <!-- Cabecera: Icono + Nombre + Burbuja Interactiva de Estado -->
         <div class="flex items-start justify-between gap-2.5">
           <div class="flex items-center gap-3 min-w-0">
-            <div class="m3-brand-icon-box" style="background: linear-gradient(135deg, ${sub.color || '#d0bcff'}22, ${sub.color || '#d0bcff'}44); border: 1px solid ${sub.color || '#d0bcff'}55">
+            <div class="m3-brand-icon-box" style="background: linear-gradient(135deg, ${safeColor}22, ${safeColor}44); border: 1px solid ${safeColor}55">
               ${iconHtml}
             </div>
             <div class="min-w-0">
@@ -3351,14 +3357,15 @@ function createTableRowHtml(sub) {
   const convertedAnnual = sub.converted_annual_cost !== undefined ? sub.converted_annual_cost : convertCurrency(sub.annual_cost, subCurr, baseCurr);
 
   const iconHtml = getServiceOfficialIcon(sub.name, sub.color, 'w-3.5 h-3.5');
+  const safeColor = sanitizeColor(sub.color, '#d0bcff');
   const isInactive = sub.status === 'paused' || sub.status === 'canceled' || sub.status === 'cancelled';
   const opacityClass = isInactive ? 'opacity-70 hover:opacity-100 transition-opacity' : '';
 
   return `
-    <tr class="hover:bg-[#211f26] transition cursor-pointer ${opacityClass}" onclick="showSubscriptionSummary(${sub.id})" title="Ver resumen de ${escapeHtml(sub.name)}">
+    <tr class="hover:bg-[#211f26] transition cursor-pointer ${opacityClass}" onclick="showSubscriptionSummary(${sub.id})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();showSubscriptionSummary(${sub.id})}" tabindex="0" role="button" aria-label="Ver resumen de ${escapeHtml(sub.name)}" title="Ver resumen de ${escapeHtml(sub.name)}">
       <td class="px-4 py-3.5">
         <div class="flex items-center gap-2.5">
-          <div class="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 shadow-sm" style="background: linear-gradient(135deg, ${sub.color || '#d0bcff'}22, ${sub.color || '#d0bcff'}44); border: 1px solid ${sub.color || '#d0bcff'}55">
+          <div class="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 shadow-sm" style="background: linear-gradient(135deg, ${safeColor}22, ${safeColor}44); border: 1px solid ${safeColor}55">
             ${iconHtml}
           </div>
           <div>
@@ -3951,12 +3958,12 @@ function renderCalendarDayDetails(cutsForSelectedDay) {
 
     return `
       <div class="m3-card p-4 flex flex-col justify-between space-y-3 relative overflow-hidden group">
-        <div class="absolute top-0 left-0 right-0 h-1" style="background-color: ${sub.color || 'var(--md-sys-color-primary)'}"></div>
+        <div class="absolute top-0 left-0 right-0 h-1" style="background-color: ${sanitizeColor(sub.color, '#4F46E5')}"></div>
 
         <div class="flex items-start justify-between gap-2">
           <div class="flex items-center gap-2.5">
-            <div class="w-9 h-9 rounded-xl flex items-center justify-center text-white font-bold text-sm shadow shrink-0" style="background: linear-gradient(135deg, ${sub.color || '#4F46E5'}22, ${sub.color || '#4F46E5'}44); border: 1px solid ${sub.color || '#4F46E5'}55">
-              ${getServiceOfficialIcon(sub.name, sub.color || '#4F46E5', 'w-4 h-4')}
+            <div class="w-9 h-9 rounded-xl flex items-center justify-center text-white font-bold text-sm shadow shrink-0" style="background: linear-gradient(135deg, ${sanitizeColor(sub.color, '#4F46E5')}22, ${sanitizeColor(sub.color, '#4F46E5')}44); border: 1px solid ${sanitizeColor(sub.color, '#4F46E5')}55">
+              ${getServiceOfficialIcon(sub.name, sanitizeColor(sub.color, '#4F46E5'), 'w-4 h-4')}
             </div>
             <div>
               <h4 class="text-sm font-bold text-white leading-tight flex items-center gap-1.5">
@@ -4158,7 +4165,7 @@ function populateSharedFriendsCheckboxes(selectedIds = []) {
           <input type="checkbox" class="friend-checkbox sr-only" value="${f.id}" ${isChecked ? 'checked' : ''}>
           
           <!-- Avatar con inicial y color -->
-          <span class="w-6 h-6 rounded-full shrink-0 flex items-center justify-center text-[10px] font-bold text-white shadow-inner" style="background-color: ${f.avatar_color || '#10B981'}">
+          <span class="w-6 h-6 rounded-full shrink-0 flex items-center justify-center text-[10px] font-bold text-white shadow-inner" style="background-color: ${sanitizeColor(f.avatar_color, '#10B981')}">
             ${escapeHtml(f.name.charAt(0).toUpperCase())}
           </span>
           
@@ -4496,8 +4503,8 @@ function openModal(sub = null) {
       if (badgeName) badgeName.textContent = sub.name;
       if (badgeIconBox) {
         badgeIconBox.innerHTML = getServiceOfficialIcon(sub.name, sub.color || '#d0bcff', 'w-4 h-4');
-        badgeIconBox.style.background = `linear-gradient(135deg, ${sub.color || '#d0bcff'}22, ${sub.color || '#d0bcff'}44)`;
-        badgeIconBox.style.border = `1px solid ${sub.color || '#d0bcff'}55`;
+        badgeIconBox.style.background = `linear-gradient(135deg, ${sanitizeColor(sub.color, '#d0bcff')}22, ${sanitizeColor(sub.color, '#d0bcff')}44)`;
+        badgeIconBox.style.border = `1px solid ${sanitizeColor(sub.color, '#d0bcff')}55`;
       }
     } else if (badgeContainer && nameInput) {
       nameInput.classList.remove('hidden');
@@ -5220,6 +5227,28 @@ function getStatusDotHtml(subId, status) {
 function escapeHtml(str) {
   if (!str) return '';
   return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+}
+
+/**
+ * Sanitiza un valor de color para prevenir XSS en atributos style="".
+ * Solo permite: hex (#abc, #aabbcc, #aabbccdd), rgb/rgba(), hsl/hsla(), y nombres CSS seguros.
+ * Retorna un color seguro por defecto si el valor es inválido o sospechoso.
+ */
+function sanitizeColor(color, fallback = '#6750a4') {
+  if (!color || typeof color !== 'string') return fallback;
+  const c = color.trim();
+  // Hex: #RGB, #RRGGBB, #RRGGBBAA
+  if (/^#([0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/.test(c)) return c;
+  // rgb/rgba
+  if (/^rgba?\(\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}\s*(,\s*(0|1|0?\.\d+))?\s*\)$/.test(c)) return c;
+  // hsl/hsla
+  if (/^hsla?\(\s*\d{1,3}\s*,\s*\d{1,3}%\s*,\s*\d{1,3}%\s*(,\s*(0|1|0?\.\d+))?\s*\)$/.test(c)) return c;
+  // CSS named colors (subset más común)
+  const safe = ['red','blue','green','yellow','orange','purple','pink','white','black','gray','grey',
+    'cyan','magenta','lime','teal','indigo','violet','coral','salmon','gold','silver','navy',
+    'maroon','olive','aqua','fuchsia','transparent','inherit','currentColor'];
+  if (safe.includes(c.toLowerCase())) return c;
+  return fallback;
 }
 
 function debounce(func, wait) {
@@ -6072,7 +6101,7 @@ function renderNotificationsDrawer(activeFilter = 'all') {
             return `
               <div class="p-3.5 rounded-2xl bg-[#141218]/80 border border-amber-500/30 hover:border-amber-500/60 transition flex items-center justify-between gap-3">
                 <div class="flex items-center gap-2.5 min-w-0">
-                  <span class="w-3 h-3 rounded-full shrink-0" style="background-color: ${sub.color || '#F59E0B'}"></span>
+                  <span class="w-3 h-3 rounded-full shrink-0" style="background-color: ${sanitizeColor(sub.color, '#F59E0B')}"></span>
                   <div class="min-w-0">
                     <div class="flex items-center gap-1.5 truncate">
                       <span class="text-xs font-bold text-white font-google-sans truncate">${escapeHtml(sub.name)}</span>
@@ -6266,13 +6295,14 @@ async function showSubscriptionSummary(subId) {
   const convertedAnnual = sub.converted_annual_cost !== undefined ? sub.converted_annual_cost : convertCurrency(sub.annual_cost, subCurr, baseCurr);
 
   // Barra superior de color de la marca
-  if (headerBar) headerBar.style.backgroundColor = sub.color || '#d0bcff';
+  const safeColor = sanitizeColor(sub.color, '#d0bcff');
+  if (headerBar) headerBar.style.backgroundColor = safeColor;
 
   // Icono del servicio
   if (iconBox) {
     iconBox.innerHTML = getServiceOfficialIcon(sub.name, sub.color, 'w-6 h-6');
-    iconBox.style.background = `linear-gradient(135deg, ${sub.color || '#d0bcff'}25, ${sub.color || '#d0bcff'}45)`;
-    iconBox.style.border = `1px solid ${sub.color || '#d0bcff'}60`;
+    iconBox.style.background = `linear-gradient(135deg, ${safeColor}25, ${safeColor}45)`;
+    iconBox.style.border = `1px solid ${safeColor}60`;
   }
 
   // Nombre y Burbuja Interactiva de Estado en la cabecera

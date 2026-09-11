@@ -35,8 +35,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Estrategia Network-First: intentar siempre la red primero para ver cambios de inmediato.
-  // Solo si la red falla (offline), recurrir a la caché guardada.
+  // Estrategia Network-First con fallback inteligente a caché (ignorando query params para assets versionados)
   event.respondWith(
     fetch(event.request)
       .then((networkResponse) => {
@@ -49,7 +48,7 @@ self.addEventListener('fetch', (event) => {
         return networkResponse;
       })
       .catch(() => {
-        return caches.match(event.request);
+        return caches.match(event.request, { ignoreSearch: true });
       })
   );
 });

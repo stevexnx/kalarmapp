@@ -531,6 +531,20 @@ def init_db(db_path=None):
             if 'user_id' not in settings_cols:
                 cursor.execute("ALTER TABLE settings ADD COLUMN user_id INTEGER DEFAULT 1")
 
+    # Add indexes for both PostgreSQL and SQLite
+    indexes = [
+        "CREATE INDEX IF NOT EXISTS idx_subscriptions_user_id ON subscriptions(user_id)",
+        "CREATE INDEX IF NOT EXISTS idx_sessions_token ON sessions(token)",
+        "CREATE INDEX IF NOT EXISTS idx_sessions_expires ON sessions(user_id, expires_at)",
+        "CREATE INDEX IF NOT EXISTS idx_friends_user_id ON friends(user_id)",
+        "CREATE INDEX IF NOT EXISTS idx_friends_linked ON friends(user_id, linked_user_id)",
+        "CREATE INDEX IF NOT EXISTS idx_payment_history_user ON payment_history(user_id, subscription_id)",
+        "CREATE INDEX IF NOT EXISTS idx_friend_requests_receiver ON friend_requests(receiver_id, status)",
+        "CREATE INDEX IF NOT EXISTS idx_shared_pay_requests_friend ON shared_pay_requests(friend_user_id, status)"
+    ]
+    for idx_sql in indexes:
+        cursor.execute(idx_sql)
+
     cursor.execute("SELECT COUNT(*) as count FROM users")
     count_row = cursor.fetchone()
     count_val = count_row['count'] if isinstance(count_row, dict) else count_row[0]
@@ -575,9 +589,9 @@ def register_user(username, password, email='', display_name='', db_path=None):
     if not username:
         conn.close()
         raise ValueError('El nombre de usuario es obligatorio')
-    if len(password) < 4:
+    if len(password) < 8:
         conn.close()
-        raise ValueError('La contraseña debe tener al menos 4 caracteres')
+        raise ValueError('La contraseña debe tener al menos 8 caracteres')
 
     cursor.execute("SELECT id FROM users WHERE LOWER(username) = ?", (username,))
     if cursor.fetchone():
@@ -677,25 +691,32 @@ def get_user_by_session(token: str, db_path=None):
     conn.close()
     return dict(row) if row else None
 
-def reset_password_with_recovery(identifier: str, new_password: str, db_path=None):
+def reset_password_with_recovery(identifier: str, recovery_email: str = '', new_password: str = '', db_path=None):
     """
     Restablece la contraseña de un usuario mediante su nombre de usuario o correo.
     Valida la existencia del usuario y actualiza hash y salt de forma segura.
     """
     ident = identifier.strip().lower()
+    rec_email = (recovery_email or '').strip().lower()
     if not ident:
-        raise ValueError('Debes ingresar tu nombre de usuario o correo')
-    if len(new_password) < 4:
-        raise ValueError('La nueva contraseña debe tener al menos 4 caracteres')
+        raise ValueError('Debes ingresar tu nombre de usuario o correo de recuperación')
+    if len(new_password) < 8:
+        raise ValueError('La nueva contraseña debe tener al menos 8 caracteres')
 
     conn = get_connection(db_path)
     cursor = conn.cursor()
 
-    cursor.execute("SELECT id, username FROM users WHERE LOWER(username) = ? OR LOWER(email) = ?", (ident, ident))
+    cursor.execute("SELECT id, username, email FROM users WHERE LOWER(username) = ? OR LOWER(email) = ?", (ident, ident))
     user = cursor.fetchone()
     if not user:
         conn.close()
         raise ValueError('No se encontró ningún usuario con ese nombre o correo')
+
+    # Si se proporcionó un recovery_email explícito diferente al ident, verificar que coincida con el usuario
+    user_email = (user['email'] or '').strip().lower()
+    if rec_email and user_email and rec_email != user_email and rec_email != user['username'].lower():
+        conn.close()
+        raise ValueError('El correo de recuperación no coincide con la cuenta')
 
     pwd_hash, salt = hash_password(new_password)
     cursor.execute("UPDATE users SET password_hash = ?, salt = ? WHERE id = ?", (pwd_hash, salt, user['id']))
@@ -709,8 +730,8 @@ def change_user_password(user_id: int, current_password: str, new_password: str,
     """
     Permite a un usuario autenticado cambiar su contraseña validando la contraseña actual.
     """
-    if len(new_password) < 4:
-        raise ValueError('La nueva contraseña debe tener al menos 4 caracteres')
+    if len(new_password) < 8:
+        raise ValueError('La nueva contraseña debe tener al menos 8 caracteres')
 
     conn = get_connection(db_path)
     cursor = conn.cursor()

@@ -6,11 +6,30 @@ import json
 import os
 import urllib.parse
 import urllib.request
+import time
 from datetime import datetime, date
 
 from . import db
 
 PUBLIC_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'public')
+
+_rate_limit_store = {}
+
+def check_rate_limit(ip, path, max_attempts=10, period=60):
+    now = time.time()
+    key = f"{ip}:{path}"
+    
+    if key not in _rate_limit_store:
+        _rate_limit_store[key] = []
+        
+    _rate_limit_store[key] = [t for t in _rate_limit_store[key] if now - t < period]
+    
+    if len(_rate_limit_store[key]) >= max_attempts:
+        return False
+        
+    _rate_limit_store[key].append(now)
+    return True
+
 
 class SubscriptionAPIHandler(http.server.SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
@@ -39,7 +58,8 @@ class SubscriptionAPIHandler(http.server.SimpleHTTPRequestHandler):
     def _set_headers(self, status=200, content_type='application/json'):
         self.send_response(status)
         self.send_header('Content-Type', content_type)
-        self.send_header('Access-Control-Allow-Origin', '*')
+        allowed_origin = os.environ.get('ALLOWED_ORIGIN', '*')
+        self.send_header('Access-Control-Allow-Origin', allowed_origin)
         self.send_header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
         self.send_header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Auth-Token')
         self.end_headers()
@@ -243,6 +263,10 @@ class SubscriptionAPIHandler(http.server.SimpleHTTPRequestHandler):
 
         # 1. Registro de Usuario
         if path == '/api/auth/register':
+            client_ip = self.client_address[0]
+            if not check_rate_limit(client_ip, path):
+                self._send_error('Demasiadas solicitudes', status=429)
+                return
             data = self._read_json_body() or {}
             username = data.get('username', '').strip()
             password = data.get('password', '')
@@ -264,6 +288,10 @@ class SubscriptionAPIHandler(http.server.SimpleHTTPRequestHandler):
 
         # 2. Inicio de Sesión (Login)
         elif path == '/api/auth/login':
+            client_ip = self.client_address[0]
+            if not check_rate_limit(client_ip, path):
+                self._send_error('Demasiadas solicitudes', status=429)
+                return
             try:
                 data = self._read_json_body() or {}
                 username = data.get('username', '').strip()
@@ -289,9 +317,10 @@ class SubscriptionAPIHandler(http.server.SimpleHTTPRequestHandler):
         elif path == '/api/auth/reset-password':
             data = self._read_json_body() or {}
             identifier = data.get('identifier', '').strip()
+            recovery_email = data.get('recovery_email', '').strip()
             new_password = data.get('new_password', '')
             try:
-                result = db.reset_password_with_recovery(identifier, new_password)
+                result = db.reset_password_with_recovery(identifier, recovery_email, new_password)
                 self._send_json({
                     'success': True,
                     'message': f'Contraseña restablecida con éxito para {result["username"]}. Ahora puedes iniciar sesión con tu nueva clave.'
