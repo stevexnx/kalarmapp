@@ -1181,36 +1181,37 @@ body.theme-light .sub-card-interactive:hover {
   box-shadow: 0 8px 24px rgba(103, 80, 164, 0.12) !important;
 }
 
-/* Botón Píldora "Pagado" en Tarjetas M3 */
+/* Botón Píldora "Marcar Pagado" en Tarjetas M3 */
 .m3-btn-paid-pill {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 3px 9px;
+  gap: 5px;
+  padding: 4px 11px;
   font-size: 0.6875rem;
   font-weight: 600;
   border-radius: var(--md-shape-full);
-  background-color: rgba(208, 188, 255, 0.12);
-  color: #d0bcff;
-  border: 1px solid rgba(208, 188, 255, 0.3);
+  background-color: rgba(168, 213, 181, 0.12);
+  color: #a8d5b5;
+  border: 1px solid rgba(168, 213, 181, 0.3);
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
 }
 .m3-btn-paid-pill:hover {
-  background-color: #d0bcff;
-  color: #381e72;
-  border-color: #d0bcff;
-  transform: scale(1.05);
-  box-shadow: 0 2px 6px rgba(208, 188, 255, 0.3);
+  background-color: rgba(168, 213, 181, 0.22);
+  color: #ffffff;
+  border-color: #a8d5b5;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(168, 213, 181, 0.25);
 }
 body.theme-light .m3-btn-paid-pill {
-  background-color: rgba(103, 80, 164, 0.08);
-  color: #6750a4;
-  border-color: rgba(103, 80, 164, 0.25);
+  background-color: rgba(16, 185, 129, 0.1);
+  color: #047857;
+  border-color: rgba(16, 185, 129, 0.28);
 }
 body.theme-light .m3-btn-paid-pill:hover {
-  background-color: #6750a4;
+  background-color: #059669;
   color: #ffffff;
+  border-color: #059669;
 }
 
 /* Adaptaciones de modo claro para el Modal de Resumen basadas en tokens M3 */

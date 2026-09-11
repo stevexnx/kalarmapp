@@ -3536,6 +3536,34 @@ function getPaymentMethodIcon(method) {
   return 'credit-card';
 }
 
+function getCutOffHumanMessage(days) {
+  if (days === null || days === undefined || isNaN(days)) return '';
+  if (days < 0) {
+    const abs = Math.abs(days);
+    return abs === 1 ? 'Venció ayer' : `Venció hace ${abs} días`;
+  }
+  if (days === 0) return '🚨 Vence hoy (revisa fondos)';
+  if (days === 1) return '⏰ Vence mañana';
+  if (days <= 3) return `⚠️ Faltan solo ${days} días para renovar`;
+  if (days <= 7) return `Faltan ${days} días para el cobro`;
+  return `Faltan ${days} días para tu próximo cobro`;
+}
+
+function getDailyEquivalent(price, cycle) {
+  if (!price || isNaN(price) || price <= 0) return null;
+  let daily = 0;
+  switch (cycle) {
+    case 'weekly': daily = price / 7; break;
+    case 'monthly': daily = price / 30.42; break;
+    case 'quarterly': daily = price / 91.25; break;
+    case 'biannual': daily = price / 182.5; break;
+    case 'annual': daily = price / 365; break;
+    default: daily = price / 30.42;
+  }
+  if (daily < 0.01) return null;
+  return daily.toFixed(2);
+}
+
 function getBillingTimelineProgress(sub) {
   const daysLeft = sub.days_until_billing;
   if (daysLeft === null || daysLeft === undefined) return null;
@@ -3596,7 +3624,10 @@ function createCardHtml(sub) {
     }
   }
 
+  const dailyEquiv = getDailyEquivalent(displayPrice, sub.billing_cycle);
   const timeline = getBillingTimelineProgress(sub);
+  const humanCutOffMessage = getCutOffHumanMessage(sub.days_until_billing);
+
   const paymentMethodBadge = sub.payment_method ? `
     <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-[#2b2930] text-[#e6e0e9] text-[10px] font-medium border border-[#49454f]/30 shrink-0" title="Método de pago: ${escapeHtml(sub.payment_method)}">
       <i data-lucide="${getPaymentMethodIcon(sub.payment_method)}" class="w-3 h-3 text-[#d0bcff]"></i>
@@ -3684,7 +3715,7 @@ function createCardHtml(sub) {
           </div>
         </div>
 
-        <!-- Fecha de Corte con Botón Pagado y Micro-Barra de Tiempo -->
+        <!-- Fecha de Corte con Mensaje Contextual y Micro-Barra de Tiempo -->
         <div class="p-3 bg-[#1d1b20] rounded-2xl border border-[#49454f]/30 space-y-2">
           <div class="flex items-center justify-between gap-2">
             <div>
@@ -3696,14 +3727,16 @@ function createCardHtml(sub) {
               </div>
             </div>
 
-            <div class="flex items-center gap-2">
-              <span class="${badgeClass}">${daysText}</span>
-              <button onclick="event.stopPropagation(); markAsPaidAndAdvance(${sub.id})" class="m3-btn-paid-pill" title="Marcar período como pagado y avanzar a la siguiente fecha">
-                <i data-lucide="check" class="w-3 h-3"></i>
-                <span>Pagado</span>
-              </button>
-            </div>
+            <span class="${badgeClass}">${daysText}</span>
           </div>
+
+          <!-- Mensaje amigable de cuánto falta para el corte -->
+          ${humanCutOffMessage ? `
+            <div class="text-[11px] font-medium text-[#cac4d0] flex items-center gap-1.5 pt-0.5">
+              <span class="w-1.5 h-1.5 rounded-full ${sub.days_until_billing <= 3 ? 'bg-rose-400 animate-pulse' : (sub.days_until_billing <= 7 ? 'bg-amber-400' : 'bg-emerald-400')}"></span>
+              <span>${humanCutOffMessage}</span>
+            </div>
+          ` : ''}
 
           ${timeline ? `
             <div class="w-full bg-[#2b2930] h-1.5 rounded-full overflow-hidden" title="Progreso del período (${timeline.percent}%)">
@@ -3719,11 +3752,14 @@ function createCardHtml(sub) {
               <span class="text-[10px] uppercase font-bold tracking-wider ${isSharedSub ? 'text-[#a8d5b5]' : 'text-[#cac4d0]'} flex items-center gap-1">
                 ${isSharedSub ? `<i data-lucide="users" class="w-3 h-3 text-[#a8d5b5]"></i> Tu Cuota ${cycleLabel}` : `Cobro ${cycleLabel}`}
               </span>
-              <div class="flex items-baseline gap-1 mt-0.5">
+              <div class="flex items-baseline gap-1 mt-0.5 flex-wrap">
                 <span class="text-xl font-extrabold text-white font-mono tracking-tight privacy-blur">
                   ${baseSymbol}${formatNumber(displayPrice)}
                 </span>
                 <span class="text-xs font-semibold ${isSharedSub ? 'text-[#a8d5b5]' : 'text-[#d0bcff]'}">/${cycleSuffix}</span>
+                ${dailyEquiv ? `
+                  <span class="text-[10px] text-[#938f99] font-mono privacy-blur ml-1.5 font-normal" title="Equivalente aproximado diario">(~${baseSymbol}${dailyEquiv}/día)</span>
+                ` : ''}
                 ${isDifferentCurrency ? `
                   <span class="text-[10px] text-[#938f99] font-mono privacy-blur ml-1">
                     (orig. ${subSymbol}${formatNumber(originalDisplayPrice)} ${subCurr})
@@ -3743,15 +3779,17 @@ function createCardHtml(sub) {
           ` : ''}
         </div>
 
-        <!-- Fila de Amigos en Split Pay y Notas (si aplican) -->
-        ${(sharedFriendsHtml || sub.notes) ? `
-          <div class="flex items-center justify-between text-[11px] text-[#cac4d0] pt-0.5">
-            <div>
-              ${sharedFriendsHtml}
-            </div>
-            ${sub.notes ? `<span class="truncate max-w-[130px] italic text-[#938f99] text-right" title="${escapeHtml(sub.notes)}">"${escapeHtml(sub.notes)}"</span>` : ''}
+        <!-- Footer de la Tarjeta: Split Pay / Notas a la izquierda y Botón Marcar Pagado a la derecha -->
+        <div class="flex items-center justify-between gap-2 pt-1 border-t border-[#49454f]/20">
+          <div class="min-w-0 flex-1">
+            ${sharedFriendsHtml ? sharedFriendsHtml : (sub.notes ? `<span class="truncate max-w-[150px] italic text-[11px] text-[#938f99] block" title="${escapeHtml(sub.notes)}">"${escapeHtml(sub.notes)}"</span>` : `<span class="text-[10px] text-[#938f99] uppercase tracking-wider font-medium">${escapeHtml(sub.category)}</span>`)}
           </div>
-        ` : ''}
+
+          <button onclick="event.stopPropagation(); markAsPaidAndAdvance(${sub.id}, this)" class="m3-btn-paid-pill shrink-0 ml-auto" title="Marcar período como pagado y avanzar a la siguiente fecha">
+            <i data-lucide="receipt" class="w-3.5 h-3.5 text-[#a8d5b5]"></i>
+            <span>Marcar Pagado</span>
+          </button>
+        </div>
       </div>
     </div>
   `;
@@ -5277,10 +5315,19 @@ async function toggleSubscriptionStatus(id, currentStatus, explicitNewStatus = n
   }
 }
 
-async function markAsPaidAndAdvance(id) {
+async function markAsPaidAndAdvance(id, btnElement = null) {
   const sub = state.subscriptions.find(s => s.id === id);
   if (!sub) return;
   const amount = sub.is_shared && sub.my_share_price ? sub.my_share_price : sub.price;
+
+  let origHtml = '';
+  if (btnElement) {
+    origHtml = btnElement.innerHTML;
+    btnElement.disabled = true;
+    btnElement.style.opacity = '0.7';
+    btnElement.innerHTML = '<i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-[#a8d5b5]"></i> <span>¡Pagado!</span>';
+    if (window.lucide && window.lucide.createIcons) window.lucide.createIcons();
+  }
 
   try {
     const res = await fetch('/api/payments', {
@@ -5300,9 +5347,24 @@ async function markAsPaidAndAdvance(id) {
     if (result.success) {
       showToast(`Pago de ${sub.name} registrado y fecha de corte avanzada`, 'success');
       await loadAllData();
+    } else {
+      if (btnElement) {
+        btnElement.disabled = false;
+        btnElement.style.opacity = '1';
+        btnElement.innerHTML = origHtml;
+        if (window.lucide && window.lucide.createIcons) window.lucide.createIcons();
+      }
+      showToast(result.error || 'Error al registrar pago', 'error');
     }
   } catch (err) {
     console.error('Error registrando pago:', err);
+    if (btnElement) {
+      btnElement.disabled = false;
+      btnElement.style.opacity = '1';
+      btnElement.innerHTML = origHtml;
+      if (window.lucide && window.lucide.createIcons) window.lucide.createIcons();
+    }
+    showToast('Error de red al registrar pago', 'error');
   }
 }
 
