@@ -813,6 +813,16 @@ function renderUserProfile() {
     if (modalUName) modalUName.textContent = `@${state.user.username}`;
     if (modalEmail) modalEmail.textContent = state.user.email || 'Sin correo registrado';
 
+    const secEmail = document.getElementById('securityTabEmail');
+    if (secEmail) secEmail.textContent = state.user.email || 'Sin correo registrado';
+    const secUName = document.getElementById('securityTabUsername');
+    if (secUName) secUName.textContent = `@${state.user.username}`;
+
+    const subsCountEl = document.getElementById('profileSubsCount');
+    if (subsCountEl) subsCountEl.textContent = state.subscriptions ? state.subscriptions.length : 0;
+    const friendsCountEl = document.getElementById('profileFriendsCount');
+    if (friendsCountEl) friendsCountEl.textContent = state.friends ? state.friends.length : 0;
+
     // Rellenar input de display_name en el modal
     const inputDispName = document.getElementById('inputProfileDisplayName');
     if (inputDispName && !inputDispName.matches(':focus')) {
@@ -1036,6 +1046,30 @@ async function handleChangePasswordSubmit(e) {
 let tempSelectedAvatarIcon = 'user';
 let tempSelectedAvatarColor = '#6750A4';
 
+function setProfileTab(tabName = 'appearance') {
+  const btnAppearance = document.getElementById('tabProfileAppearance');
+  const btnSecurity = document.getElementById('tabProfileSecurity');
+  const contentAppearance = document.getElementById('profileTabContentAppearance');
+  const contentSecurity = document.getElementById('profileTabContentSecurity');
+
+  if (tabName === 'appearance') {
+    btnAppearance?.classList.add('active');
+    btnAppearance?.classList.remove('text-[#cac4d0]');
+    btnSecurity?.classList.remove('active');
+    btnSecurity?.classList.add('text-[#cac4d0]');
+    contentAppearance?.classList.remove('hidden');
+    contentSecurity?.classList.add('hidden');
+  } else {
+    btnSecurity?.classList.add('active');
+    btnSecurity?.classList.remove('text-[#cac4d0]');
+    btnAppearance?.classList.remove('active');
+    btnAppearance?.classList.add('text-[#cac4d0]');
+    contentSecurity?.classList.remove('hidden');
+    contentAppearance?.classList.add('hidden');
+  }
+  initIcons();
+}
+
 function openProfileModal() {
   const modal = document.getElementById('profileModal');
   if (!modal || !state.user) return;
@@ -1046,6 +1080,21 @@ function openProfileModal() {
   const inputDisp = document.getElementById('inputProfileDisplayName');
   if (inputDisp) inputDisp.value = state.user.display_name || '';
 
+  // Actualizar datos de la pestaña de Seguridad
+  const secEmail = document.getElementById('securityTabEmail');
+  if (secEmail) secEmail.textContent = state.user.email || 'Sin correo registrado';
+  const secUName = document.getElementById('securityTabUsername');
+  if (secUName) secUName.textContent = `@${state.user.username}`;
+
+  // Actualizar contadores de estadísticas rápidas
+  const subsCount = state.subscriptions ? state.subscriptions.length : 0;
+  const friendsCount = state.friends ? state.friends.length : 0;
+  const subsCountEl = document.getElementById('profileSubsCount');
+  if (subsCountEl) subsCountEl.textContent = subsCount;
+  const friendsCountEl = document.getElementById('profileFriendsCount');
+  if (friendsCountEl) friendsCountEl.textContent = friendsCount;
+
+  setProfileTab('appearance');
   renderAvatarSelectors();
   updateProfileAvatarPreview();
 
@@ -1333,6 +1382,8 @@ function initEventListeners() {
 
   // Modal de Perfil de Usuario
   document.getElementById('btnOpenProfileModal')?.addEventListener('click', openProfileModal);
+  document.getElementById('tabProfileAppearance')?.addEventListener('click', () => setProfileTab('appearance'));
+  document.getElementById('tabProfileSecurity')?.addEventListener('click', () => setProfileTab('security'));
   document.getElementById('btnCloseProfileModal')?.addEventListener('click', () => {
     document.getElementById('profileModal')?.classList.add('hidden');
   });
@@ -6455,6 +6506,7 @@ window.updateNotificationsBadge = updateNotificationsBadge;
 window.selectAvatarIcon = selectAvatarIcon;
 window.selectAvatarColor = selectAvatarColor;
 window.openProfileModal = openProfileModal;
+window.setProfileTab = setProfileTab;
 
 // ================= MODAL: RESUMEN DE SUSCRIPCIÓN (CLICK EN TARJETA) =================
 function switchSubDetailTab(tabName = 'details') {

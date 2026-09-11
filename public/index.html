@@ -74,7 +74,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Roboto+Flex:opsz,wght@8..144,300..800&family=Google+Sans:wght@400;500;700&family=Google+Sans+Text:wght@400;500;700&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="/styles.css?v=2.7.2">
+  <link rel="stylesheet" href="/styles.css?v=2.7.3">
 </head>
 <body class="min-h-full flex antialiased selection:bg-[#d0bcff] selection:text-[#381e72] bg-[#141218] text-[#e6e0e9]">
 
@@ -750,134 +750,192 @@
 
   </div> <!-- Fin del contenedor flex-1 principal -->
 
-  <!-- ================= MODAL: MI CUENTA / PERFIL ================= -->
+  <!-- ================= MODAL: MI CUENTA / PERFIL (M3 PREMIUM) ================= -->
   <div id="profileModal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-black/70 backdrop-blur-sm p-4 flex items-center justify-center">
-    <div class="relative w-full max-w-sm m3-dialog p-6 space-y-5 animate-scale-up">
-      <div class="flex items-center justify-between border-b border-[#49454f]/40 pb-3">
+    <div class="relative w-full max-w-md m3-dialog p-5 sm:p-6 space-y-4 animate-scale-up">
+      <!-- Encabezado del Modal -->
+      <div class="flex items-center justify-between border-b border-[#49454f]/30 pb-3">
         <h3 class="text-base font-bold text-white flex items-center gap-2 font-google-sans">
-          <i data-lucide="user" class="w-5 h-5 text-[#d0bcff]"></i> Mi Cuenta
+          <i data-lucide="user" class="w-5 h-5 text-[#d0bcff]"></i> Mi Perfil y Cuenta
         </h3>
-        <button id="btnCloseProfileModal" class="text-[#cac4d0] hover:text-white p-1 rounded-full hover:bg-[#2b2930]">
+        <button type="button" id="btnCloseProfileModal" class="text-[#cac4d0] hover:text-white p-1.5 rounded-full hover:bg-[#2b2930] transition" title="Cerrar ventana">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
 
-      <div class="text-center py-2 space-y-3">
-        <!-- Avatar Preview Interactivo con botón para cambiar -->
-        <div class="relative inline-block mx-auto">
-          <div id="modalProfileAvatar" class="w-16 h-16 rounded-full flex items-center justify-center text-2xl font-black shadow-xl ring-4 ring-[#d0bcff]/20 transition-all duration-300" style="background-color: var(--md-sys-color-primary-container); color: var(--md-sys-color-on-primary-container)">
-            -
-          </div>
-        </div>
+      <!-- HERO CARD: Avatar Preview En Vivo + Datos de Cuenta + Estadísticas -->
+      <div class="relative overflow-hidden bg-gradient-to-br from-[#2b2930] via-[#1d1b20] to-[#141218] border border-[#49454f]/30 rounded-2xl p-4 shadow-inner">
+        <div class="absolute -top-10 -right-10 w-28 h-28 bg-[#d0bcff]/10 rounded-full blur-2xl pointer-events-none"></div>
 
-        <div>
-          <h4 id="modalProfileDisplayName" class="text-lg font-bold text-white font-google-sans">Usuario</h4>
-          <p id="modalProfileUsername" class="text-xs text-[#d0bcff] font-mono">@usuario</p>
-          <p id="modalProfileEmail" class="text-xs text-[#cac4d0] mt-0.5">usuario@ejemplo.com</p>
-        </div>
-        <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full m3-badge-success text-[11px] font-medium">
-          <span class="w-1.5 h-1.5 rounded-full bg-[#a8d5b5] animate-pulse"></span>
-          Sesión Activa
+        <div class="flex items-center gap-4 relative z-10">
+          <!-- Live Preview Avatar -->
+          <div class="relative shrink-0">
+            <div id="modalProfileAvatar" class="transition-transform duration-300 transform hover:scale-105">
+              <!-- Renderizado dinámicamente -->
+            </div>
+            <span class="absolute -bottom-1 -right-1 bg-[#d0bcff] text-[#381e72] p-1 rounded-full shadow-md border-2 border-[#1d1b20]" title="Previsualización en tiempo real">
+              <i data-lucide="sparkles" class="w-3 h-3"></i>
+            </span>
+          </div>
+
+          <!-- Datos del Usuario -->
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center gap-2">
+              <h4 id="modalProfileDisplayName" class="text-base font-bold text-white truncate font-google-sans">Usuario</h4>
+              <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full m3-badge-success text-[10px] font-semibold shrink-0">
+                <span class="w-1.5 h-1.5 rounded-full bg-[#a8d5b5] animate-pulse"></span> Activo
+              </span>
+            </div>
+            <p id="modalProfileUsername" class="text-xs text-[#d0bcff] font-mono truncate">@usuario</p>
+            <p id="modalProfileEmail" class="text-[11px] text-[#cac4d0] truncate mt-0.5">usuario@ejemplo.com</p>
+
+            <!-- Quick Stats Chips -->
+            <div class="flex items-center gap-2 mt-2">
+              <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-[#141218]/90 text-[#e6e0e9] text-[10px] font-medium border border-[#49454f]/30">
+                <i data-lucide="credit-card" class="w-3 h-3 text-[#d0bcff]"></i>
+                <span id="profileSubsCount">0</span> subs
+              </span>
+              <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-[#141218]/90 text-[#e6e0e9] text-[10px] font-medium border border-[#49454f]/30">
+                <i data-lucide="users" class="w-3 h-3 text-[#d0bcff]"></i>
+                <span id="profileFriendsCount">0</span> amigos
+              </span>
+            </div>
+          </div>
         </div>
       </div>
 
-      <!-- ================= SECCIÓN: PERSONALIZAR AVATAR Y APARIENCIA ================= -->
-      <div class="p-3.5 bg-[#141218] border border-[#49454f]/40 rounded-2xl space-y-3 text-xs">
-        <div class="flex items-center justify-between">
-          <span class="font-bold text-white flex items-center gap-1.5 font-google-sans">
-            <i data-lucide="sparkles" class="w-4 h-4 text-[#d0bcff]"></i> Personalizar Avatar
-          </span>
-          <span class="text-[10px] text-[#cac4d0]">Visible para tus amigos</span>
-        </div>
+      <!-- SEGMENTED TABS (M3) -->
+      <div class="flex p-1 bg-[#141218] rounded-xl border border-[#49454f]/40 gap-1">
+        <button type="button" id="tabProfileAppearance" class="profile-nav-tab active flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all">
+          <i data-lucide="palette" class="w-3.5 h-3.5"></i>
+          <span>Personalizar</span>
+        </button>
+        <button type="button" id="tabProfileSecurity" class="profile-nav-tab flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all">
+          <i data-lucide="shield-check" class="w-3.5 h-3.5"></i>
+          <span>Seguridad</span>
+        </button>
+      </div>
 
+      <!-- ================= PESTAÑA 1: PERSONALIZAR AVATAR ================= -->
+      <div id="profileTabContentAppearance" class="space-y-3.5">
         <!-- Nombre a mostrar -->
         <div>
           <label class="block text-[11px] text-[#cac4d0] font-medium mb-1" for="inputProfileDisplayName">Nombre Público</label>
-          <input type="text" id="inputProfileDisplayName" placeholder="Tu nombre" class="m3-text-field py-1.5 text-xs">
+          <div class="m3-input-wrapper">
+            <i data-lucide="user-pen" class="w-4 h-4 m3-input-icon"></i>
+            <input type="text" id="inputProfileDisplayName" placeholder="Tu nombre público" class="m3-text-field m3-input-field text-xs py-2">
+          </div>
         </div>
 
-        <!-- Selector de Icono de Avatar (Cuadrícula M3 Estética) -->
+        <!-- Selector de Icono: Cuadrícula simétrica 5 columnas x 4 filas = 20 iconos -->
         <div>
-          <label class="block text-[11px] text-[#cac4d0] font-medium mb-1.5">Elige tu Icono</label>
-          <div id="avatarIconSelectorGrid" class="grid grid-cols-6 gap-1.5 max-h-36 overflow-y-auto p-1 bg-[#1d1b20] rounded-xl border border-[#49454f]/30">
+          <div class="flex items-center justify-between mb-1.5">
+            <label class="block text-[11px] text-[#cac4d0] font-medium">Icono de Avatar</label>
+            <span class="text-[10px] text-[#938f99]">20 iconos disponibles</span>
+          </div>
+          <div id="avatarIconSelectorGrid" class="grid grid-cols-5 gap-1.5 p-2 bg-[#141218] rounded-2xl border border-[#49454f]/30">
             <!-- Iconos inyectados dinámicamente -->
           </div>
         </div>
 
-        <!-- Selector de Color de Fondo M3 -->
+        <!-- Selector de Color: Cuadrícula simétrica 6 columnas x 2 filas = 12 colores -->
         <div>
-          <label class="block text-[11px] text-[#cac4d0] font-medium mb-1.5">Color de Fondo</label>
-          <div id="avatarColorSelectorGrid" class="flex flex-wrap items-center gap-2 p-1.5 bg-[#1d1b20] rounded-xl border border-[#49454f]/30">
+          <div class="flex items-center justify-between mb-1.5">
+            <label class="block text-[11px] text-[#cac4d0] font-medium">Color de Fondo M3</label>
+            <span class="text-[10px] text-[#938f99]">12 tonos balanceados</span>
+          </div>
+          <div id="avatarColorSelectorGrid" class="grid grid-cols-6 gap-2.5 p-2.5 bg-[#141218] rounded-2xl border border-[#49454f]/30 justify-items-center">
             <!-- Paleta de colores inyectada dinámicamente -->
           </div>
         </div>
 
-        <button type="button" id="btnSaveProfileAvatar" class="m3-btn-filled w-full py-2 text-xs font-bold shadow-md flex items-center justify-center gap-1.5">
-          <i data-lucide="check" class="w-3.5 h-3.5"></i>
+        <!-- Botón Guardar Cambios -->
+        <button type="button" id="btnSaveProfileAvatar" class="m3-btn-filled w-full py-2.5 text-xs font-bold shadow-lg flex items-center justify-center gap-2 mt-2">
+          <i data-lucide="check" class="w-4 h-4"></i>
           <span>Guardar Cambios de Perfil</span>
         </button>
       </div>
 
-      <!-- Sección: Seguridad / Cambiar Contraseña dentro de la cuenta -->
-      <div class="border-t border-[#49454f]/40 pt-3">
-        <button type="button" id="btnToggleChangePassword" class="w-full flex items-center justify-between p-2.5 rounded-2xl bg-[#1d1b20] hover:bg-[#2b2930] border border-[#49454f]/40 text-xs font-semibold text-white transition">
-          <div class="flex items-center gap-2">
-            <i data-lucide="key-round" class="w-4 h-4 text-[#d0bcff]"></i>
-            <span>Cambiar Contraseña</span>
+      <!-- ================= PESTAÑA 2: SEGURIDAD Y CUENTA ================= -->
+      <div id="profileTabContentSecurity" class="hidden space-y-3.5">
+        <!-- Resumen Informativo de Cuenta -->
+        <div class="p-3 bg-[#141218] border border-[#49454f]/30 rounded-2xl space-y-2 text-xs">
+          <div class="flex items-center justify-between text-[#cac4d0] py-1 border-b border-[#49454f]/20">
+            <span class="flex items-center gap-1.5"><i data-lucide="mail" class="w-3.5 h-3.5 text-[#d0bcff]"></i> Correo</span>
+            <span id="securityTabEmail" class="font-mono text-white text-[11px] truncate max-w-[200px]">usuario@ejemplo.com</span>
           </div>
-          <i data-lucide="chevron-down" id="iconChangePasswordChevron" class="w-4 h-4 text-[#cac4d0] transition-transform duration-200"></i>
-        </button>
+          <div class="flex items-center justify-between text-[#cac4d0] py-1 border-b border-[#49454f]/20">
+            <span class="flex items-center gap-1.5"><i data-lucide="at-sign" class="w-3.5 h-3.5 text-[#d0bcff]"></i> Usuario</span>
+            <span id="securityTabUsername" class="font-mono text-[#d0bcff] text-[11px]">@usuario</span>
+          </div>
+          <div class="flex items-center justify-between text-[#cac4d0] py-1">
+            <span class="flex items-center gap-1.5"><i data-lucide="shield" class="w-3.5 h-3.5 text-[#a8d5b5]"></i> Estado</span>
+            <span class="text-[#a8d5b5] font-semibold text-[11px]">Sesión cifrada y segura</span>
+          </div>
+        </div>
 
-        <form id="changePasswordForm" class="hidden mt-3 space-y-3 p-3 bg-[#141218] rounded-2xl border border-[#49454f]/40 text-xs">
-          <div>
-            <label class="block text-[#cac4d0] font-medium mb-1" for="currentPasswordInput">Contraseña Actual *</label>
-            <div class="m3-input-wrapper">
-              <i data-lucide="lock" class="w-4 h-4 m3-input-icon"></i>
-              <input type="password" id="currentPasswordInput" required placeholder="Tu contraseña actual"
-                class="m3-text-field m3-input-field">
+        <!-- Cambiar Contraseña -->
+        <div>
+          <button type="button" id="btnToggleChangePassword" class="w-full flex items-center justify-between p-2.5 rounded-2xl bg-[#1d1b20] hover:bg-[#2b2930] border border-[#49454f]/40 text-xs font-semibold text-white transition">
+            <div class="flex items-center gap-2">
+              <i data-lucide="key-round" class="w-4 h-4 text-[#d0bcff]"></i>
+              <span>Cambiar Contraseña</span>
             </div>
-          </div>
+            <i data-lucide="chevron-down" id="iconChangePasswordChevron" class="w-4 h-4 text-[#cac4d0] transition-transform duration-200"></i>
+          </button>
 
-          <div>
-            <label class="block text-[#cac4d0] font-medium mb-1" for="newPasswordInput">Nueva Contraseña *</label>
-            <div class="m3-input-wrapper">
-              <i data-lucide="key" class="w-4 h-4 m3-input-icon"></i>
-              <input type="password" id="newPasswordInput" required placeholder="Mínimo 8 caracteres"
-                class="m3-text-field m3-input-field">
-              <button type="button" id="btnToggleNewPasswordProfile" class="m3-input-toggle" title="Mostrar u ocultar contraseña">
-                <i data-lucide="eye" class="w-4 h-4" id="eyeIconNewPasswordProfile"></i>
+          <form id="changePasswordForm" class="hidden mt-2.5 space-y-2.5 p-3 bg-[#141218] rounded-2xl border border-[#49454f]/40 text-xs">
+            <div>
+              <label class="block text-[#cac4d0] font-medium mb-1" for="currentPasswordInput">Contraseña Actual *</label>
+              <div class="m3-input-wrapper">
+                <i data-lucide="lock" class="w-4 h-4 m3-input-icon"></i>
+                <input type="password" id="currentPasswordInput" required placeholder="Tu contraseña actual" class="m3-text-field m3-input-field text-xs py-1.5">
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-[#cac4d0] font-medium mb-1" for="newPasswordInput">Nueva Contraseña *</label>
+              <div class="m3-input-wrapper">
+                <i data-lucide="key" class="w-4 h-4 m3-input-icon"></i>
+                <input type="password" id="newPasswordInput" required placeholder="Mínimo 8 caracteres" class="m3-text-field m3-input-field text-xs py-1.5">
+                <button type="button" id="btnToggleNewPasswordProfile" class="m3-input-toggle" title="Mostrar u ocultar contraseña">
+                  <i data-lucide="eye" class="w-4 h-4" id="eyeIconNewPasswordProfile"></i>
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-[#cac4d0] font-medium mb-1" for="confirmNewPasswordInput">Confirmar Nueva Contraseña *</label>
+              <div class="m3-input-wrapper">
+                <i data-lucide="shield-check" class="w-4 h-4 m3-input-icon"></i>
+                <input type="password" id="confirmNewPasswordInput" required placeholder="Repite la nueva contraseña" class="m3-text-field m3-input-field text-xs py-1.5">
+              </div>
+            </div>
+
+            <div class="pt-1 flex gap-2">
+              <button type="submit" id="btnSubmitChangePassword" class="m3-btn-filled flex-1 py-2 text-xs font-bold shadow">
+                Actualizar Clave
+              </button>
+              <button type="button" id="btnCancelChangePassword" class="m3-btn-outline py-2 px-3 text-xs">
+                Cancelar
               </button>
             </div>
-          </div>
+          </form>
+        </div>
 
-          <div>
-            <label class="block text-[#cac4d0] font-medium mb-1" for="confirmNewPasswordInput">Confirmar Nueva Contraseña *</label>
-            <div class="m3-input-wrapper">
-              <i data-lucide="shield-check" class="w-4 h-4 m3-input-icon"></i>
-              <input type="password" id="confirmNewPasswordInput" required placeholder="Repite la nueva contraseña"
-                class="m3-text-field m3-input-field">
+        <!-- Zona de Peligro / Sesión -->
+        <div class="pt-1">
+          <div class="p-3 bg-[#8c1d18]/10 border border-[#8c1d18]/30 rounded-2xl flex items-center justify-between gap-3">
+            <div>
+              <p class="text-xs font-semibold text-[#f2b8b5]">Sesión del Dispositivo</p>
+              <p class="text-[11px] text-[#cac4d0]">Desconecta tu cuenta de este navegador</p>
             </div>
-          </div>
-
-          <div class="pt-1 flex gap-2">
-            <button type="submit" id="btnSubmitChangePassword" class="m3-btn-filled flex-1 py-2 text-xs font-bold shadow">
-              Actualizar Clave
-            </button>
-            <button type="button" id="btnCancelChangePassword" class="m3-btn-outline py-2 px-3 text-xs">
-              Cancelar
+            <button type="button" id="btnLogoutFromProfileModal" class="m3-btn-outline text-[#f2b8b5] border-[#f2b8b5]/50 hover:bg-[#8c1d18]/30 py-1.5 px-3 text-xs font-semibold shrink-0 flex items-center gap-1.5 transition">
+              <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
+              <span>Cerrar Sesión</span>
             </button>
           </div>
-        </form>
-      </div>
-
-      <div class="pt-3 border-t border-[#49454f]/40 flex flex-col gap-2">
-        <button type="button" id="btnLogoutFromProfileModal" class="m3-btn-outline text-[#f2b8b5] border-[#f2b8b5]/40 hover:bg-[#8c1d18]/20 w-full py-2.5 px-4 font-semibold text-xs transition flex items-center justify-center gap-2">
-          <i data-lucide="log-out" class="w-4 h-4"></i>
-          <span>Cerrar Sesión</span>
-        </button>
-        <button type="button" id="btnCancelProfileModal" class="m3-btn-outline w-full py-2 text-xs font-medium">
-          Cerrar Ventana
-        </button>
+        </div>
       </div>
     </div>
   </div>
@@ -2504,6 +2562,6 @@
     </div>
   </aside>
 
-  <script src="/app.js?v=2.7.2"></script>
+  <script src="/app.js?v=2.7.3"></script>
 </body>
 </html>
