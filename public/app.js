@@ -317,10 +317,11 @@ const PRESET_SERVICES = [
     ]
   },
 
-  // Inteligencia Artificial & Productividad
+  // Inteligencia Artificial (IA)
   {
     name: 'ChatGPT Plus',
-    category: 'IA & Productividad',
+    category: 'IA',
+    currency: 'USD',
     color: '#10A37F',
     icon: 'openai',
     url: 'https://chatgpt.com',
@@ -333,7 +334,8 @@ const PRESET_SERVICES = [
   },
   {
     name: 'Claude Pro',
-    category: 'IA & Productividad',
+    category: 'IA',
+    currency: 'USD',
     color: '#D97706',
     icon: 'anthropic',
     url: 'https://claude.ai',
@@ -345,7 +347,8 @@ const PRESET_SERVICES = [
   },
   {
     name: 'Midjourney',
-    category: 'IA & Productividad',
+    category: 'IA',
+    currency: 'USD',
     color: '#2B2D42',
     icon: 'midjourney',
     url: 'https://www.midjourney.com',
@@ -359,7 +362,8 @@ const PRESET_SERVICES = [
   },
   {
     name: 'GitHub Copilot',
-    category: 'IA & Productividad',
+    category: 'IA',
+    currency: 'USD',
     color: '#24292F',
     icon: 'github',
     url: 'https://github.com/features/copilot',
@@ -370,9 +374,12 @@ const PRESET_SERVICES = [
       { name: 'Individual Anual', priceUsd: 100.00, cycle: 'annual' }
     ]
   },
+
+  // Productividad
   {
     name: 'Microsoft 365',
-    category: 'IA & Productividad',
+    category: 'Productividad',
+    currency: 'USD',
     color: '#D83B01',
     icon: 'microsoft',
     url: 'https://www.microsoft.com/microsoft-365',
@@ -387,7 +394,8 @@ const PRESET_SERVICES = [
   },
   {
     name: 'Notion Plus',
-    category: 'IA & Productividad',
+    category: 'Productividad',
+    currency: 'USD',
     color: '#000000',
     icon: 'notion',
     url: 'https://www.notion.so',
@@ -396,6 +404,21 @@ const PRESET_SERVICES = [
     plans: [
       { name: 'Plus Mensual', priceUsd: 10.00, cycle: 'monthly' },
       { name: 'Plus Anual', priceUsd: 96.00, cycle: 'annual' }
+    ]
+  },
+  {
+    name: 'Google Workspace',
+    category: 'Productividad',
+    currency: 'USD',
+    color: '#4285F4',
+    icon: 'google',
+    url: 'https://workspace.google.com',
+    defaultPlan: 'Business Starter',
+    trialDays: 14,
+    plans: [
+      { name: 'Business Starter', priceUsd: 6.00, cycle: 'monthly' },
+      { name: 'Business Standard', priceUsd: 12.00, cycle: 'monthly' },
+      { name: 'Business Plus', priceUsd: 18.00, cycle: 'monthly' }
     ]
   },
 
@@ -4768,8 +4791,8 @@ function renderPlanSelector(serviceName, currentPrice = null, currentCycle = nul
     return;
   }
 
-  const baseCurr = state.baseCurrencyCode || 'USD';
-  const baseSymbol = state.currency || '$';
+  const servCurrency = service.currency || 'USD';
+  const servSymbol = CURRENCY_SYMBOLS[servCurrency] || '$';
 
   let chipsHtml = '';
 
@@ -4783,25 +4806,25 @@ function renderPlanSelector(serviceName, currentPrice = null, currentCycle = nul
           <i data-lucide="timer" class="w-3.5 h-3.5 text-rose-400"></i>
           Prueba Gratis (${service.trialDays} días)
         </span>
-        <span class="text-[11px] opacity-90 font-mono mt-0.5 font-medium text-rose-300">$0.00 luego ${baseSymbol}${formatNumber(convertCurrency(service.plans[0].priceUsd, 'USD', baseCurr))}</span>
+        <span class="text-[11px] opacity-90 font-mono mt-0.5 font-medium text-rose-300">$0.00 luego ${servSymbol}${formatNumber(service.plans[0].priceUsd)}</span>
       </button>
     `;
   }
 
   chipsHtml += service.plans.map((plan, idx) => {
-    const converted = convertCurrency(plan.priceUsd, 'USD', baseCurr);
+    const price = plan.priceUsd;
     const cycleLabel = plan.cycle === 'annual' ? '/año' : (plan.cycle === 'weekly' ? '/sem' : '/mes');
-    const priceStr = formatNumber(converted).replace(/,/g, '');
+    const priceStr = formatNumber(price).replace(/,/g, '');
 
     // Comprobar si coincide con el precio o ciclo actual
-    const isMatchingPrice = currentPrice !== null && Math.abs(parseFloat(currentPrice) - converted) < 0.05;
+    const isMatchingPrice = currentPrice !== null && Math.abs(parseFloat(currentPrice) - price) < 0.05;
     const isMatchingCycle = currentCycle ? plan.cycle === currentCycle : true;
     const isActive = (isMatchingPrice && isMatchingCycle) || (currentPrice === null && idx === 0 && (!service.trialDays || service.trialDays <= 0));
 
     return `
       <button type="button" class="m3-plan-chip ${isActive ? 'active' : ''}" data-is-trial="false" data-plan-index="${idx}" data-price="${priceStr}" data-cycle="${plan.cycle || 'monthly'}" onclick="handleSelectPlanChip(this)">
         <span class="text-xs font-bold leading-tight">${escapeHtml(plan.name)}</span>
-        <span class="text-[11px] opacity-80 font-mono mt-0.5 font-medium">${baseSymbol}${priceStr} ${cycleLabel}</span>
+        <span class="text-[11px] opacity-80 font-mono mt-0.5 font-medium">${servSymbol}${priceStr} ${cycleLabel}</span>
       </button>
     `;
   }).join('');
@@ -5078,8 +5101,13 @@ function renderPresetCatalog(filterCategory = 'all', searchQuery = '') {
   const q = searchQuery.toLowerCase().trim();
 
   const filtered = PRESET_SERVICES.filter(service => {
-    const matchCategory = filterCategory === 'all' || service.category.toLowerCase() === filterCategory.toLowerCase();
-    const matchQuery = !q || service.name.toLowerCase().includes(q) || service.category.toLowerCase().includes(q);
+    const sCat = (service.category || '').toLowerCase();
+    const fCat = filterCategory.toLowerCase();
+    const matchCategory = filterCategory === 'all' || 
+      sCat === fCat ||
+      (fCat === 'nube & utilidades' && sCat.includes('nube')) ||
+      (fCat === 'ia' && (sCat === 'ia' || sCat.includes('inteligencia')));
+    const matchQuery = !q || service.name.toLowerCase().includes(q) || sCat.includes(q);
     return matchCategory && matchQuery;
   });
 
@@ -5110,7 +5138,11 @@ function renderPresetCatalog(filterCategory = 'all', searchQuery = '') {
   const itemsHtml = filtered.map((service) => {
     const sIndex = PRESET_SERVICES.findIndex(s => s.name === service.name);
     const plan = service.plans[0];
-    const converted = convertCurrency(plan.priceUsd, 'USD', baseCurr);
+    const servCurrency = service.currency || 'USD';
+    const servSymbol = CURRENCY_SYMBOLS[servCurrency] || '$';
+    const price = plan.priceUsd;
+    const isDifferent = servCurrency !== baseCurr;
+    const converted = isDifferent ? convertCurrency(price, servCurrency, baseCurr) : null;
     const cycleText = plan.cycle === 'annual' ? '/año' : (plan.cycle === 'weekly' ? '/sem' : '/mes');
     const officialIcon = getServiceOfficialIcon(service.name, service.color);
 
@@ -5125,7 +5157,8 @@ function renderPresetCatalog(filterCategory = 'all', searchQuery = '') {
             ${service.trialDays && service.trialDays > 0 ? `<span class="text-[9px] px-1.5 py-0.2 rounded-full bg-rose-500/20 text-rose-300 font-bold border border-rose-500/30">Free Trial</span>` : ''}
           </div>
           <div class="text-[11px] text-[#cac4d0] truncate mt-0.5 flex items-center gap-1 font-mono">
-            <span class="text-[#d0bcff] font-semibold">${baseSymbol}${formatNumber(converted)}</span>
+            <span class="text-[#d0bcff] font-semibold">${servSymbol}${formatNumber(price)}</span>
+            ${isDifferent ? `<span class="text-[10px] text-[#938f99]">(≈${baseSymbol}${formatNumber(converted)})</span>` : ''}
             <span class="text-[10px] opacity-70">${cycleText}</span>
           </div>
         </div>
@@ -5141,14 +5174,14 @@ function selectPresetService(serviceIndex) {
   const service = PRESET_SERVICES[serviceIndex];
   if (!service) return;
 
-  const baseCurr = state.baseCurrencyCode || 'USD';
+  const servCurrency = service.currency || 'USD';
   const plan = service.plans[0];
-  const convertedPrice = convertCurrency(plan.priceUsd, 'USD', baseCurr);
+  const servPrice = plan.priceUsd;
 
   document.getElementById('subName').value = service.name;
   document.getElementById('subAlias').value = '';
-  document.getElementById('subPrice').value = formatNumber(convertedPrice).replace(/,/g, '');
-  document.getElementById('subCurrency').value = baseCurr;
+  document.getElementById('subPrice').value = formatNumber(servPrice).replace(/,/g, '');
+  document.getElementById('subCurrency').value = servCurrency;
   document.getElementById('subBillingCycle').value = plan.cycle || 'monthly';
   document.getElementById('subCategory').value = service.category || 'Otros';
   document.getElementById('subColor').value = service.color || '#d0bcff';
@@ -5194,7 +5227,7 @@ function selectPresetService(serviceIndex) {
   document.getElementById('subCategoryContainer')?.classList.add('hidden');
 
   // Renderizar chips de planes dinámicos para este servicio (ocultando inputs manuales innecesarios)
-  renderPlanSelector(service.name, convertedPrice, plan.cycle);
+  renderPlanSelector(service.name, servPrice, plan.cycle);
 
   // Construir HTML del icono del servicio para el título del modal
   const iconColor = service.color || '#d0bcff';
