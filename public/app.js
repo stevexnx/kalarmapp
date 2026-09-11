@@ -33,6 +33,47 @@ try {
   if (cSettings) cachedSettings = JSON.parse(cSettings);
 } catch (e) {}
 
+const CURRENCY_CONFIG = [
+  { code: 'USD', symbol: '$', flag: '🇺🇸', name: 'Dólar Estadounidense' },
+  { code: 'DOP', symbol: 'RD$', flag: '🇩🇴', name: 'Peso Dominicano' },
+  { code: 'EUR', symbol: '€', flag: '🇪🇺', name: 'Euro' },
+  { code: 'MXN', symbol: 'MX$', flag: '🇲🇽', name: 'Peso Mexicano' },
+  { code: 'COP', symbol: 'COL$', flag: '🇨🇴', name: 'Peso Colombiano' },
+  { code: 'CLP', symbol: 'CLP$', flag: '🇨🇱', name: 'Peso Chileno' },
+  { code: 'ARS', symbol: 'AR$', flag: '🇦🇷', name: 'Peso Argentino' },
+  { code: 'GBP', symbol: '£', flag: '🇬🇧', name: 'Libra Esterlina' }
+];
+
+const CURRENCY_SYMBOLS = {
+  'USD': '$',
+  'DOP': 'RD$',
+  'EUR': '€',
+  'MXN': 'MX$',
+  'ARS': 'AR$',
+  'CLP': 'CLP$',
+  'COP': 'COL$',
+  'GBP': '£'
+};
+
+function getCurrencySymbol(code) {
+  return CURRENCY_SYMBOLS[code] || '$';
+}
+
+function updateNavCurrencyBadge() {
+  const code = state.baseCurrencyCode || state.settings?.base_currency || 'USD';
+  const symbol = state.currency || CURRENCY_SYMBOLS[code] || '$';
+  const found = CURRENCY_CONFIG.find(c => c.code === code);
+  const flag = found ? found.flag : (code === 'DOP' ? '🇩🇴' : code === 'EUR' ? '🇪🇺' : '🇺🇸');
+
+  const badgeElem = document.getElementById('navBaseCurrencyBadge');
+  const flagElem = document.getElementById('navBaseCurrencyFlag');
+  if (badgeElem) badgeElem.textContent = `${code} (${symbol})`;
+  if (flagElem) flagElem.textContent = flag;
+}
+
+const initialBaseCurrency = cachedSettings?.base_currency || 'USD';
+const initialCurrencySymbol = CURRENCY_SYMBOLS[initialBaseCurrency] || '$';
+
 const state = {
   user: initialUser,
   token: initialToken,
@@ -44,8 +85,8 @@ const state = {
   splitPayTab: 'received', // 'received' | 'sent'
   stats: cachedStats,
   settings: cachedSettings,
-  currency: '$', // se actualiza en loadSettings()
-  baseCurrencyCode: cachedSettings?.base_currency || 'USD',
+  currency: initialCurrencySymbol,
+  baseCurrencyCode: initialBaseCurrency,
   chartMode: 'annual', // 'annual' | 'monthly'
   viewMode: 'grid',    // 'grid' | 'table'
   currentTab: 'dashboard', // 'dashboard' | 'payments' | 'friends'
@@ -59,17 +100,6 @@ const state = {
     currentMonth: new Date().getMonth(), // 0-indexed
     selectedDateStr: null
   }
-};
-
-const CURRENCY_SYMBOLS = {
-  'USD': '$',
-  'DOP': 'RD$',
-  'EUR': '€',
-  'MXN': 'MX$',
-  'ARS': 'AR$',
-  'CLP': 'CLP$',
-  'COP': 'COL$',
-  'GBP': '£'
 };
 
 const CYCLE_LABELS = {
@@ -624,6 +654,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   initPWA();
   initThemeMode();
   initPrivacyMode();
+  updateNavCurrencyBadge();
   initIcons();
   initEventListeners();
   await checkAuth();
@@ -1711,7 +1742,24 @@ function initEventListeners() {
 
 // ================= CARGA DE DATOS =================
 async function loadAllData() {
-  await Promise.allSettled([loadSettings(), loadStats(), loadSubscriptions(), loadPayments(), loadFriends()]);
+  await loadSettings();
+  await Promise.allSettled([loadStats(), loadSubscriptions(), loadPayments(), loadFriends()]);
+  renderAllViews();
+}
+
+function renderAllViews() {
+  renderSubscriptions();
+  renderKPIs();
+  renderBudgetBar();
+  renderTrialAlerts();
+  renderUpcomingAlerts();
+  renderCharts();
+  renderFriendsList();
+  updateNavCurrencyBadge();
+  updateCalendarBadge();
+  if (state.currentTab === 'calendar') {
+    renderCalendar();
+  }
 }
 
 async function loadSettings() {
@@ -1723,8 +1771,7 @@ async function loadSettings() {
       localStorage.setItem('subtracker_cached_settings', JSON.stringify(result.data));
       state.baseCurrencyCode = result.data.base_currency || 'USD';
       state.currency = CURRENCY_SYMBOLS[state.baseCurrencyCode] || '$';
-      const navBadge = document.getElementById('navBaseCurrencyBadge');
-      if (navBadge) navBadge.textContent = `${state.baseCurrencyCode} (${state.currency})`;
+      updateNavCurrencyBadge();
       initPrivacyMode();
     }
   } catch (err) {
@@ -3610,9 +3657,10 @@ function createCardHtml(sub) {
   const { text: daysText, badgeClass } = getCutOffBadgeInfo(sub.days_until_billing);
 
   const isDifferentCurrency = subCurr !== baseCurr;
-  const convertedPrice = sub.converted_price !== undefined ? sub.converted_price : convertCurrency(sub.price, subCurr, baseCurr);
-  const convertedMonthly = sub.converted_monthly_cost !== undefined ? sub.converted_monthly_cost : convertCurrency(sub.monthly_cost, subCurr, baseCurr);
-  const convertedAnnual = sub.converted_annual_cost !== undefined ? sub.converted_annual_cost : convertCurrency(sub.annual_cost, subCurr, baseCurr);
+  const isSubConvertedFresh = sub.converted_price !== undefined && (!sub.base_currency || sub.base_currency === baseCurr);
+  const convertedPrice = isSubConvertedFresh ? sub.converted_price : convertCurrency(sub.price, subCurr, baseCurr);
+  const convertedMonthly = isSubConvertedFresh ? sub.converted_monthly_cost : convertCurrency(sub.monthly_cost, subCurr, baseCurr);
+  const convertedAnnual = isSubConvertedFresh ? sub.converted_annual_cost : convertCurrency(sub.annual_cost, subCurr, baseCurr);
 
   // Cálculo del cobro correspondiente exacto
   const isSharedSub = Boolean(sub.is_shared);
@@ -3816,9 +3864,10 @@ function createTableRowHtml(sub) {
   const { text: daysText, badgeClass } = getCutOffBadgeInfo(sub.days_until_billing);
 
   const isDifferentCurrency = subCurr !== baseCurr;
-  const convertedPrice = sub.converted_price !== undefined ? sub.converted_price : convertCurrency(sub.price, subCurr, baseCurr);
-  const convertedMonthly = sub.converted_monthly_cost !== undefined ? sub.converted_monthly_cost : convertCurrency(sub.monthly_cost, subCurr, baseCurr);
-  const convertedAnnual = sub.converted_annual_cost !== undefined ? sub.converted_annual_cost : convertCurrency(sub.annual_cost, subCurr, baseCurr);
+  const isSubConvertedFresh = sub.converted_price !== undefined && (!sub.base_currency || sub.base_currency === baseCurr);
+  const convertedPrice = isSubConvertedFresh ? sub.converted_price : convertCurrency(sub.price, subCurr, baseCurr);
+  const convertedMonthly = isSubConvertedFresh ? sub.converted_monthly_cost : convertCurrency(sub.monthly_cost, subCurr, baseCurr);
+  const convertedAnnual = isSubConvertedFresh ? sub.converted_annual_cost : convertCurrency(sub.annual_cost, subCurr, baseCurr);
 
   const iconHtml = getServiceOfficialIcon(sub.name, sub.color, 'w-3.5 h-3.5');
   const safeColor = sanitizeColor(sub.color, '#d0bcff');
@@ -4249,7 +4298,8 @@ function renderCalendar() {
 
   activeSubs.forEach(sub => {
     const dates = getSubBillingDatesForMonth(sub, year, month);
-    const convertedPrice = sub.converted_price !== undefined
+    const isSubConvertedFresh = sub.converted_price !== undefined && (!sub.base_currency || sub.base_currency === baseCurr);
+    const convertedPrice = isSubConvertedFresh
       ? sub.converted_price
       : convertCurrency(sub.price, sub.currency || 'USD', baseCurr);
 
@@ -5442,17 +5492,6 @@ function switchSettingsTab(tabName) {
   initIcons();
 }
 
-const CURRENCY_CONFIG = [
-  { code: 'USD', symbol: '$', flag: '🇺🇸', name: 'Dólar Estadounidense' },
-  { code: 'DOP', symbol: 'RD$', flag: '🇩🇴', name: 'Peso Dominicano' },
-  { code: 'EUR', symbol: '€', flag: '🇪🇺', name: 'Euro' },
-  { code: 'MXN', symbol: '$', flag: '🇲🇽', name: 'Peso Mexicano' },
-  { code: 'COP', symbol: '$', flag: '🇨🇴', name: 'Peso Colombiano' },
-  { code: 'CLP', symbol: '$', flag: '🇨🇱', name: 'Peso Chileno' },
-  { code: 'ARS', symbol: '$', flag: '🇦🇷', name: 'Peso Argentino' },
-  { code: 'GBP', symbol: '£', flag: '🇬🇧', name: 'Libra Esterlina' }
-];
-
 function renderCurrencyDropdownOptions(selectedCode) {
   const menu = document.getElementById('customCurrencyMenu');
   if (!menu) return;
@@ -5616,6 +5655,12 @@ async function handleSettingsGeneralSubmit(e) {
     const result = await res.json();
     if (result.success) {
       showToast('Ajustes generales guardados exitosamente', 'success');
+      state.settings = result.data;
+      localStorage.setItem('subtracker_cached_settings', JSON.stringify(result.data));
+      state.baseCurrencyCode = result.data.base_currency || data.base_currency || 'USD';
+      state.currency = CURRENCY_SYMBOLS[state.baseCurrencyCode] || '$';
+      updateNavCurrencyBadge();
+
       const privacyDefault = document.getElementById('settingPrivacyModeDefault')?.checked;
       if (privacyDefault !== undefined) {
         localStorage.setItem('subtracker_privacy', privacyDefault ? 'true' : 'false');
@@ -6967,9 +7012,10 @@ async function showSubscriptionSummary(subId) {
   const { text: daysText, badgeClass } = getCutOffBadgeInfo(sub.days_until_billing);
 
   const isDifferentCurrency = subCurr !== baseCurr;
-  const convertedPrice = sub.converted_price !== undefined ? sub.converted_price : convertCurrency(sub.price, subCurr, baseCurr);
-  const convertedMonthly = sub.converted_monthly_cost !== undefined ? sub.converted_monthly_cost : convertCurrency(sub.monthly_cost, subCurr, baseCurr);
-  const convertedAnnual = sub.converted_annual_cost !== undefined ? sub.converted_annual_cost : convertCurrency(sub.annual_cost, subCurr, baseCurr);
+  const isSubConvertedFresh = sub.converted_price !== undefined && (!sub.base_currency || sub.base_currency === baseCurr);
+  const convertedPrice = isSubConvertedFresh ? sub.converted_price : convertCurrency(sub.price, subCurr, baseCurr);
+  const convertedMonthly = isSubConvertedFresh ? sub.converted_monthly_cost : convertCurrency(sub.monthly_cost, subCurr, baseCurr);
+  const convertedAnnual = isSubConvertedFresh ? sub.converted_annual_cost : convertCurrency(sub.annual_cost, subCurr, baseCurr);
 
   // Barra superior de color de la marca
   const safeColor = sanitizeColor(sub.color, '#d0bcff');
@@ -7284,6 +7330,7 @@ window.switchSubDetailTab = switchSubDetailTab;
 window.toggleCurrencyDropdown = toggleCurrencyDropdown;
 window.selectBaseCurrency = selectBaseCurrency;
 window.selectLeadDays = selectLeadDays;
+window.updateNavCurrencyBadge = updateNavCurrencyBadge;
 
 
 

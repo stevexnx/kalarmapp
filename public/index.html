@@ -74,7 +74,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Roboto+Flex:opsz,wght@8..144,300..800&family=Google+Sans:wght@400;500;700&family=Google+Sans+Text:wght@400;500;700&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="/styles.css?v=2.8.2">
+  <link rel="stylesheet" href="/styles.css?v=2.8.3">
 </head>
 <body class="min-h-full flex antialiased selection:bg-[#d0bcff] selection:text-[#381e72] bg-[#141218] text-[#e6e0e9]">
 
@@ -169,11 +169,13 @@
 
         <!-- Acciones en Top App Bar estilo Google -->
         <div class="flex items-center gap-2 sm:gap-3">
-          <!-- Moneda Base Badge -->
-          <div class="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#211f26] border border-[#49454f]/40 text-xs text-[#cac4d0]">
-            <span>Moneda:</span>
-            <span id="navBaseCurrencyBadge" class="font-bold text-[#d0bcff]">USD ($)</span>
-          </div>
+          <!-- Moneda Base Badge con Bandera -->
+          <button type="button" id="navBaseCurrencyContainer" onclick="openSettingsModal('general')" title="Moneda base activa (Clic para configurar)"
+            class="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 rounded-full bg-[#211f26] hover:bg-[#2b2930] border border-[#49454f]/40 text-xs text-[#cac4d0] transition cursor-pointer">
+            <span id="navBaseCurrencyFlag" class="text-sm leading-none shrink-0">🇺🇸</span>
+            <span class="hidden md:inline text-[#cac4d0]">Moneda:</span>
+            <span id="navBaseCurrencyBadge" class="font-bold text-[#d0bcff] font-mono">USD ($)</span>
+          </button>
 
           <!-- Botón Command Palette (Ctrl+K) -->
           <button id="btnOpenCommandPalette" title="Buscar y comandos rápidos (Ctrl + K)" class="hidden sm:inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#211f26] hover:bg-[#2b2930] text-xs text-[#cac4d0] hover:text-white border border-[#49454f]/50 transition">
@@ -1893,10 +1895,10 @@
                 <option value="USD">USD ($)</option>
                 <option value="DOP">DOP (RD$)</option>
                 <option value="EUR">EUR (€)</option>
-                <option value="MXN">MXN ($)</option>
-                <option value="ARS">ARS ($)</option>
-                <option value="CLP">CLP ($)</option>
-                <option value="COP">COP ($)</option>
+                <option value="MXN">MXN (MX$)</option>
+                <option value="ARS">ARS (AR$)</option>
+                <option value="CLP">CLP (CLP$)</option>
+                <option value="COP">COP (COL$)</option>
                 <option value="GBP">GBP (£)</option>
               </select>
             </div>
@@ -2677,6 +2679,6 @@
     </div>
   </aside>
 
-  <script src="/app.js?v=2.8.2"></script>
+  <script src="/app.js?v=2.8.3"></script>
 </body>
 </html>
