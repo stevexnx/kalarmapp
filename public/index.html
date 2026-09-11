@@ -48,7 +48,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Roboto+Flex:opsz,wght@8..144,300..800&family=Google+Sans:wght@400;500;700&family=Google+Sans+Text:wght@400;500;700&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="/styles.css?v=2.6.6">
+  <link rel="stylesheet" href="/styles.css?v=2.6.7">
 </head>
 <body class="min-h-full flex antialiased selection:bg-[#d0bcff] selection:text-[#381e72] bg-[#141218] text-[#e6e0e9]">
 
@@ -1493,12 +1493,17 @@
           </div>
         </div>
 
-        <!-- Botones de Acción del Resumen: Editar y Cancelar / Borrar -->
+        <!-- Botones de Acción del Resumen: Marcar Cancelada, Eliminar y Editar -->
         <div class="pt-3 border-t border-[#49454f]/40 flex flex-col sm:flex-row items-center justify-between gap-2.5">
-          <button type="button" id="btnSubDetailCancel" class="w-full sm:w-auto m3-btn-danger py-2 px-4 text-xs flex items-center justify-center gap-2 cursor-pointer">
-            <i data-lucide="trash-2" class="w-4 h-4"></i>
-            <span>Cancelar Suscripción</span>
-          </button>
+          <div class="w-full sm:w-auto flex items-center gap-2">
+            <button type="button" id="btnSubDetailCancel" class="m3-btn-danger py-2 px-3.5 text-xs flex items-center justify-center gap-1.5 cursor-pointer">
+              <i data-lucide="ban" class="w-4 h-4"></i>
+              <span id="subDetailCancelBtnText">Cancelar Suscripción</span>
+            </button>
+            <button type="button" id="btnSubDetailDelete" class="p-2 rounded-full text-[#cac4d0] hover:text-rose-400 hover:bg-rose-950/20 transition cursor-pointer" title="Eliminar definitivamente de la base de datos">
+              <i data-lucide="trash-2" class="w-4 h-4"></i>
+            </button>
+          </div>
 
           <div class="w-full sm:w-auto flex items-center gap-2 justify-end">
             <button type="button" id="btnSubDetailToggleStatus" class="m3-btn-outline py-2 px-3.5 text-xs flex items-center gap-1.5 cursor-pointer">
@@ -2324,6 +2329,6 @@
     </div>
   </aside>
 
-  <script src="/app.js?v=2.6.6"></script>
+  <script src="/app.js?v=2.6.7"></script>
 </body>
 </html>

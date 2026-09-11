@@ -1205,6 +1205,16 @@ function initEventListeners() {
   document.getElementById('btnSubDetailCancel')?.addEventListener('click', () => {
     if (state.selectedSummarySubId) {
       const sub = (state.subscriptions || []).find(s => s.id === state.selectedSummarySubId);
+      if (sub) {
+        const targetStatus = sub.status === 'canceled' ? 'active' : 'canceled';
+        toggleSubscriptionStatus(sub.id, sub.status, targetStatus);
+        closeSubscriptionSummary();
+      }
+    }
+  });
+  document.getElementById('btnSubDetailDelete')?.addEventListener('click', () => {
+    if (state.selectedSummarySubId) {
+      const sub = (state.subscriptions || []).find(s => s.id === state.selectedSummarySubId);
       const subId = state.selectedSummarySubId;
       const subName = sub ? sub.name : 'esta suscripción';
       closeSubscriptionSummary();
@@ -1215,7 +1225,8 @@ function initEventListeners() {
     if (state.selectedSummarySubId) {
       const sub = (state.subscriptions || []).find(s => s.id === state.selectedSummarySubId);
       if (sub) {
-        toggleSubscriptionStatus(sub.id, sub.status);
+        const nextStatus = sub.status === 'active' ? 'paused' : 'active';
+        toggleSubscriptionStatus(sub.id, sub.status, nextStatus);
         closeSubscriptionSummary();
       }
     }
@@ -3171,7 +3182,6 @@ function createCardHtml(sub) {
   const subSymbol = CURRENCY_SYMBOLS[subCurr] || '$';
   const cycleLabel = CYCLE_LABELS[sub.billing_cycle] || sub.billing_cycle;
   const { text: daysText, badgeClass } = getCutOffBadgeInfo(sub.days_until_billing);
-  const statusBadge = getStatusBadge(sub.status);
 
   const isDifferentCurrency = subCurr !== baseCurr;
   const convertedPrice = sub.converted_price !== undefined ? sub.converted_price : convertCurrency(sub.price, subCurr, baseCurr);
@@ -3179,45 +3189,81 @@ function createCardHtml(sub) {
   const convertedAnnual = sub.converted_annual_cost !== undefined ? sub.converted_annual_cost : convertCurrency(sub.annual_cost, subCurr, baseCurr);
 
   let trialBadge = sub.is_trial ? `<span class="m3-badge-error flex items-center gap-1"><i data-lucide="timer" class="w-3 h-3"></i> Trial</span>` : '';
-  let sharedBadge = sub.is_shared ? `<span class="m3-badge-success flex items-center gap-1"><i data-lucide="users" class="w-3 h-3"></i> Dividido /${sub.shared_with_count || 2}</span>` : '';
+
+  // Renderizar burbujas de amigos en Split Pay si la cuenta es compartida
+  let sharedFriendsHtml = '';
+  if (sub.is_shared) {
+    const friendIds = (sub.shared_friend_ids || '').toString().split(',').map(x => parseInt(x.trim())).filter(Boolean);
+    const matchedFriends = (state.friends || []).filter(f => friendIds.includes(f.id));
+
+    if (matchedFriends.length > 0) {
+      const displayFriends = matchedFriends.slice(0, 3);
+      const remainingCount = matchedFriends.length - 3;
+      const namesList = matchedFriends.map(f => f.name).join(', ');
+
+      sharedFriendsHtml = `
+        <div class="flex items-center gap-1.5" title="Dividido con: ${escapeHtml(namesList)}">
+          <div class="flex -space-x-1.5 overflow-hidden">
+            ${displayFriends.map(f => `
+              <div class="w-5 h-5 rounded-full bg-[#381e72] border border-[#1d1b20] text-[9px] font-bold text-[#d0bcff] flex items-center justify-center shrink-0" title="${escapeHtml(f.name)}">
+                ${escapeHtml((f.name || 'A')[0].toUpperCase())}
+              </div>
+            `).join('')}
+            ${remainingCount > 0 ? `
+              <div class="w-5 h-5 rounded-full bg-[#2b2930] border border-[#1d1b20] text-[8px] font-bold text-[#cac4d0] flex items-center justify-center shrink-0">
+                +${remainingCount}
+              </div>
+            ` : ''}
+          </div>
+          <span class="text-[10px] text-[#a8d5b5] font-medium font-sans">Split Pay</span>
+        </div>
+      `;
+    } else {
+      sharedFriendsHtml = `
+        <span class="m3-badge-success text-[10px] flex items-center gap-1">
+          <i data-lucide="users" class="w-3 h-3"></i> Dividido /${sub.shared_with_count || 2}
+        </span>
+      `;
+    }
+  }
 
   const iconHtml = getServiceOfficialIcon(sub.name, sub.color);
+  const isInactive = sub.status === 'paused' || sub.status === 'canceled' || sub.status === 'cancelled';
+  const opacityClass = isInactive ? 'opacity-70 hover:opacity-100 transition-opacity' : '';
 
   return `
-    <div class="m3-card sub-card-interactive p-5 relative overflow-hidden flex flex-col justify-between m3-elevation-1" onclick="showSubscriptionSummary(${sub.id})" title="Ver resumen de ${escapeHtml(sub.name)}">
+    <div class="m3-card sub-card-interactive p-5 relative overflow-hidden flex flex-col justify-between m3-elevation-1 ${opacityClass}" onclick="showSubscriptionSummary(${sub.id})" title="Ver resumen de ${escapeHtml(sub.name)}">
       <div class="absolute top-0 left-0 right-0 h-1.5" style="background-color: ${sub.color || 'var(--md-sys-color-primary)'}"></div>
 
-      <div>
-        <div class="flex items-start justify-between gap-3">
-          <div class="flex items-center gap-3">
+      <div class="space-y-3.5">
+        <!-- Cabecera: Icono + Nombre + Burbuja Interactiva de Estado -->
+        <div class="flex items-start justify-between gap-2.5">
+          <div class="flex items-center gap-3 min-w-0">
             <div class="m3-brand-icon-box" style="background: linear-gradient(135deg, ${sub.color || '#d0bcff'}22, ${sub.color || '#d0bcff'}44); border: 1px solid ${sub.color || '#d0bcff'}55">
               ${iconHtml}
             </div>
-            <div>
-              <h4 class="text-sm font-bold text-white tracking-tight flex items-center gap-1.5 font-google-sans">
-                <span>${escapeHtml(sub.name)}</span>
-                ${sub.alias ? `<span class="text-[10px] font-medium px-2 py-0.5 rounded-full bg-[#381e72]/80 border border-[#d0bcff]/40 text-[#d0bcff] font-sans" title="Alias: ${escapeHtml(sub.alias)}">${escapeHtml(sub.alias)}</span>` : ''}
+            <div class="min-w-0">
+              <h4 class="text-sm font-bold text-white tracking-tight flex items-center gap-1.5 font-google-sans truncate">
+                <span class="truncate">${escapeHtml(sub.name)}</span>
+                ${sub.alias ? `<span class="text-[10px] font-medium px-2 py-0.2 rounded-full bg-[#381e72]/80 border border-[#d0bcff]/40 text-[#d0bcff] font-sans truncate" title="Alias: ${escapeHtml(sub.alias)}">${escapeHtml(sub.alias)}</span>` : ''}
               </h4>
               <div class="flex flex-wrap items-center gap-1.5 mt-1">
-                <span class="m3-badge-secondary">
+                <span class="m3-badge-secondary text-[10px]">
                   ${escapeHtml(sub.category)}
                 </span>
                 ${trialBadge}
-                ${sharedBadge}
-                ${statusBadge}
               </div>
             </div>
           </div>
 
-          <!-- Indicador visual sutil de interactividad -->
-          <div class="flex items-center gap-1 text-[#cac4d0]">
-            <span class="p-1 text-[#cac4d0] group-hover:text-white transition" title="Ver detalles">
-              <i data-lucide="chevron-right" class="w-4 h-4"></i>
-            </span>
+          <!-- Burbuja interactiva de estado (Verde / Naranja / Gris) -->
+          <div class="shrink-0 pt-0.5">
+            ${getStatusDotHtml(sub.id, sub.status)}
           </div>
         </div>
 
-        <div class="mt-4 p-3 bg-[#1d1b20] rounded-2xl border border-[#49454f]/30 flex items-center justify-between">
+        <!-- Fecha de Corte -->
+        <div class="p-3 bg-[#1d1b20] rounded-2xl border border-[#49454f]/30 flex items-center justify-between">
           <div>
             <span class="text-[10px] uppercase tracking-wider font-semibold text-[#cac4d0] flex items-center gap-1">
               <i data-lucide="calendar" class="w-3 h-3 text-[#cac4d0]"></i> Fecha de Corte
@@ -3230,7 +3276,8 @@ function createCardHtml(sub) {
           </div>
         </div>
 
-        <div class="mt-3.5 grid grid-cols-2 gap-2 bg-[#211f26] border border-[#49454f]/40 rounded-2xl p-3">
+        <!-- Montos: Cobro Recurrente + Costo Anual -->
+        <div class="grid grid-cols-2 gap-2 bg-[#211f26] border border-[#49454f]/40 rounded-2xl p-3">
           <div>
             <span class="text-[10px] uppercase font-semibold tracking-wider text-[#cac4d0] block">Cobro Recurrente</span>
             ${isDifferentCurrency ? `
@@ -3258,24 +3305,15 @@ function createCardHtml(sub) {
           </div>
         </div>
 
-        <div class="mt-3 text-[11px] text-[#cac4d0] flex items-center justify-between border-t border-[#49454f]/30 pt-2.5">
-          <span class="flex items-center gap-1 text-[#cac4d0]">
-            <i data-lucide="credit-card" class="w-3 h-3 text-[#cac4d0]"></i>
-            ${escapeHtml(sub.payment_method || 'Sin método')}
-          </span>
-          ${sub.notes ? `<span class="truncate max-w-[140px] italic text-[#938f99]" title="${escapeHtml(sub.notes)}">"${escapeHtml(sub.notes)}"</span>` : ''}
-        </div>
-      </div>
-
-      <div class="mt-4 pt-3 border-t border-[#49454f]/30 flex items-center justify-between text-xs">
-        <button onclick="event.stopPropagation(); toggleSubscriptionStatus(${sub.id}, '${sub.status}')" class="text-xs font-medium text-[#cac4d0] hover:text-white flex items-center gap-1.5 transition cursor-pointer">
-          <i data-lucide="${sub.status === 'active' ? 'pause-circle' : 'play-circle'}" class="w-3.5 h-3.5"></i>
-          <span>${sub.status === 'active' ? 'Pausar' : 'Reactivar'}</span>
-        </button>
-        <span class="text-[11px] text-[#cac4d0] font-sans flex items-center gap-1 opacity-80">
-          <span>Ver resumen</span>
-          <i data-lucide="arrow-up-right" class="w-3 h-3"></i>
-        </span>
+        <!-- Fila de Amigos en Split Pay y Notas (si aplican) -->
+        ${(sharedFriendsHtml || sub.notes) ? `
+          <div class="flex items-center justify-between text-[11px] text-[#cac4d0] pt-1">
+            <div>
+              ${sharedFriendsHtml}
+            </div>
+            ${sub.notes ? `<span class="truncate max-w-[130px] italic text-[#938f99] text-right" title="${escapeHtml(sub.notes)}">"${escapeHtml(sub.notes)}"</span>` : ''}
+          </div>
+        ` : ''}
       </div>
     </div>
   `;
@@ -3288,7 +3326,6 @@ function createTableRowHtml(sub) {
   const subSymbol = CURRENCY_SYMBOLS[subCurr] || '$';
   const cycleLabel = CYCLE_LABELS[sub.billing_cycle] || sub.billing_cycle;
   const { text: daysText, badgeClass } = getCutOffBadgeInfo(sub.days_until_billing);
-  const statusBadge = getStatusBadge(sub.status);
 
   const isDifferentCurrency = subCurr !== baseCurr;
   const convertedPrice = sub.converted_price !== undefined ? sub.converted_price : convertCurrency(sub.price, subCurr, baseCurr);
@@ -3296,9 +3333,11 @@ function createTableRowHtml(sub) {
   const convertedAnnual = sub.converted_annual_cost !== undefined ? sub.converted_annual_cost : convertCurrency(sub.annual_cost, subCurr, baseCurr);
 
   const iconHtml = getServiceOfficialIcon(sub.name, sub.color, 'w-3.5 h-3.5');
+  const isInactive = sub.status === 'paused' || sub.status === 'canceled' || sub.status === 'cancelled';
+  const opacityClass = isInactive ? 'opacity-70 hover:opacity-100 transition-opacity' : '';
 
   return `
-    <tr class="hover:bg-[#211f26] transition cursor-pointer" onclick="showSubscriptionSummary(${sub.id})" title="Ver resumen de ${escapeHtml(sub.name)}">
+    <tr class="hover:bg-[#211f26] transition cursor-pointer ${opacityClass}" onclick="showSubscriptionSummary(${sub.id})" title="Ver resumen de ${escapeHtml(sub.name)}">
       <td class="px-4 py-3.5">
         <div class="flex items-center gap-2.5">
           <div class="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 shadow-sm" style="background: linear-gradient(135deg, ${sub.color || '#d0bcff'}22, ${sub.color || '#d0bcff'}44); border: 1px solid ${sub.color || '#d0bcff'}55">
@@ -3311,7 +3350,7 @@ function createTableRowHtml(sub) {
               ${sub.is_trial ? `<span class="m3-badge-error text-[9px]">TRIAL</span>` : ''}
               ${sub.is_shared ? `<span class="m3-badge-success text-[9px]">SPLIT</span>` : ''}
             </div>
-            <div class="text-[11px] text-[#cac4d0]">${escapeHtml(sub.payment_method || 'Tarjeta')}</div>
+            <div class="text-[11px] text-[#cac4d0]">${escapeHtml(sub.category || 'General')}</div>
           </div>
         </div>
       </td>
@@ -3339,7 +3378,9 @@ function createTableRowHtml(sub) {
           (${baseSymbol}${formatNumber(convertedMonthly)} / mes${isDifferentCurrency ? ` &bull; orig. ${subSymbol}${formatNumber(sub.annual_cost)}` : ''})
         </div>
       </td>
-      <td class="px-4 py-3.5">${statusBadge}</td>
+      <td class="px-4 py-3.5" onclick="event.stopPropagation()">
+        ${getStatusDotHtml(sub.id, sub.status)}
+      </td>
       <td class="px-4 py-3.5 text-right space-x-1" onclick="event.stopPropagation()">
         <button onclick="markAsPaidAndAdvance(${sub.id})" title="Marcar como pagado" class="p-1.5 hover:bg-[#2b2930] rounded-full text-[#cac4d0] hover:text-[#a8d5b5] transition cursor-pointer"><i data-lucide="receipt" class="w-4 h-4"></i></button>
         <button onclick="showSubscriptionSummary(${sub.id})" title="Ver resumen" class="p-1.5 hover:bg-[#2b2930] rounded-full text-[#cac4d0] hover:text-white transition cursor-pointer"><i data-lucide="eye" class="w-4 h-4"></i></button>
@@ -4771,8 +4812,16 @@ async function deleteSubscription(id, name) {
   }
 }
 
-async function toggleSubscriptionStatus(id, currentStatus) {
-  const newStatus = currentStatus === 'active' ? 'paused' : 'active';
+async function toggleSubscriptionStatus(id, currentStatus, explicitNewStatus = null) {
+  let newStatus = explicitNewStatus;
+  if (!newStatus) {
+    if (currentStatus === 'active') newStatus = 'paused';
+    else if (currentStatus === 'paused') newStatus = 'canceled';
+    else newStatus = 'active';
+  }
+
+  const label = newStatus === 'active' ? 'activada' : (newStatus === 'paused' ? 'pausada' : 'cancelada');
+
   try {
     const res = await fetch(`/api/subscriptions/${id}`, {
       method: 'PUT',
@@ -4781,7 +4830,7 @@ async function toggleSubscriptionStatus(id, currentStatus) {
     });
     const result = await res.json();
     if (result.success) {
-      showToast(`Suscripción ${newStatus === 'active' ? 'activada' : 'pausada'}`, 'success');
+      showToast(`Suscripción ${label}`, 'success');
       await loadAllData();
     }
   } catch (err) {
@@ -5117,6 +5166,37 @@ function getStatusBadge(status) {
   if (status === 'active') return `<span class="m3-badge-success">Activa</span>`;
   if (status === 'paused') return `<span class="m3-badge-warning">Pausada</span>`;
   return `<span class="m3-badge-secondary">Cancelada</span>`;
+}
+
+function getStatusDotHtml(subId, status) {
+  let dotColor = 'bg-emerald-400';
+  let ringColor = 'ring-emerald-400/30';
+  let badgeBg = 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300';
+  let title = 'Activa (clic para pausar o cancelar)';
+  let label = 'Activa';
+
+  if (status === 'paused') {
+    dotColor = 'bg-amber-400';
+    ringColor = 'ring-amber-400/30';
+    badgeBg = 'bg-amber-500/10 border-amber-500/30 text-amber-300';
+    title = 'Pausada (clic para cancelar o activar)';
+    label = 'Pausada';
+  } else if (status === 'canceled' || status === 'cancelled') {
+    dotColor = 'bg-slate-400';
+    ringColor = 'ring-slate-400/30';
+    badgeBg = 'bg-slate-800 border-slate-700 text-slate-400';
+    title = 'Cancelada (clic para reactivar)';
+    label = 'Cancelada';
+  }
+
+  return `
+    <button type="button" onclick="event.stopPropagation(); toggleSubscriptionStatus(${subId}, '${status}')"
+            class="group inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[10px] font-semibold transition cursor-pointer ${badgeBg} hover:scale-105 active:scale-95"
+            title="${title}">
+      <span class="w-2 h-2 rounded-full ${dotColor} ring-4 ${ringColor}"></span>
+      <span class="capitalize">${label}</span>
+    </button>
+  `;
 }
 
 function escapeHtml(str) {
@@ -6265,11 +6345,26 @@ function showSubscriptionSummary(subId) {
   // Botón de pausar / reactivar
   if (statusBtn && statusIcon && statusText) {
     if (sub.status === 'active') {
+      statusBtn.classList.remove('hidden');
       statusIcon.setAttribute('data-lucide', 'pause-circle');
       statusText.textContent = 'Pausar';
-    } else {
+    } else if (sub.status === 'paused') {
+      statusBtn.classList.remove('hidden');
       statusIcon.setAttribute('data-lucide', 'play-circle');
       statusText.textContent = 'Reactivar';
+    } else {
+      // Si está cancelada, ocultar botón pausar para evitar confusión
+      statusBtn.classList.add('hidden');
+    }
+  }
+
+  // Botón de Cancelar / Reactivar
+  const cancelBtnText = document.getElementById('subDetailCancelBtnText');
+  if (cancelBtnText) {
+    if (sub.status === 'canceled' || sub.status === 'cancelled') {
+      cancelBtnText.textContent = 'Reactivar Suscripción';
+    } else {
+      cancelBtnText.textContent = 'Cancelar Suscripción';
     }
   }
 
