@@ -74,7 +74,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Roboto+Flex:opsz,wght@8..144,300..800&family=Google+Sans:wght@400;500;700&family=Google+Sans+Text:wght@400;500;700&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="/styles.css?v=2.7.1">
+  <link rel="stylesheet" href="/styles.css?v=2.7.2">
 </head>
 <body class="min-h-full flex antialiased selection:bg-[#d0bcff] selection:text-[#381e72] bg-[#141218] text-[#e6e0e9]">
 
@@ -763,18 +763,59 @@
       </div>
 
       <div class="text-center py-2 space-y-3">
-        <div id="modalProfileAvatar" class="w-16 h-16 mx-auto rounded-full flex items-center justify-center text-2xl font-black shadow-xl ring-4 ring-[#d0bcff]/20" style="background-color: var(--md-sys-color-primary-container); color: var(--md-sys-color-on-primary-container)">
-          -
+        <!-- Avatar Preview Interactivo con botón para cambiar -->
+        <div class="relative inline-block mx-auto">
+          <div id="modalProfileAvatar" class="w-16 h-16 rounded-full flex items-center justify-center text-2xl font-black shadow-xl ring-4 ring-[#d0bcff]/20 transition-all duration-300" style="background-color: var(--md-sys-color-primary-container); color: var(--md-sys-color-on-primary-container)">
+            -
+          </div>
         </div>
+
         <div>
           <h4 id="modalProfileDisplayName" class="text-lg font-bold text-white font-google-sans">Usuario</h4>
           <p id="modalProfileUsername" class="text-xs text-[#d0bcff] font-mono">@usuario</p>
-          <p id="modalProfileEmail" class="text-xs text-[#cac4d0] mt-1">usuario@ejemplo.com</p>
+          <p id="modalProfileEmail" class="text-xs text-[#cac4d0] mt-0.5">usuario@ejemplo.com</p>
         </div>
         <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full m3-badge-success text-[11px] font-medium">
           <span class="w-1.5 h-1.5 rounded-full bg-[#a8d5b5] animate-pulse"></span>
           Sesión Activa
         </div>
+      </div>
+
+      <!-- ================= SECCIÓN: PERSONALIZAR AVATAR Y APARIENCIA ================= -->
+      <div class="p-3.5 bg-[#141218] border border-[#49454f]/40 rounded-2xl space-y-3 text-xs">
+        <div class="flex items-center justify-between">
+          <span class="font-bold text-white flex items-center gap-1.5 font-google-sans">
+            <i data-lucide="sparkles" class="w-4 h-4 text-[#d0bcff]"></i> Personalizar Avatar
+          </span>
+          <span class="text-[10px] text-[#cac4d0]">Visible para tus amigos</span>
+        </div>
+
+        <!-- Nombre a mostrar -->
+        <div>
+          <label class="block text-[11px] text-[#cac4d0] font-medium mb-1" for="inputProfileDisplayName">Nombre Público</label>
+          <input type="text" id="inputProfileDisplayName" placeholder="Tu nombre" class="m3-text-field py-1.5 text-xs">
+        </div>
+
+        <!-- Selector de Icono de Avatar (Cuadrícula M3 Estética) -->
+        <div>
+          <label class="block text-[11px] text-[#cac4d0] font-medium mb-1.5">Elige tu Icono</label>
+          <div id="avatarIconSelectorGrid" class="grid grid-cols-6 gap-1.5 max-h-36 overflow-y-auto p-1 bg-[#1d1b20] rounded-xl border border-[#49454f]/30">
+            <!-- Iconos inyectados dinámicamente -->
+          </div>
+        </div>
+
+        <!-- Selector de Color de Fondo M3 -->
+        <div>
+          <label class="block text-[11px] text-[#cac4d0] font-medium mb-1.5">Color de Fondo</label>
+          <div id="avatarColorSelectorGrid" class="flex flex-wrap items-center gap-2 p-1.5 bg-[#1d1b20] rounded-xl border border-[#49454f]/30">
+            <!-- Paleta de colores inyectada dinámicamente -->
+          </div>
+        </div>
+
+        <button type="button" id="btnSaveProfileAvatar" class="m3-btn-filled w-full py-2 text-xs font-bold shadow-md flex items-center justify-center gap-1.5">
+          <i data-lucide="check" class="w-3.5 h-3.5"></i>
+          <span>Guardar Cambios de Perfil</span>
+        </button>
       </div>
 
       <!-- Sección: Seguridad / Cambiar Contraseña dentro de la cuenta -->
@@ -2079,13 +2120,16 @@
 
       <!-- Tarjeta de Usuario Activo en Ajustes -->
       <div id="settingsUserCard" class="hidden p-3.5 bg-[#1d1b20] border border-[#49454f]/40 rounded-2xl flex items-center justify-between">
-        <div class="flex items-center gap-3">
-          <div id="settingsUserAvatar" class="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-[#381e72] shadow ring-2 ring-[#d0bcff]/40 shrink-0" style="background-color: #d0bcff">
+        <div class="flex items-center gap-3 cursor-pointer group" onclick="closeSettingsModal(); openProfileModal();" title="Personalizar mi avatar y perfil">
+          <div id="settingsUserAvatar" class="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-[#381e72] shadow ring-2 ring-[#d0bcff]/40 shrink-0 group-hover:ring-[#d0bcff] transition" style="background-color: #d0bcff">
             -
           </div>
           <div>
-            <div id="settingsUserDisplayName" class="text-xs sm:text-sm font-bold text-white font-google-sans">Usuario</div>
-            <div id="settingsUserUsername" class="text-[11px] text-[#d0bcff] font-mono">@usuario</div>
+            <div class="flex items-center gap-1.5">
+              <div id="settingsUserDisplayName" class="text-xs sm:text-sm font-bold text-white font-google-sans group-hover:text-[#d0bcff] transition">Usuario</div>
+              <span class="text-[9px] px-1.5 py-0.2 rounded-full bg-[#381e72] text-[#d0bcff]">Editar</span>
+            </div>
+            <div id="settingsUserUsername" class="text-[11px] text-[#cac4d0] font-mono">@usuario</div>
           </div>
         </div>
         <button type="button" id="btnLogoutSettings" class="m3-btn-outline text-rose-300 border-rose-500/40 hover:bg-rose-500/10 text-xs py-1.5 px-3.5 flex items-center gap-1.5">
@@ -2460,6 +2504,6 @@
     </div>
   </aside>
 
-  <script src="/app.js?v=2.7.1"></script>
+  <script src="/app.js?v=2.7.2"></script>
 </body>
 </html>

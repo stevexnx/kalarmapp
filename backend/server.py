@@ -622,6 +622,17 @@ class SubscriptionAPIHandler(http.server.SimpleHTTPRequestHandler):
             self._send_json({'success': True, 'data': updated, 'message': 'Configuración guardada'})
             return
 
+        # 1.5. Actualizar Perfil de Usuario (Nombre, Color de Avatar, Icono de Avatar)
+        elif path == '/api/user/profile':
+            user = self._get_current_user()
+            data = self._read_json_body() or {}
+            try:
+                updated_user = db.update_user_profile(user['id'], data)
+                self._send_json({'success': True, 'user': updated_user, 'message': 'Perfil actualizado con éxito'})
+            except Exception as e:
+                self._send_error(f"Error al actualizar perfil: {str(e)}", 400)
+            return
+
         # 2. Actualizar Amigo
         elif path.startswith('/api/friends/'):
             user = self._get_current_user()

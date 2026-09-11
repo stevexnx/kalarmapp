@@ -341,6 +341,7 @@ def init_db(db_path=None):
         """)
         # Migraciones idempotentes para bases PostgreSQL existentes
         cursor.execute("ALTER TABLE friends ADD COLUMN IF NOT EXISTS linked_user_id INTEGER REFERENCES users (id) ON DELETE SET NULL")
+        cursor.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_icon VARCHAR(50) DEFAULT 'user'")
         cursor.execute("ALTER TABLE subscriptions ADD COLUMN IF NOT EXISTS user_id INTEGER DEFAULT 1")
         cursor.execute("ALTER TABLE subscriptions ADD COLUMN IF NOT EXISTS is_trial INTEGER DEFAULT 0")
         cursor.execute("ALTER TABLE subscriptions ADD COLUMN IF NOT EXISTS trial_end_date TEXT")
@@ -361,9 +362,14 @@ def init_db(db_path=None):
                 salt TEXT NOT NULL,
                 display_name TEXT NOT NULL,
                 avatar_color TEXT DEFAULT '#4F46E5',
+                avatar_icon TEXT DEFAULT 'user',
                 created_at TEXT NOT NULL
             )
         """)
+        cursor.execute("PRAGMA table_info(users)")
+        user_cols = [row['name'] for row in cursor.fetchall()]
+        if 'avatar_icon' not in user_cols:
+            cursor.execute("ALTER TABLE users ADD COLUMN avatar_icon TEXT DEFAULT 'user'")
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS sessions (
                 token TEXT PRIMARY KEY,
@@ -606,8 +612,8 @@ def register_user(username, password, email='', display_name='', db_path=None):
     disp_name = display_name.strip() or username.capitalize()
 
     cursor.execute('''
-        INSERT INTO users (username, email, password_hash, salt, display_name, avatar_color, created_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO users (username, email, password_hash, salt, display_name, avatar_color, avatar_icon, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, 'user', ?)
     ''', (username, email.strip().lower(), pwd_hash, salt, disp_name, avatar_color, now_str))
     
     new_user_id = cursor.lastrowid
@@ -631,7 +637,8 @@ def register_user(username, password, email='', display_name='', db_path=None):
         'id': new_user_id,
         'username': username,
         'display_name': disp_name,
-        'avatar_color': avatar_color
+        'avatar_color': avatar_color,
+        'avatar_icon': 'user'
     }
 
 def authenticate_user(username, password, db_path=None):
@@ -653,7 +660,8 @@ def authenticate_user(username, password, db_path=None):
             'username': row['username'],
             'email': row['email'],
             'display_name': row['display_name'],
-            'avatar_color': row['avatar_color']
+            'avatar_color': row['avatar_color'],
+            'avatar_icon': row['avatar_icon'] if 'avatar_icon' in row.keys() else 'user'
         }
     return None
 
@@ -682,7 +690,7 @@ def get_user_by_session(token: str, db_path=None):
 
     now_iso = datetime.now(timezone.utc).isoformat()
     cursor.execute('''
-        SELECT u.id, u.username, u.email, u.display_name, u.avatar_color
+        SELECT u.id, u.username, u.email, u.display_name, u.avatar_color, u.avatar_icon
         FROM sessions s
         JOIN users u ON s.user_id = u.id
         WHERE s.token = ? AND s.expires_at > ?
@@ -752,6 +760,56 @@ def change_user_password(user_id: int, current_password: str, new_password: str,
     conn.close()
     return True
 
+def get_user_by_id(user_id: int, db_path=None):
+    """Obtiene los datos públicos y de perfil de un usuario por su ID."""
+    conn = get_connection(db_path)
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT id, username, email, display_name, avatar_color, COALESCE(avatar_icon, 'user') as avatar_icon, created_at
+        FROM users WHERE id = ?
+    """, (user_id,))
+    row = cursor.fetchone()
+    conn.close()
+    return dict(row) if row else None
+
+def update_user_profile(user_id: int, data: dict, db_path=None):
+    """Actualiza display_name, avatar_color y avatar_icon de un usuario."""
+    allowed_icons = [
+        'user', 'smile', 'sparkles', 'zap', 'flame', 'heart', 'star',
+        'shield', 'crown', 'rocket', 'coffee', 'music', 'headphones',
+        'camera', 'compass', 'code', 'feather', 'cat', 'bot', 'gem'
+    ]
+
+    conn = get_connection(db_path)
+    cursor = conn.cursor()
+
+    fields = []
+    values = []
+
+    if 'display_name' in data and data['display_name']:
+        fields.append("display_name = ?")
+        values.append(str(data['display_name']).strip())
+
+    if 'avatar_color' in data and data['avatar_color']:
+        fields.append("avatar_color = ?")
+        values.append(str(data['avatar_color']).strip())
+
+    if 'avatar_icon' in data and data['avatar_icon']:
+        icon = str(data['avatar_icon']).strip().lower()
+        if icon in allowed_icons:
+            fields.append("avatar_icon = ?")
+            values.append(icon)
+
+    if not fields:
+        conn.close()
+        return get_user_by_id(user_id, db_path)
+
+    values.append(user_id)
+    cursor.execute(f"UPDATE users SET {', '.join(fields)} WHERE id = ?", values)
+    conn.commit()
+    conn.close()
+    return get_user_by_id(user_id, db_path)
+
 def delete_session(token: str, db_path=None):
     """Cierra la sesión eliminando el token."""
     if not token:
@@ -764,19 +822,36 @@ def delete_session(token: str, db_path=None):
 
 # ================= GESTIÓN DE AMIGOS =================
 def get_friends(user_id=1, db_path=None):
-    """Obtiene la lista de amigos del usuario."""
+    """Obtiene la lista de amigos del usuario, reflejando el avatar actualizado si es un usuario conectado."""
     conn = get_connection(db_path)
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM friends WHERE user_id = ? ORDER BY name ASC", (user_id,))
+    cursor.execute("""
+        SELECT f.id, f.user_id, f.linked_user_id, f.name, f.email, f.phone,
+               COALESCE(u.avatar_color, f.avatar_color) as avatar_color,
+               COALESCE(u.avatar_icon, 'user') as avatar_icon,
+               f.notes, f.created_at
+        FROM friends f
+        LEFT JOIN users u ON f.linked_user_id = u.id
+        WHERE f.user_id = ?
+        ORDER BY f.name ASC
+    """, (user_id,))
     rows = cursor.fetchall()
     conn.close()
     return [dict(r) for r in rows]
 
 def get_friend_by_id(friend_id: int, user_id=1, db_path=None):
-    """Obtiene un amigo por ID."""
+    """Obtiene un amigo por ID con su avatar actualizado."""
     conn = get_connection(db_path)
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM friends WHERE id = ? AND user_id = ?", (friend_id, user_id))
+    cursor.execute("""
+        SELECT f.id, f.user_id, f.linked_user_id, f.name, f.email, f.phone,
+               COALESCE(u.avatar_color, f.avatar_color) as avatar_color,
+               COALESCE(u.avatar_icon, 'user') as avatar_icon,
+               f.notes, f.created_at
+        FROM friends f
+        LEFT JOIN users u ON f.linked_user_id = u.id
+        WHERE f.id = ? AND f.user_id = ?
+    """, (friend_id, user_id))
     row = cursor.fetchone()
     conn.close()
     return dict(row) if row else None
@@ -929,7 +1004,7 @@ def search_users(query: str, current_user_id: int, db_path=None):
     cursor = conn.cursor()
     term = f"%{query.strip().lower()}%"
     cursor.execute('''
-        SELECT id, username, display_name, email, avatar_color, created_at
+        SELECT id, username, display_name, email, avatar_color, COALESCE(avatar_icon, 'user') as avatar_icon, created_at
         FROM users
         WHERE id != ? AND (LOWER(username) LIKE ? OR LOWER(display_name) LIKE ? OR LOWER(email) LIKE ?)
         LIMIT 20
@@ -1013,7 +1088,7 @@ def get_friend_requests(user_id: int, db_path=None):
     cursor.execute('''
         SELECT fr.id, fr.sender_id, fr.receiver_id, fr.status, fr.created_at,
                u.username as sender_username, u.display_name as sender_display_name,
-               u.avatar_color as sender_avatar_color, u.email as sender_email
+               u.avatar_color as sender_avatar_color, COALESCE(u.avatar_icon, 'user') as sender_avatar_icon, u.email as sender_email
         FROM friend_requests fr
         JOIN users u ON fr.sender_id = u.id
         WHERE fr.receiver_id = ? AND fr.status = 'pending'
@@ -1025,7 +1100,7 @@ def get_friend_requests(user_id: int, db_path=None):
     cursor.execute('''
         SELECT fr.id, fr.sender_id, fr.receiver_id, fr.status, fr.created_at,
                u.username as receiver_username, u.display_name as receiver_display_name,
-               u.avatar_color as receiver_avatar_color
+               u.avatar_color as receiver_avatar_color, COALESCE(u.avatar_icon, 'user') as receiver_avatar_icon
         FROM friend_requests fr
         JOIN users u ON fr.receiver_id = u.id
         WHERE fr.sender_id = ? AND fr.status = 'pending'
@@ -1151,6 +1226,7 @@ def get_split_pay_requests(user_id: int, db_path=None):
                u.display_name as creator_display_name,
                u.display_name as creator_name,
                u.avatar_color as creator_avatar_color,
+               COALESCE(u.avatar_icon, 'user') as creator_avatar_icon,
                s.name as subscription_name,
                s.name as sub_name,
                s.category as subscription_category,
@@ -1176,6 +1252,7 @@ def get_split_pay_requests(user_id: int, db_path=None):
                u.display_name as friend_display_name,
                u.display_name as friend_name,
                u.avatar_color as friend_avatar_color,
+               COALESCE(u.avatar_icon, 'user') as friend_avatar_icon,
                s.name as subscription_name,
                s.name as sub_name,
                s.category as subscription_category,

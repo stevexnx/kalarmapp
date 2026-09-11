@@ -90,6 +90,45 @@ const CATEGORY_COLORS = {
   'Otros': '#8B5CF6'
 };
 
+// ================= COLECCIÓN DE AVATARES ESTÉTICOS M3 =================
+const AVATAR_ICONS = [
+  { id: 'user', name: 'Usuario', icon: 'user' },
+  { id: 'smile', name: 'Feliz', icon: 'smile' },
+  { id: 'sparkles', name: 'Mágico', icon: 'sparkles' },
+  { id: 'zap', name: 'Rayo', icon: 'zap' },
+  { id: 'flame', name: 'Fuego', icon: 'flame' },
+  { id: 'heart', name: 'Corazón', icon: 'heart' },
+  { id: 'star', name: 'Estrella', icon: 'star' },
+  { id: 'shield', name: 'Escudo', icon: 'shield' },
+  { id: 'crown', name: 'Corona', icon: 'crown' },
+  { id: 'rocket', name: 'Cohete', icon: 'rocket' },
+  { id: 'coffee', name: 'Café', icon: 'coffee' },
+  { id: 'music', name: 'Música', icon: 'music' },
+  { id: 'headphones', name: 'Audífonos', icon: 'headphones' },
+  { id: 'camera', name: 'Cámara', icon: 'camera' },
+  { id: 'compass', name: 'Brújula', icon: 'compass' },
+  { id: 'code', name: 'Código', icon: 'code' },
+  { id: 'feather', name: 'Pluma', icon: 'feather' },
+  { id: 'cat', name: 'Gatito', icon: 'cat' },
+  { id: 'bot', name: 'Robot', icon: 'bot' },
+  { id: 'gem', name: 'Gema', icon: 'gem' }
+];
+
+const AVATAR_COLORS = [
+  '#6750A4', // Lavanda M3 (Principal)
+  '#381E72', // Púrpura Profundo
+  '#006A6A', // Verde Azulado M3
+  '#2B5037', // Verde Bosque
+  '#10B981', // Verde Menta
+  '#0284C7', // Azul Cielo
+  '#2563EB', // Azul Cobalto
+  '#D97706', // Ámbar Cálido
+  '#EA580C', // Naranja Fuego
+  '#DC2626', // Rubí / Rojo
+  '#BE185D', // Rosa Magenta
+  '#7C3AED'  // Violeta Neón
+];
+
 // ================= CATÁLOGO DE SUSCRIPCIONES POPULARES (PRECIOS OFICIALES E ICONOS) =================
 const PRESET_SERVICES = [
   // Streaming de Video
@@ -507,6 +546,32 @@ function getServiceOfficialIcon(name, customColor = '#4F46E5', sizeClass = 'w-5 
   return `<i data-lucide="credit-card" class="${sizeClass}" style="color: ${customColor || '#d0bcff'}"></i>`;
 }
 
+/**
+ * Genera el markup HTML estético para un avatar de usuario o amigo.
+ * Soporta iconos Lucide personalizados o la letra inicial como fallback elegante.
+ */
+function renderAvatarHtml({ name = 'U', color = '#6750A4', icon = 'user', size = 'w-8 h-8', textSize = 'text-xs', iconSize = 'w-4 h-4', extraClasses = '' }) {
+  const safeColor = sanitizeColor(color, '#6750A4');
+  const initial = (name || 'U').charAt(0).toUpperCase();
+
+  // Si tiene icono válido asignado
+  if (icon && icon !== 'initial') {
+    return `
+      <div class="${size} rounded-full flex items-center justify-center shrink-0 shadow-md ${extraClasses}" style="background-color: ${safeColor}; color: #ffffff" title="${escapeHtml(name)}">
+        <i data-lucide="${escapeHtml(icon)}" class="${iconSize} stroke-[2.2]"></i>
+      </div>
+    `;
+  }
+
+  // Fallback con inicial
+  return `
+    <div class="${size} rounded-full flex items-center justify-center ${textSize} font-bold shrink-0 shadow-md ${extraClasses}" style="background-color: ${safeColor}; color: #ffffff" title="${escapeHtml(name)}">
+      ${escapeHtml(initial)}
+    </div>
+  `;
+}
+
+
 
 function convertCurrency(amount, fromCurr, toCurr) {
   if (!amount || isNaN(amount)) return 0;
@@ -704,30 +769,55 @@ function renderUserProfile() {
     settingsUserCard?.classList.remove('hidden');
     hideWelcomeLanding();
 
-    const initial = (state.user.display_name || state.user.username || 'A').charAt(0).toUpperCase();
-    const bgColor = state.user.avatar_color || '#4F46E5';
+    const uNameText = state.user.display_name || state.user.username || 'Usuario';
+    const bgColor = state.user.avatar_color || '#6750A4';
+    const iconName = state.user.avatar_icon || 'user';
 
     if (badge) {
-      badge.textContent = initial;
-      badge.style.backgroundColor = bgColor;
+      badge.innerHTML = renderAvatarHtml({
+        name: uNameText,
+        color: bgColor,
+        icon: iconName,
+        size: 'w-8 h-8',
+        iconSize: 'w-4 h-4',
+        extraClasses: 'ring-2 ring-[#d0bcff]/40'
+      });
     }
-    if (dispName) dispName.textContent = state.user.display_name || state.user.username;
+    if (dispName) dispName.textContent = uNameText;
     if (uName) uName.textContent = `@${state.user.username}`;
 
     if (settingsAvatar) {
-      settingsAvatar.textContent = initial;
-      settingsAvatar.style.backgroundColor = bgColor;
+      settingsAvatar.innerHTML = renderAvatarHtml({
+        name: uNameText,
+        color: bgColor,
+        icon: iconName,
+        size: 'w-10 h-10',
+        iconSize: 'w-5 h-5',
+        extraClasses: 'ring-2 ring-[#d0bcff]/40 shadow'
+      });
     }
-    if (settingsDispName) settingsDispName.textContent = state.user.display_name || state.user.username;
+    if (settingsDispName) settingsDispName.textContent = uNameText;
     if (settingsUName) settingsUName.textContent = `@${state.user.username}`;
 
     if (modalAvatar) {
-      modalAvatar.textContent = initial;
-      modalAvatar.style.backgroundColor = bgColor;
+      modalAvatar.innerHTML = renderAvatarHtml({
+        name: uNameText,
+        color: bgColor,
+        icon: iconName,
+        size: 'w-16 h-16',
+        iconSize: 'w-8 h-8',
+        extraClasses: 'shadow-xl ring-4 ring-[#d0bcff]/20'
+      });
     }
-    if (modalDispName) modalDispName.textContent = state.user.display_name || state.user.username;
+    if (modalDispName) modalDispName.textContent = uNameText;
     if (modalUName) modalUName.textContent = `@${state.user.username}`;
     if (modalEmail) modalEmail.textContent = state.user.email || 'Sin correo registrado';
+
+    // Rellenar input de display_name en el modal
+    const inputDispName = document.getElementById('inputProfileDisplayName');
+    if (inputDispName && !inputDispName.matches(':focus')) {
+      inputDispName.value = state.user.display_name || '';
+    }
   } else {
     loggedInMenu?.classList.add('hidden');
     openLoginBtn?.classList.remove('hidden');
@@ -942,6 +1032,116 @@ async function handleChangePasswordSubmit(e) {
   }
 }
 
+// Variables temporales para personalizar avatar en el modal
+let tempSelectedAvatarIcon = 'user';
+let tempSelectedAvatarColor = '#6750A4';
+
+function openProfileModal() {
+  const modal = document.getElementById('profileModal');
+  if (!modal || !state.user) return;
+
+  tempSelectedAvatarIcon = state.user.avatar_icon || 'user';
+  tempSelectedAvatarColor = state.user.avatar_color || '#6750A4';
+
+  const inputDisp = document.getElementById('inputProfileDisplayName');
+  if (inputDisp) inputDisp.value = state.user.display_name || '';
+
+  renderAvatarSelectors();
+  updateProfileAvatarPreview();
+
+  modal.classList.remove('hidden');
+  initIcons();
+}
+
+function renderAvatarSelectors() {
+  const iconGrid = document.getElementById('avatarIconSelectorGrid');
+  const colorGrid = document.getElementById('avatarColorSelectorGrid');
+
+  if (iconGrid) {
+    iconGrid.innerHTML = AVATAR_ICONS.map(item => {
+      const isActive = item.id === tempSelectedAvatarIcon;
+      return `
+        <button type="button" onclick="selectAvatarIcon('${item.id}')" class="avatar-icon-option ${isActive ? 'active' : ''}" title="${item.name}">
+          <i data-lucide="${item.icon}" class="w-4 h-4"></i>
+        </button>
+      `;
+    }).join('');
+  }
+
+  if (colorGrid) {
+    colorGrid.innerHTML = AVATAR_COLORS.map(color => {
+      const isActive = color.toLowerCase() === tempSelectedAvatarColor.toLowerCase();
+      return `
+        <button type="button" onclick="selectAvatarColor('${color}')" class="avatar-color-option ${isActive ? 'active' : ''}" style="background-color: ${color}" title="Color ${color}"></button>
+      `;
+    }).join('');
+  }
+
+  initIcons();
+}
+
+function selectAvatarIcon(iconId) {
+  tempSelectedAvatarIcon = iconId;
+  renderAvatarSelectors();
+  updateProfileAvatarPreview();
+}
+
+function selectAvatarColor(colorHex) {
+  tempSelectedAvatarColor = colorHex;
+  renderAvatarSelectors();
+  updateProfileAvatarPreview();
+}
+
+function updateProfileAvatarPreview() {
+  const preview = document.getElementById('modalProfileAvatar');
+  const inputDisp = document.getElementById('inputProfileDisplayName');
+  const name = (inputDisp && inputDisp.value.trim()) || state.user?.display_name || state.user?.username || 'U';
+
+  if (preview) {
+    preview.innerHTML = renderAvatarHtml({
+      name: name,
+      color: tempSelectedAvatarColor,
+      icon: tempSelectedAvatarIcon,
+      size: 'w-16 h-16',
+      iconSize: 'w-8 h-8',
+      extraClasses: 'shadow-xl ring-4 ring-[#d0bcff]/20'
+    });
+    initIcons();
+  }
+}
+
+async function handleSaveProfileAvatar() {
+  const inputDisp = document.getElementById('inputProfileDisplayName');
+  const newDisplayName = inputDisp ? inputDisp.value.trim() : '';
+
+  try {
+    const res = await fetch('/api/user/profile', {
+      method: 'PUT',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({
+        display_name: newDisplayName || state.user.username,
+        avatar_color: tempSelectedAvatarColor,
+        avatar_icon: tempSelectedAvatarIcon
+      })
+    });
+
+    const result = await res.json();
+    if (res.ok && result.success) {
+      state.user = result.user;
+      localStorage.setItem('subtracker_user', JSON.stringify(result.user));
+      renderUserProfile();
+      showToast('¡Avatar y perfil actualizados con éxito!', 'success');
+      // Recargar amigos para actualizar vista sincronizada
+      await loadFriends();
+    } else {
+      showToast(result.error || 'No se pudo actualizar el perfil', 'error');
+    }
+  } catch (err) {
+    console.error('Error al guardar avatar de perfil:', err);
+    showToast('Error de conexión al actualizar perfil', 'error');
+  }
+}
+
 function closeAuthModal() {
   document.getElementById('authModal')?.classList.add('hidden');
   if (!state.user) {
@@ -1132,16 +1332,15 @@ function initEventListeners() {
   document.getElementById('btnLogoutFromProfileModal')?.addEventListener('click', handleLogout);
 
   // Modal de Perfil de Usuario
-  document.getElementById('btnOpenProfileModal')?.addEventListener('click', () => {
-    document.getElementById('profileModal')?.classList.remove('hidden');
-    initIcons();
-  });
+  document.getElementById('btnOpenProfileModal')?.addEventListener('click', openProfileModal);
   document.getElementById('btnCloseProfileModal')?.addEventListener('click', () => {
     document.getElementById('profileModal')?.classList.add('hidden');
   });
   document.getElementById('btnCancelProfileModal')?.addEventListener('click', () => {
     document.getElementById('profileModal')?.classList.add('hidden');
   });
+  document.getElementById('btnSaveProfileAvatar')?.addEventListener('click', handleSaveProfileAvatar);
+  document.getElementById('inputProfileDisplayName')?.addEventListener('input', () => updateProfileAvatarPreview());
 
   // Amigos y Funciones Sociales
   document.getElementById('btnOpenAddFriendModal')?.addEventListener('click', () => openFriendModal());
@@ -1638,9 +1837,14 @@ function renderFriendsList() {
       <div>
         <div class="flex items-start justify-between">
           <div class="flex items-center gap-2.5 min-w-0">
-            <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs shadow shrink-0 group-hover:scale-105 transition" style="background-color: ${sanitizeColor(f.avatar_color, '#a8d5b5')}; color: #133821">
-              ${escapeHtml(f.name.charAt(0).toUpperCase())}
-            </div>
+            ${renderAvatarHtml({
+              name: f.name,
+              color: f.avatar_color,
+              icon: f.avatar_icon || 'user',
+              size: 'w-10 h-10',
+              iconSize: 'w-5 h-5',
+              extraClasses: 'group-hover:scale-105 transition'
+            })}
             <div class="min-w-0">
               <div class="flex items-center gap-1.5 flex-wrap">
                 <h4 class="text-xs font-bold text-white font-google-sans truncate group-hover:text-[#d0bcff] transition">${escapeHtml(f.name)}</h4>
@@ -1731,9 +1935,13 @@ function renderFriendRequests() {
   list.innerHTML = received.map(req => `
     <div class="p-3 bg-[#1d1b20] border border-[#d0bcff]/30 rounded-2xl flex items-center justify-between gap-3">
       <div class="flex items-center gap-2.5 min-w-0">
-        <div class="w-8 h-8 rounded-full bg-[#d0bcff] text-[#381e72] font-bold text-xs flex items-center justify-center shrink-0">
-          ${escapeHtml((req.sender_name || req.sender_username || '?').charAt(0).toUpperCase())}
-        </div>
+        ${renderAvatarHtml({
+          name: req.sender_display_name || req.sender_username,
+          color: req.sender_avatar_color,
+          icon: req.sender_avatar_icon || 'user',
+          size: 'w-8 h-8',
+          iconSize: 'w-4 h-4'
+        })}
         <div class="min-w-0">
           <h4 class="text-xs font-bold text-white truncate">${escapeHtml(req.sender_name || req.sender_username)}</h4>
           <div class="text-[10px] text-[#cac4d0] truncate">@${escapeHtml(req.sender_username)}</div>
@@ -1844,9 +2052,13 @@ async function handleUserSearch(query) {
       return `
         <div class="p-3 bg-[#1d1b20] border border-[#49454f]/40 rounded-2xl flex items-center justify-between gap-3">
           <div class="flex items-center gap-2.5 min-w-0">
-            <div class="w-8 h-8 rounded-full bg-[#d0bcff] text-[#381e72] font-bold text-xs flex items-center justify-center shrink-0">
-              ${escapeHtml((u.display_name || u.username).charAt(0).toUpperCase())}
-            </div>
+            ${renderAvatarHtml({
+              name: u.display_name || u.username,
+              color: u.avatar_color,
+              icon: u.avatar_icon || 'user',
+              size: 'w-8 h-8',
+              iconSize: 'w-4 h-4'
+            })}
             <div class="min-w-0">
               <h4 class="text-xs font-bold text-white truncate">${escapeHtml(u.display_name || u.username)}</h4>
               <div class="text-[10px] text-[#cac4d0] truncate">@${escapeHtml(u.username)}</div>
@@ -1978,6 +2190,9 @@ function renderSplitPayRequests() {
 
       const iconHtml = getServiceOfficialIcon(subName, req.subscription_color || '#d0bcff', 'w-4 h-4');
 
+      const otherColor = isReceived ? req.creator_avatar_color : req.friend_avatar_color;
+      const otherIcon = isReceived ? req.creator_avatar_icon : req.friend_avatar_icon;
+
       return `
         <div onclick="openSplitPayDetailModal(${req.id})" class="p-3.5 bg-[#211f26] border border-[#49454f]/40 hover:border-[#d0bcff]/70 hover:bg-[#28262f] cursor-pointer rounded-2xl flex flex-col justify-between space-y-3 transition shadow-sm group">
           <div>
@@ -1987,10 +2202,17 @@ function renderSplitPayRequests() {
                   ${iconHtml}
                 </div>
                 <div class="min-w-0">
-                  <span class="text-[10px] text-[#cac4d0] uppercase tracking-wider block truncate">
-                    ${isReceived ? `De: ${escapeHtml(otherPerson)}` : `Para: ${escapeHtml(otherPerson)}`}
-                    ${otherUsername ? `<span class="text-[#d0bcff] font-mono lowercase text-[10px]"> (${escapeHtml(otherUsername)})</span>` : ''}
-                  </span>
+                  <div class="flex items-center gap-1.5 text-[10px] text-[#cac4d0] uppercase tracking-wider truncate">
+                    ${renderAvatarHtml({
+                      name: otherPerson,
+                      color: otherColor,
+                      icon: otherIcon || 'user',
+                      size: 'w-4 h-4',
+                      iconSize: 'w-2.5 h-2.5'
+                    })}
+                    <span class="truncate">${isReceived ? `De: ${escapeHtml(otherPerson)}` : `Para: ${escapeHtml(otherPerson)}`}</span>
+                    ${otherUsername ? `<span class="text-[#d0bcff] font-mono lowercase text-[10px]">(${escapeHtml(otherUsername)})</span>` : ''}
+                  </div>
                   <h4 class="text-xs font-bold text-white font-google-sans mt-0.5 group-hover:text-[#d0bcff] transition truncate">${escapeHtml(subName)}</h4>
                 </div>
               </div>
@@ -2125,9 +2347,16 @@ function openSplitPayDetailModal(requestId) {
     <div class="p-3.5 bg-[#1d1b20] border border-[#49454f]/40 rounded-2xl space-y-2.5">
       <div class="flex items-center justify-between">
         <span class="text-[#cac4d0]">${isReceived ? 'Enviado por:' : 'Destinatario:'}</span>
-        <span class="text-white font-bold flex items-center gap-1">
+        <span class="text-white font-bold flex items-center gap-2">
+          ${renderAvatarHtml({
+            name: otherPerson,
+            color: isReceived ? req.creator_avatar_color : req.friend_avatar_color,
+            icon: (isReceived ? req.creator_avatar_icon : req.friend_avatar_icon) || 'user',
+            size: 'w-6 h-6',
+            iconSize: 'w-3.5 h-3.5'
+          })}
           <span>${escapeHtml(otherPerson)}</span>
-          ${otherUsername ? `<span class="text-[#d0bcff] font-mono font-normal">(${escapeHtml(otherUsername)})</span>` : ''}
+          ${otherUsername ? `<span class="text-[#d0bcff] font-mono font-normal text-xs">(${escapeHtml(otherUsername)})</span>` : ''}
         </span>
       </div>
       <div class="flex items-center justify-between">
@@ -3228,9 +3457,14 @@ function createCardHtml(sub) {
         <div class="flex items-center gap-1.5" title="Dividido con: ${escapeHtml(namesList)}">
           <div class="flex -space-x-1.5 overflow-hidden">
             ${displayFriends.map(f => `
-              <div class="w-5 h-5 rounded-full bg-[#381e72] border border-[#1d1b20] text-[9px] font-bold text-[#d0bcff] flex items-center justify-center shrink-0" title="${escapeHtml(f.name)}">
-                ${escapeHtml((f.name || 'A')[0].toUpperCase())}
-              </div>
+              ${renderAvatarHtml({
+                name: f.name,
+                color: f.avatar_color,
+                icon: f.avatar_icon || 'user',
+                size: 'w-5 h-5',
+                iconSize: 'w-2.5 h-2.5',
+                extraClasses: 'border border-[#1d1b20]'
+              })}
             `).join('')}
             ${remainingCount > 0 ? `
               <div class="w-5 h-5 rounded-full bg-[#2b2930] border border-[#1d1b20] text-[8px] font-bold text-[#cac4d0] flex items-center justify-center shrink-0">
@@ -6218,6 +6452,9 @@ window.openNotificationsDrawer = openNotificationsDrawer;
 window.closeNotificationsDrawer = closeNotificationsDrawer;
 window.renderNotificationsDrawer = renderNotificationsDrawer;
 window.updateNotificationsBadge = updateNotificationsBadge;
+window.selectAvatarIcon = selectAvatarIcon;
+window.selectAvatarColor = selectAvatarColor;
+window.openProfileModal = openProfileModal;
 
 // ================= MODAL: RESUMEN DE SUSCRIPCIÓN (CLICK EN TARJETA) =================
 function switchSubDetailTab(tabName = 'details') {
@@ -6435,9 +6672,14 @@ async function showSubscriptionSummary(subId) {
           return `
             <div class="p-3.5 bg-[#211f26] rounded-2xl border border-[#49454f]/30 flex items-center justify-between gap-3">
               <div class="flex items-center gap-3 min-w-0">
-                <div class="w-9 h-9 rounded-full bg-[#381e72] border border-[#d0bcff]/40 flex items-center justify-center font-bold text-xs text-[#d0bcff] shrink-0">
-                  ${escapeHtml((f.name || 'A')[0].toUpperCase())}
-                </div>
+                ${renderAvatarHtml({
+                  name: f.name,
+                  color: f.avatar_color,
+                  icon: f.avatar_icon || 'user',
+                  size: 'w-9 h-9',
+                  iconSize: 'w-4 h-4',
+                  extraClasses: 'border border-[#d0bcff]/40'
+                })}
                 <div class="min-w-0">
                   <h5 class="text-xs font-bold text-white truncate font-google-sans">${escapeHtml(f.name)}</h5>
                   <p class="text-[11px] text-[#cac4d0] truncate mt-0.5">Cuota asignada: <strong class="text-[#a8d5b5] font-mono">${baseSymbol}${sharePerPerson}</strong> / ${cycleLabel.toLowerCase()}</p>

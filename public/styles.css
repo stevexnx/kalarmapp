@@ -1203,6 +1203,44 @@ body.theme-light .sub-detail-tab-btn.active {
   border-bottom-color: var(--md-sys-color-primary) !important;
 }
 
+/* ================= SELECTOR DE AVATARES M3 ================= */
+.avatar-icon-option {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  border-radius: var(--md-shape-md);
+  color: var(--md-sys-color-on-surface-variant);
+  background-color: var(--md-sys-color-surface-container-low);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  cursor: pointer;
+  transition: all 0.18s cubic-bezier(0.2, 0, 0, 1);
+}
+.avatar-icon-option:hover {
+  background-color: var(--md-sys-color-surface-container-high);
+  color: var(--md-sys-color-on-surface);
+  transform: scale(1.08);
+}
+.avatar-icon-option.active {
+  background-color: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-on-primary-container);
+  border-color: var(--md-sys-color-primary);
+  box-shadow: 0 0 0 2px var(--md-sys-color-primary);
+  transform: scale(1.08);
+}
 
-
-
+.avatar-color-option {
+  width: 24px;
+  height: 24px;
+  border-radius: var(--md-shape-full);
+  cursor: pointer;
+  transition: transform 0.18s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.18s ease;
+  border: 2px solid transparent;
+}
+.avatar-color-option:hover {
+  transform: scale(1.15);
+}
+.avatar-color-option.active {
+  transform: scale(1.15);
+  box-shadow: 0 0 0 2px var(--md-sys-color-background), 0 0 0 4px var(--md-sys-color-primary);
+}
