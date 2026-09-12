@@ -1680,7 +1680,7 @@ def get_settings(user_id=1, db_path=None):
                 result[key] = rates
             except Exception:
                 result[key] = dict(DEFAULT_EXCHANGE_RATES)
-        elif key in ('show_timeline', 'show_daily_cost', 'show_original_currency', 'privacy_mode_default'):
+        elif key in ('show_timeline', 'show_daily_cost', 'show_original_currency', 'privacy_mode_default', 'compact_dashboard'):
             result[key] = (str(val).lower() in ('true', '1'))
         elif key == 'notification_lead_days':
             try:
@@ -1695,7 +1695,7 @@ def get_settings(user_id=1, db_path=None):
         else:
             result[key] = val
 
-    for bool_key in ('show_timeline', 'show_daily_cost', 'show_original_currency', 'privacy_mode_default'):
+    for bool_key in ('show_timeline', 'show_daily_cost', 'show_original_currency', 'privacy_mode_default', 'compact_dashboard'):
         if bool_key not in result:
             result[bool_key] = False
 
@@ -1710,7 +1710,7 @@ def update_settings(data: dict, user_id=1, db_path=None):
     cursor = conn.cursor()
 
     for k, v in data.items():
-        if k in ('show_timeline', 'show_daily_cost', 'show_original_currency', 'privacy_mode_default'):
+        if k in ('show_timeline', 'show_daily_cost', 'show_original_currency', 'privacy_mode_default', 'compact_dashboard'):
             val_str = '1' if (v is True or str(v).lower() in ('1', 'true')) else '0'
         elif k == 'notification_lead_days':
             val_str = str(int(v) if str(v).isdigit() else 3)

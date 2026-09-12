@@ -683,6 +683,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   initPWA();
   initThemeMode();
   initPrivacyMode();
+  initCompactDashboardMode();
+  initChartsAccordion();
   updateNavCurrencyBadge();
   initIcons();
   initEventListeners();
@@ -1911,6 +1913,7 @@ async function loadSettings() {
       state.currency = CURRENCY_SYMBOLS[state.baseCurrencyCode] || '$';
       updateNavCurrencyBadge();
       initPrivacyMode();
+      applyCompactDashboardMode(Boolean(result.data.compact_dashboard));
     }
   } catch (err) {
     console.error('Error cargando ajustes:', err);
@@ -5860,6 +5863,7 @@ function openSettingsModal(defaultTab = 'general') {
     const showDailyCostCheck = document.getElementById('settingShowDailyCost');
     const showOrigCurrCheck = document.getElementById('settingShowOriginalCurrency');
     const privacyDefaultCheck = document.getElementById('settingPrivacyModeDefault');
+    const compactDashboardCheck = document.getElementById('settingCompactDashboard');
 
     if (showTimelineCheck) {
       showTimelineCheck.checked = Boolean(state.settings.show_timeline === true || state.settings.show_timeline === '1' || state.settings.show_timeline === 'true');
@@ -5872,6 +5876,9 @@ function openSettingsModal(defaultTab = 'general') {
     }
     if (privacyDefaultCheck) {
       privacyDefaultCheck.checked = Boolean(state.settings.privacy_mode_default === true || state.settings.privacy_mode_default === '1' || state.settings.privacy_mode_default === 'true');
+    }
+    if (compactDashboardCheck) {
+      compactDashboardCheck.checked = Boolean(state.settings.compact_dashboard === true || state.settings.compact_dashboard === '1' || state.settings.compact_dashboard === 'true');
     }
 
     selectLeadDays(parseInt(state.settings.notification_lead_days) || 3);
@@ -5901,7 +5908,8 @@ async function handleSettingsGeneralSubmit(e) {
     show_timeline: document.getElementById('settingShowTimeline')?.checked ? '1' : '0',
     show_daily_cost: document.getElementById('settingShowDailyCost')?.checked ? '1' : '0',
     show_original_currency: document.getElementById('settingShowOriginalCurrency')?.checked ? '1' : '0',
-    privacy_mode_default: document.getElementById('settingPrivacyModeDefault')?.checked ? '1' : '0'
+    privacy_mode_default: document.getElementById('settingPrivacyModeDefault')?.checked ? '1' : '0',
+    compact_dashboard: document.getElementById('settingCompactDashboard')?.checked ? '1' : '0'
   };
 
   try {
@@ -5918,6 +5926,7 @@ async function handleSettingsGeneralSubmit(e) {
       state.baseCurrencyCode = result.data.base_currency || data.base_currency || 'USD';
       state.currency = CURRENCY_SYMBOLS[state.baseCurrencyCode] || '$';
       updateNavCurrencyBadge();
+      applyCompactDashboardMode(Boolean(result.data.compact_dashboard));
 
       const privacyDefault = document.getElementById('settingPrivacyModeDefault')?.checked;
       if (privacyDefault !== undefined) {
@@ -6485,6 +6494,51 @@ function applyPrivacyMode(active) {
   }
   initIcons();
 }
+
+// ================= VISTA COMPACTA DEL DASHBOARD =================
+function initCompactDashboardMode() {
+  const isCompact = Boolean(state.settings?.compact_dashboard === true || state.settings?.compact_dashboard === '1' || state.settings?.compact_dashboard === 'true');
+  applyCompactDashboardMode(isCompact);
+}
+
+function applyCompactDashboardMode(isCompact) {
+  if (isCompact) {
+    document.body.classList.add('compact-dashboard');
+  } else {
+    document.body.classList.remove('compact-dashboard');
+  }
+}
+
+// ================= GRÁFICOS COLAPSABLES (ACORDEÓN M3) =================
+function initChartsAccordion() {
+  const savedCollapsed = localStorage.getItem('subtracker_charts_collapsed');
+  if (savedCollapsed === 'true') {
+    toggleChartsAccordion(true);
+  }
+}
+
+function toggleChartsAccordion(forceState) {
+  const content = document.getElementById('chartsAccordionContent');
+  const btn = document.getElementById('chartsAccordionBtn');
+  if (!content || !btn) return;
+
+  const isCurrentlyCollapsed = content.classList.contains('collapsed');
+  const shouldCollapse = (typeof forceState === 'boolean') ? forceState : !isCurrentlyCollapsed;
+
+  if (shouldCollapse) {
+    content.classList.add('collapsed');
+    btn.classList.add('collapsed');
+  } else {
+    content.classList.remove('collapsed');
+    btn.classList.remove('collapsed');
+    setTimeout(() => {
+      if (state.categoryChart) state.categoryChart.resize();
+      if (state.topChart) state.topChart.resize();
+    }, 360);
+  }
+  localStorage.setItem('subtracker_charts_collapsed', shouldCollapse ? 'true' : 'false');
+}
+window.toggleChartsAccordion = toggleChartsAccordion;
 
 // ================= MODO CLARO / OSCURO (GOOGLE MATERIAL 3) =================
 function initThemeMode() {
