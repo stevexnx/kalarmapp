@@ -88,7 +88,7 @@ const state = {
   currency: initialCurrencySymbol,
   baseCurrencyCode: initialBaseCurrency,
   chartMode: 'annual', // 'annual' | 'monthly'
-  viewMode: 'grid',    // 'grid' | 'table'
+  viewMode: localStorage.getItem('subtracker_view_mode') || 'grid',    // 'grid' | 'table'
   currentTab: 'dashboard', // 'dashboard' | 'payments' | 'friends'
   categoryChart: null,
   topChart: null,
@@ -631,6 +631,45 @@ function renderAvatarHtml({ name = 'U', color = '#6750A4', icon = 'user', size =
 }
 
 
+
+// ================= MATEMÁTICA FINANCIERA SEGURA (MONEY MATH) =================
+const MoneyMath = {
+  toCents(amount) {
+    const n = typeof amount === 'string' ? parseFloat(amount) : Number(amount);
+    return isNaN(n) ? 0 : Math.round(n * 100);
+  },
+  fromCents(cents) {
+    return cents / 100;
+  },
+  add(a, b) {
+    return (MoneyMath.toCents(a) + MoneyMath.toCents(b)) / 100;
+  },
+  subtract(a, b) {
+    return (MoneyMath.toCents(a) - MoneyMath.toCents(b)) / 100;
+  },
+  sum(amounts) {
+    if (!Array.isArray(amounts)) return 0;
+    const totalCents = amounts.reduce((acc, curr) => acc + MoneyMath.toCents(curr), 0);
+    return totalCents / 100;
+  },
+  divide(amount, divisor) {
+    if (!divisor || divisor <= 0) return 0;
+    return Math.round(MoneyMath.toCents(amount) / divisor) / 100;
+  },
+  round2(amount) {
+    return MoneyMath.fromCents(MoneyMath.toCents(amount));
+  }
+};
+window.MoneyMath = MoneyMath;
+
+// ================= NORMALIZACIÓN DE FECHAS LOCALES (ANTI-DST & TIMEZONE SHIFT) =================
+function getLocalDateString(d = new Date()) {
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+window.getLocalDateString = getLocalDateString;
 
 function convertCurrency(amount, fromCurr, toCurr) {
   if (!amount || isNaN(amount)) return 0;
@@ -2828,7 +2867,7 @@ async function executeConfirmSplitPay(requestId, req, subMode) {
       const amount = typeof req.amount === 'number' ? req.amount : parseFloat(req.amount || 0);
       const totalOriginalPrice = req.subscription_price ? parseFloat(req.subscription_price) : amount;
       const billingCycle = req.subscription_billing_cycle || 'monthly';
-      const nextDate = req.due_date || req.subscription_next_billing_date || new Date().toISOString().split('T')[0];
+      const nextDate = req.due_date || req.subscription_next_billing_date || getLocalDateString();
       const category = req.subscription_category || 'Servicios Compartidos';
       const color = req.subscription_color || '#d0bcff';
       const icon = req.subscription_icon || '';
@@ -3399,7 +3438,7 @@ async function recordFriendPaymentPrompt(friendId, friendName, amount) {
       body: JSON.stringify({
         friend_id: friendId,
         amount: amount,
-        payment_date: new Date().toISOString().split('T')[0],
+        payment_date: getLocalDateString(),
         notes: notes
       })
     });
@@ -3698,6 +3737,18 @@ function renderSubscriptions() {
   }
 
   emptyState.classList.add('hidden');
+
+  const btnG = document.getElementById('viewModeGrid');
+  const btnT = document.getElementById('viewModeTable');
+  if (btnG && btnT) {
+    if (state.viewMode === 'grid') {
+      btnG.className = 'p-1.5 rounded-full bg-[#d0bcff] text-[#381e72] transition';
+      btnT.className = 'p-1.5 rounded-full text-[#cac4d0] hover:text-white transition';
+    } else {
+      btnT.className = 'p-1.5 rounded-full bg-[#d0bcff] text-[#381e72] transition';
+      btnG.className = 'p-1.5 rounded-full text-[#cac4d0] hover:text-white transition';
+    }
+  }
 
   if (state.viewMode === 'grid') {
     grid.classList.remove('hidden');
@@ -4269,6 +4320,7 @@ function setChartMode(mode) {
 
 function setViewMode(mode) {
   state.viewMode = mode;
+  localStorage.setItem('subtracker_view_mode', mode);
   const btnG = document.getElementById('viewModeGrid');
   const btnT = document.getElementById('viewModeTable');
   if (btnG && btnT) {
@@ -5697,7 +5749,7 @@ async function markAsPaidAndAdvance(id, btnElement = null) {
         subscription_id: id,
         amount: amount,
         currency: sub.currency || 'USD',
-        payment_date: new Date().toISOString().split('T')[0],
+        payment_date: getLocalDateString(),
         payment_method: sub.payment_method || 'Tarjeta',
         notes: `Cobro de corte pagado`,
         advance_date: true
@@ -6018,7 +6070,7 @@ function openManualPaymentModal() {
     <option value="${s.id}">${escapeHtml(s.name)} (${s.currency} ${s.price})</option>
   `).join('');
 
-  document.getElementById('payDate').value = new Date().toISOString().split('T')[0];
+  document.getElementById('payDate').value = getLocalDateString();
   if (state.subscriptions.length > 0) {
     document.getElementById('payAmount').value = state.subscriptions[0].price;
   }
@@ -6084,7 +6136,7 @@ function exportCsv() {
   const csvContent = 'data:text/csv;charset=utf-8,\uFEFF' + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
   const link = document.createElement('a');
   link.setAttribute('href', encodeURI(csvContent));
-  link.setAttribute('download', `suscripciones_${new Date().toISOString().split('T')[0]}.csv`);
+  link.setAttribute('download', `suscripciones_${getLocalDateString()}.csv`);
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);

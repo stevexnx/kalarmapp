@@ -1,5 +1,5 @@
 // Service Worker para SubTracker PWA
-const CACHE_NAME = 'subtracker-v2';
+const CACHE_NAME = 'subtracker-v3';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',

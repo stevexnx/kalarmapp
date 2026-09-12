@@ -18,7 +18,7 @@
 
   --md-sys-color-on-surface: #e6e0e9;
   --md-sys-color-on-surface-variant: #cac4d0;
-  --md-sys-color-outline: #938f99;
+  --md-sys-color-outline: #a5a0ab;
   --md-sys-color-outline-variant: #49454f;
 
   /* Google M3 Primary (Púrpura/Lavanda característico de material.io) */
@@ -91,6 +91,17 @@ h1, h2, h3, h4, .font-google-sans {
 }
 ::-webkit-scrollbar-thumb:hover {
   background: var(--md-sys-color-outline);
+}
+
+/* Accesibilidad y Foco de Teclado M3 (WCAG 2.1 Focus Visible) */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--md-sys-color-primary) !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 0 4px rgba(208, 188, 255, 0.2) !important;
 }
 
 /* ================= GOOGLE M3 NAVIGATION RAIL ================= */
