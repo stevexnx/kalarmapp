@@ -811,6 +811,14 @@ function renderUserProfile() {
   const loggedInMenu = document.getElementById('userLoggedInMenu');
   const openLoginBtn = document.getElementById('btnOpenLoginModal');
 
+  // Elementos en el Rail izquierdo
+  const railBadge = document.getElementById('railUserAvatarBadge');
+  const railLoggedInMenu = document.getElementById('railUserLoggedInMenu');
+  const railLoginBtn = document.getElementById('railBtnOpenLogin');
+  const railPopoverAvatar = document.getElementById('railPopoverAvatar');
+  const railPopoverDispName = document.getElementById('railPopoverDisplayName');
+  const railPopoverUName = document.getElementById('railPopoverUsername');
+
   // Campos en Ajustes
   const settingsUserCard = document.getElementById('settingsUserCard');
   const settingsAvatar = document.getElementById('settingsUserAvatar');
@@ -826,6 +834,8 @@ function renderUserProfile() {
   if (state.user) {
     loggedInMenu?.classList.remove('hidden');
     openLoginBtn?.classList.add('hidden');
+    railLoggedInMenu?.classList.remove('hidden');
+    railLoginBtn?.classList.add('hidden');
     settingsUserCard?.classList.remove('hidden');
     hideWelcomeLanding();
 
@@ -845,6 +855,30 @@ function renderUserProfile() {
     }
     if (dispName) dispName.textContent = uNameText;
     if (uName) uName.textContent = `@${state.user.username}`;
+
+    if (railBadge) {
+      railBadge.innerHTML = renderAvatarHtml({
+        name: uNameText,
+        color: bgColor,
+        icon: iconName,
+        size: 'w-9 h-9',
+        iconSize: 'w-4 h-4',
+        extraClasses: 'ring-2 ring-[#d0bcff]/40'
+      });
+    }
+
+    if (railPopoverAvatar) {
+      railPopoverAvatar.innerHTML = renderAvatarHtml({
+        name: uNameText,
+        color: bgColor,
+        icon: iconName,
+        size: 'w-9 h-9',
+        iconSize: 'w-4 h-4',
+        extraClasses: 'ring-2 ring-[#d0bcff]/40 shrink-0'
+      });
+    }
+    if (railPopoverDispName) railPopoverDispName.textContent = uNameText;
+    if (railPopoverUName) railPopoverUName.textContent = `@${state.user.username}`;
 
     if (settingsAvatar) {
       settingsAvatar.innerHTML = renderAvatarHtml({
@@ -891,11 +925,28 @@ function renderUserProfile() {
   } else {
     loggedInMenu?.classList.add('hidden');
     openLoginBtn?.classList.remove('hidden');
+    railLoggedInMenu?.classList.add('hidden');
+    railLoginBtn?.classList.remove('hidden');
+    closeRailProfilePopover();
     settingsUserCard?.classList.add('hidden');
     showWelcomeLanding();
   }
 
   initIcons();
+}
+
+function toggleRailProfilePopover() {
+  const popover = document.getElementById('railProfilePopover');
+  if (!popover) return;
+  popover.classList.toggle('hidden');
+  initIcons();
+}
+
+function closeRailProfilePopover() {
+  const popover = document.getElementById('railProfilePopover');
+  if (popover && !popover.classList.contains('hidden')) {
+    popover.classList.add('hidden');
+  }
 }
 
 function openAuthModal(mode = 'login') {
@@ -1494,6 +1545,37 @@ function initEventListeners() {
 
   // Modal de Perfil de Usuario
   document.getElementById('btnOpenProfileModal')?.addEventListener('click', openProfileModal);
+
+  // Perfil en Barra Lateral Izquierda (Rail) y Popover M3
+  document.getElementById('railBtnOpenProfile')?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    toggleRailProfilePopover();
+  });
+  document.getElementById('railBtnOpenLogin')?.addEventListener('click', () => openAuthModal('login'));
+  document.getElementById('railPopoverBtnProfile')?.addEventListener('click', () => {
+    closeRailProfilePopover();
+    openProfileModal();
+  });
+  document.getElementById('railPopoverBtnSettings')?.addEventListener('click', () => {
+    closeRailProfilePopover();
+    openSettingsModal('general');
+  });
+  document.getElementById('railPopoverBtnLogout')?.addEventListener('click', () => {
+    closeRailProfilePopover();
+    handleLogout();
+  });
+
+  // Cerrar popover del rail al hacer clic fuera
+  document.addEventListener('click', (e) => {
+    const popover = document.getElementById('railProfilePopover');
+    const btn = document.getElementById('railBtnOpenProfile');
+    if (popover && !popover.classList.contains('hidden')) {
+      if (!popover.contains(e.target) && !btn?.contains(e.target)) {
+        closeRailProfilePopover();
+      }
+    }
+  });
+
   document.getElementById('btnCloseProfileModal')?.addEventListener('click', () => {
     document.getElementById('profileModal')?.classList.add('hidden');
   });
