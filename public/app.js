@@ -1330,15 +1330,36 @@ async function handleAuthSubmit(e) {
       showToast(`Error de conexión: ${err.message || err}`, 'error');
     }
   } else {
-    const displayName = document.getElementById('authDisplayName').value.trim();
-    const email = document.getElementById('authEmail').value.trim();
+    const displayName = document.getElementById('authDisplayName')?.value.trim() || '';
+    const email = document.getElementById('authEmail')?.value.trim() || '';
+
+    if (!username) {
+      showToast('Por favor, ingresa un nombre de usuario', 'error');
+      return;
+    }
+    if (!password) {
+      showToast('Por favor, ingresa una contraseña', 'error');
+      return;
+    }
+    if (password.length < 8) {
+      showToast('La contraseña debe tener al menos 8 caracteres', 'error');
+      return;
+    }
+
     try {
       const res = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password, display_name: displayName, email })
       });
-      const result = await res.json();
+      let result;
+      try {
+        result = await res.json();
+      } catch (parseErr) {
+        const text = await res.text().catch(() => '');
+        showToast(`Error del servidor (${res.status}): ${text.slice(0, 100) || 'Respuesta inválida'}`, 'error');
+        return;
+      }
       if (result.success) {
         state.token = result.token;
         state.user = result.user;
@@ -1347,15 +1368,16 @@ async function handleAuthSubmit(e) {
         sessionStorage.setItem('subtracker_token', result.token);
         localStorage.setItem('subtracker_user', JSON.stringify(result.user));
 
-        showToast(`¡Cuenta creada con éxito!`, 'success');
+        showToast('¡Cuenta creada con éxito!', 'success');
         document.getElementById('authModal')?.classList.add('hidden');
         renderUserProfile();
         await loadAllData();
       } else {
-        showToast(result.error || 'Error al registrar', 'error');
+        showToast(result.error || result.message || 'Error al registrar', 'error');
       }
     } catch (err) {
-      showToast('Error al registrar usuario', 'error');
+      console.error('Register error:', err);
+      showToast(`Error al registrar usuario: ${err.message || err}`, 'error');
     }
   }
 }
