@@ -1,0 +1,25 @@
+{
+  "name": "kalarm",
+  "version": "1.0.0",
+  "description": "Aplicación web completa, moderna y ligera para la administración de suscripciones recurrentes, control de fechas de corte con alertas de cobros inminentes, seguimiento de pruebas gratuitas (*Free Trials*), gestión de cuentas compartidas (*Split Cost*), presupuestos mensuales, conversor multidivisa, historial de pagos reales, **sistema de login multiusuario con sesiones seguras** y **módulo de Lista de Amigos con control de cobros y recordatorios por WhatsApp**.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stevexnx/kalarmapp.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/stevexnx/kalarmapp/issues"
+  },
+  "homepage": "https://github.com/stevexnx/kalarmapp#readme",
+  "dependencies": {
+    "@capacitor/android": "^8.5.2",
+    "@capacitor/cli": "^8.5.2",
+    "@capacitor/core": "^8.5.2"
+  }
+}

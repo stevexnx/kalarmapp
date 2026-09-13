@@ -1,0 +1,10 @@
+{
+  "appId": "com.subtracker.app",
+  "appName": "SubTracker Pro",
+  "webDir": "public",
+  "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "https"
+  }
+}
+
