@@ -229,6 +229,12 @@
 
         <!-- Acciones en Top App Bar estilo Google -->
         <div class="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+          <!-- Botón Amigos en la barra superior -->
+          <button type="button" id="btnHeaderFriends" onclick="switchTab('friends')" title="Amigos y Cuentas Compartidas" class="relative inline-flex items-center justify-center p-2 rounded-full bg-[#211f26] hover:bg-[#2b2930] text-[#cac4d0] hover:text-[#d0bcff] border border-[#49454f]/50 transition cursor-pointer shrink-0">
+            <i data-lucide="users" class="w-4 h-4"></i>
+            <span id="headerFriendsBadge" class="hidden absolute -top-1 -right-1 min-w-[17px] h-[17px] px-1 rounded-full bg-[#a8d5b5] text-[#133821] font-bold text-[9px] flex items-center justify-center ring-2 ring-[#141218]">0</span>
+          </button>
+
           <!-- Botón Notificaciones en la barra superior -->
           <button type="button" id="btnToggleNotifications" onclick="toggleNotificationsDrawer()" title="Centro de Notificaciones y Avisos" class="relative inline-flex items-center justify-center p-2 rounded-full bg-[#211f26] hover:bg-[#2b2930] text-[#cac4d0] hover:text-[#d0bcff] border border-[#49454f]/50 transition cursor-pointer shrink-0">
             <i data-lucide="bell" id="iconNotificationBell" class="w-4 h-4"></i>
@@ -2718,15 +2724,14 @@
   <!-- ================= BARRA DE FUNCIONES HORIZONTAL INFERIOR (ANDROID / MÓVIL) ================= -->
   <nav id="bottomNavigationBar" class="fixed bottom-0 left-0 right-0 z-40 bg-[#141218]/95 backdrop-blur-xl border-t border-[#49454f]/40 flex sm:hidden items-center justify-around px-2 py-1 transition-transform duration-300 shadow-2xl" style="padding-bottom: max(8px, env(safe-area-inset-bottom));">
     
-    <!-- 1: Amigos -->
-    <button id="bottomBtnFriends" type="button" onclick="switchTab('friends')" class="bottom-nav-item flex flex-col items-center justify-center flex-1 py-1 text-[#cac4d0] hover:text-white transition group cursor-pointer focus:outline-none" title="Amigos y Cuentas Compartidas">
+    <!-- 1: Inicio -->
+    <button id="bottomBtnDashboard" type="button" onclick="switchTab('dashboard')" class="bottom-nav-item active flex flex-col items-center justify-center flex-1 py-1 text-[#cac4d0] hover:text-white transition group cursor-pointer focus:outline-none" title="Inicio / Suscripciones">
       <div class="relative flex items-center justify-center">
         <div class="bottom-nav-pill px-3 py-1 rounded-full transition">
-          <i data-lucide="users" class="w-5 h-5 transition-transform group-hover:scale-110"></i>
+          <i data-lucide="layout-dashboard" class="w-5 h-5 transition-transform group-hover:scale-110"></i>
         </div>
-        <span id="bottomFriendsBadge" class="hidden absolute -top-1 right-1 w-4 h-4 rounded-full bg-[#a8d5b5] text-[#133821] font-bold text-[9px] flex items-center justify-center">0</span>
       </div>
-      <span class="text-[10px] font-medium tracking-tight mt-0.5">Amigos</span>
+      <span class="text-[10px] font-medium tracking-tight mt-0.5">Inicio</span>
     </button>
 
     <!-- 2: Calendario -->

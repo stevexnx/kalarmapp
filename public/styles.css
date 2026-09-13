@@ -254,6 +254,12 @@ textarea:focus-visible {
   font-weight: 700;
 }
 
+#btnHeaderFriends.active {
+  background-color: var(--md-sys-color-secondary-container, #4a4458) !important;
+  color: var(--md-sys-color-on-secondary-container, #d0bcff) !important;
+  border-color: rgba(208, 188, 255, 0.4) !important;
+}
+
 @media (max-width: 640px) {
   .m3-nav-rail {
     display: none !important;

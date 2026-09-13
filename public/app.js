@@ -744,6 +744,11 @@ document.addEventListener('DOMContentLoaded', async () => {
           bottomBadge.textContent = state.friends.length;
           bottomBadge.classList.toggle('hidden', state.friends.length === 0);
         }
+        const headerBadge = document.getElementById('headerFriendsBadge');
+        if (headerBadge) {
+          headerBadge.textContent = state.friends.length;
+          headerBadge.classList.toggle('hidden', state.friends.length === 0);
+        }
       }
       if (state.stats) {
         renderKPIs();
@@ -1654,13 +1659,14 @@ function initEventListeners() {
   document.getElementById('btnOpenNavRail')?.addEventListener('click', toggleNavRail);
 
   // Barra de funciones inferior (Android / Móvil)
-  document.getElementById('bottomBtnFriends')?.addEventListener('click', () => switchTab('friends'));
+  document.getElementById('bottomBtnDashboard')?.addEventListener('click', () => switchTab('dashboard'));
   document.getElementById('bottomBtnCalendar')?.addEventListener('click', () => switchTab('calendar'));
   document.getElementById('bottomBtnAddSub')?.addEventListener('click', () => openModal());
   document.getElementById('bottomBtnSplitPay')?.addEventListener('click', () => switchTab('splitpay'));
   document.getElementById('bottomBtnPayments')?.addEventListener('click', () => switchTab('payments'));
 
-  // Header Usuario y Notificaciones
+  // Header Amigos, Usuario y Notificaciones
+  document.getElementById('btnHeaderFriends')?.addEventListener('click', () => switchTab('friends'));
   document.getElementById('btnHeaderOpenProfile')?.addEventListener('click', openProfileModal);
   document.getElementById('btnHeaderOpenLogin')?.addEventListener('click', () => openAuthModal('login'));
   document.getElementById('btnOpenSettingsFromProfile')?.addEventListener('click', () => {
@@ -2193,6 +2199,11 @@ async function loadFriends() {
       if (bottomFriendsBadge) {
         bottomFriendsBadge.textContent = state.friends.length;
         bottomFriendsBadge.classList.toggle('hidden', state.friends.length === 0);
+      }
+      const headerFriendsBadge = document.getElementById('headerFriendsBadge');
+      if (headerFriendsBadge) {
+        headerFriendsBadge.textContent = state.friends.length;
+        headerFriendsBadge.classList.toggle('hidden', state.friends.length === 0);
       }
     }
     if (balancesData && balancesData.success) {
@@ -3622,13 +3633,14 @@ function switchTab(tab) {
   const railFriends = document.getElementById('railBtnFriends');
   const railSplit = document.getElementById('railBtnSplitPay');
 
-  const bottomFriends = document.getElementById('bottomBtnFriends');
+  const bottomDash = document.getElementById('bottomBtnDashboard');
   const bottomCal = document.getElementById('bottomBtnCalendar');
   const bottomSplit = document.getElementById('bottomBtnSplitPay');
   const bottomPay = document.getElementById('bottomBtnPayments');
+  const headerFriends = document.getElementById('btnHeaderFriends');
 
   [viewDash, viewCal, viewPay, viewFriends, viewSplit].forEach(v => v?.classList.add('hidden'));
-  [tabDash, tabCal, tabPay, tabFriends, tabSplit, railDash, railCal, railPay, railFriends, railSplit, bottomFriends, bottomCal, bottomSplit, bottomPay].forEach(t => {
+  [tabDash, tabCal, tabPay, tabFriends, tabSplit, railDash, railCal, railPay, railFriends, railSplit, bottomDash, bottomCal, bottomSplit, bottomPay, headerFriends].forEach(t => {
     t?.classList.remove('active');
   });
 
@@ -3636,6 +3648,7 @@ function switchTab(tab) {
     viewDash?.classList.remove('hidden');
     tabDash?.classList.add('active');
     railDash?.classList.add('active');
+    bottomDash?.classList.add('active');
   } else if (tab === 'calendar') {
     viewCal?.classList.remove('hidden');
     tabCal?.classList.add('active');
@@ -3652,7 +3665,7 @@ function switchTab(tab) {
     viewFriends?.classList.remove('hidden');
     tabFriends?.classList.add('active');
     railFriends?.classList.add('active');
-    bottomFriends?.classList.add('active');
+    headerFriends?.classList.add('active');
     loadFriends();
   } else if (tab === 'splitpay') {
     viewSplit?.classList.remove('hidden');
