@@ -1024,6 +1024,24 @@ function closeRailProfilePopover() {
   }
 }
 
+function toggleNavRail() {
+  const rail = document.getElementById('mainNavRail') || document.querySelector('.m3-nav-rail');
+  const btnOpen = document.getElementById('btnOpenNavRail');
+  if (!rail) return;
+
+  const isHidden = rail.classList.contains('hidden');
+  if (isHidden) {
+    rail.classList.remove('hidden');
+    if (btnOpen) btnOpen.classList.add('hidden');
+    try { localStorage.setItem('subtracker_nav_rail_hidden', 'false'); } catch (e) {}
+  } else {
+    rail.classList.add('hidden');
+    if (btnOpen) btnOpen.classList.remove('hidden');
+    try { localStorage.setItem('subtracker_nav_rail_hidden', 'true'); } catch (e) {}
+  }
+  initIcons();
+}
+
 function openAuthModal(mode = 'login') {
   if (mode === 'welcome') {
     showWelcomeLanding();
@@ -1601,6 +1619,8 @@ function initEventListeners() {
   document.getElementById('railBtnSettings')?.addEventListener('click', () => openSettingsModal('general'));
   document.getElementById('railBtnBackup')?.addEventListener('click', () => openSettingsModal('backups'));
   document.getElementById('railBtnNotifications')?.addEventListener('click', () => toggleNotificationsDrawer());
+  document.getElementById('btnToggleNavRail')?.addEventListener('click', toggleNavRail);
+  document.getElementById('btnOpenNavRail')?.addEventListener('click', toggleNavRail);
 
   // Navegación de Calendario
   document.getElementById('btnPrevMonth')?.addEventListener('click', () => changeCalendarMonth(-1));
@@ -7508,6 +7528,7 @@ window.openAvatarEditorModal = openAvatarEditorModal;
 window.closeAvatarEditorModal = closeAvatarEditorModal;
 window.openAuthModal = openAuthModal;
 window.closeAuthModal = closeAuthModal;
+window.toggleNavRail = toggleNavRail;
 
 // ================= MODAL: RESUMEN DE SUSCRIPCIÓN (CLICK EN TARJETA) =================
 function switchSubDetailTab(tabName = 'details') {

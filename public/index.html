@@ -79,11 +79,11 @@
 <body class="min-h-full flex antialiased selection:bg-[#d0bcff] selection:text-[#381e72] bg-[#141218] text-[#e6e0e9]">
 
   <!-- ================= GOOGLE M3 NAVIGATION RAIL ================= -->
-  <aside class="m3-nav-rail flex flex-col justify-between py-3 sm:py-5 border-r border-[#49454f]/40 shrink-0 sticky top-0 h-screen z-40 bg-[#141218] overflow-y-auto overflow-x-hidden">
+  <aside id="mainNavRail" class="m3-nav-rail flex flex-col justify-between py-3 sm:py-5 border-r border-[#49454f]/40 shrink-0 sticky top-0 h-screen z-40 bg-[#141218] overflow-y-auto overflow-x-hidden transition-all duration-300">
     <div class="flex flex-col items-center gap-6 w-full">
-      <!-- Logo Google Material Style -->
-      <button type="button" onclick="switchTab('dashboard')" class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#d0bcff] to-[#6750a4] flex items-center justify-center shadow-lg shadow-[#d0bcff]/15 transition hover:scale-105 cursor-pointer" title="SubTracker Pro">
-        <i data-lucide="credit-card" class="w-6 h-6 text-[#141218]"></i>
+      <!-- Botón Ocultar Barra de Funciones -->
+      <button id="btnToggleNavRail" type="button" onclick="toggleNavRail()" class="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-tr from-[#d0bcff] to-[#6750a4] flex items-center justify-center shadow-lg shadow-[#d0bcff]/15 transition hover:scale-105 active:scale-95 cursor-pointer group" title="Ocultar barra de funciones">
+        <i data-lucide="credit-card" class="w-5 h-5 sm:w-6 sm:h-6 text-[#141218]"></i>
       </button>
 
       <!-- Ítems del Navigation Rail -->
@@ -211,9 +211,10 @@
         
         <!-- Identificador Móvil / Título de la App -->
         <div class="flex items-center gap-2 sm:gap-3 min-w-0">
-          <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-tr from-[#d0bcff] to-[#6750a4] flex items-center justify-center shadow-md shrink-0">
-            <i data-lucide="credit-card" class="w-4 h-4 sm:w-5 sm:h-5 text-[#141218]"></i>
-          </div>
+          <!-- Botón Reabrir Barra de Funciones (solo visible cuando la barra esté oculta) -->
+          <button id="btnOpenNavRail" type="button" onclick="toggleNavRail()" class="hidden p-2 rounded-xl bg-[#211f26] hover:bg-[#2b2930] text-[#d0bcff] border border-[#49454f]/50 transition cursor-pointer shrink-0" title="Mostrar barra de navegación">
+            <i data-lucide="menu" class="w-5 h-5"></i>
+          </button>
           <div class="min-w-0">
             <div class="flex items-center gap-1.5 sm:gap-2">
               <h1 class="text-base sm:text-xl font-bold tracking-tight text-[#e6e0e9] font-google-sans truncate">
