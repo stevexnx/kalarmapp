@@ -1041,8 +1041,7 @@ function renderUserProfile() {
 }
 
 function closeProfileModal() {
-  const modal = document.getElementById('profileModal');
-  if (modal) modal.classList.add('hidden');
+  closeWithContainerTransform('profileModal');
 }
 
 function toggleRailProfilePopover() {
@@ -1286,7 +1285,7 @@ async function handleChangePasswordSubmit(e) {
 let tempSelectedAvatarIcon = 'user';
 let tempSelectedAvatarColor = '#6750A4';
 
-function openProfileModal() {
+function openProfileModal(sourceElem = null) {
   const modal = document.getElementById('profileModal');
   if (!modal) return;
   if (!state.user) {
@@ -1316,7 +1315,8 @@ function openProfileModal() {
 
   updateProfileAvatarPreview();
 
-  modal.classList.remove('hidden');
+  const triggerSource = sourceElem || document.getElementById('btnHeaderOpenProfile') || document.getElementById('railUserProfileContainer');
+  openWithContainerTransform(modal, triggerSource, { borderRadius: '28px' });
   initIcons();
 }
 
@@ -1661,17 +1661,17 @@ function initEventListeners() {
   // Barra de funciones inferior (Android / Móvil)
   document.getElementById('bottomBtnDashboard')?.addEventListener('click', () => switchTab('dashboard'));
   document.getElementById('bottomBtnCalendar')?.addEventListener('click', () => switchTab('calendar'));
-  document.getElementById('bottomBtnAddSub')?.addEventListener('click', () => openModal());
+  document.getElementById('bottomBtnAddSub')?.addEventListener('click', (e) => openModal(null, e.currentTarget));
   document.getElementById('bottomBtnSplitPay')?.addEventListener('click', () => switchTab('splitpay'));
   document.getElementById('bottomBtnPayments')?.addEventListener('click', () => switchTab('payments'));
 
   // Header Amigos, Usuario y Notificaciones
   document.getElementById('btnHeaderFriends')?.addEventListener('click', () => switchTab('friends'));
-  document.getElementById('btnHeaderOpenProfile')?.addEventListener('click', openProfileModal);
+  document.getElementById('btnHeaderOpenProfile')?.addEventListener('click', (e) => openProfileModal(e.currentTarget));
   document.getElementById('btnHeaderOpenLogin')?.addEventListener('click', () => openAuthModal('login'));
-  document.getElementById('btnOpenSettingsFromProfile')?.addEventListener('click', () => {
+  document.getElementById('btnOpenSettingsFromProfile')?.addEventListener('click', (e) => {
     closeProfileModal();
-    openSettingsModal('general');
+    openSettingsModal('general', e.currentTarget);
   });
 
   // Navegación de Calendario
@@ -1762,11 +1762,10 @@ function initEventListeners() {
     }
   });
 
-  document.getElementById('btnCloseProfileModal')?.addEventListener('click', () => {
-    document.getElementById('profileModal')?.classList.add('hidden');
-  });
-  document.getElementById('btnCancelProfileModal')?.addEventListener('click', () => {
-    document.getElementById('profileModal')?.classList.add('hidden');
+  document.getElementById('btnCloseProfileModal')?.addEventListener('click', closeProfileModal);
+  document.getElementById('btnCancelProfileModal')?.addEventListener('click', closeProfileModal);
+  document.getElementById('profileModal')?.addEventListener('click', (e) => {
+    if (e.target.id === 'profileModal') closeProfileModal();
   });
   document.getElementById('btnSaveProfileName')?.addEventListener('click', handleSaveProfileName);
   document.getElementById('inputProfileDisplayName')?.addEventListener('input', () => updateProfileAvatarPreview());
@@ -1804,6 +1803,9 @@ function initEventListeners() {
   // Suscripciones en Común
   document.getElementById('btnCloseSharedSubsModal')?.addEventListener('click', closeSharedSubsModal);
   document.getElementById('btnOkSharedSubsModal')?.addEventListener('click', closeSharedSubsModal);
+  document.getElementById('sharedSubsModal')?.addEventListener('click', (e) => {
+    if (e.target.id === 'sharedSubsModal') closeSharedSubsModal();
+  });
 
   // Notificaciones
   document.getElementById('btnEnableNotifications')?.addEventListener('click', requestNotificationPermission);
@@ -1823,10 +1825,13 @@ function initEventListeners() {
   document.getElementById('btnChartModeMonthly')?.addEventListener('click', () => setChartMode('monthly'));
 
   // Modales
-  document.getElementById('btnOpenAddModal')?.addEventListener('click', () => openModal());
-  document.getElementById('btnEmptyAdd')?.addEventListener('click', () => openModal());
+  document.getElementById('btnOpenAddModal')?.addEventListener('click', (e) => openModal(null, e.currentTarget));
+  document.getElementById('btnEmptyAdd')?.addEventListener('click', (e) => openModal(null, e.currentTarget));
   document.getElementById('btnCloseModal')?.addEventListener('click', closeModal);
   document.getElementById('btnCancelModal')?.addEventListener('click', closeModal);
+  document.getElementById('subscriptionModal')?.addEventListener('click', (e) => {
+    if (e.target.id === 'subscriptionModal') closeModal();
+  });
   document.getElementById('btnBackToPresets')?.addEventListener('click', showPresetsStep);
   document.getElementById('btnBackToPresetsForm')?.addEventListener('click', showPresetsStep);
   document.getElementById('btnCustomSubscription')?.addEventListener('click', openCustomSubscription);
@@ -1956,9 +1961,12 @@ function initEventListeners() {
   });
 
   // Ajustes y Configuración (Multi-pestaña)
-  document.getElementById('btnOpenSettingsModal')?.addEventListener('click', () => openSettingsModal('general'));
-  document.getElementById('btnQuickEditBudget')?.addEventListener('click', () => openSettingsModal('general'));
+  document.getElementById('btnOpenSettingsModal')?.addEventListener('click', (e) => openSettingsModal('general', e.currentTarget));
+  document.getElementById('btnQuickEditBudget')?.addEventListener('click', (e) => openSettingsModal('general', e.currentTarget));
   document.getElementById('btnCloseSettingsModal')?.addEventListener('click', closeSettingsModal);
+  document.getElementById('settingsModal')?.addEventListener('click', (e) => {
+    if (e.target.id === 'settingsModal') closeSettingsModal();
+  });
   document.getElementById('tabSettingsGeneral')?.addEventListener('click', () => switchSettingsTab('general'));
   document.getElementById('tabSettingsBackups')?.addEventListener('click', () => switchSettingsTab('backups'));
   document.getElementById('tabSettingsNotifications')?.addEventListener('click', () => switchSettingsTab('notifications'));
@@ -1975,9 +1983,12 @@ function initEventListeners() {
   document.getElementById('btnResetDemoSettings')?.addEventListener('click', resetDemoData);
 
   // Pagos Manuales
-  document.getElementById('btnOpenManualPaymentModal')?.addEventListener('click', openManualPaymentModal);
+  document.getElementById('btnOpenManualPaymentModal')?.addEventListener('click', (e) => openManualPaymentModal(e.currentTarget));
   document.getElementById('btnClosePaymentModal')?.addEventListener('click', closePaymentModal);
   document.getElementById('btnCancelPaymentModal')?.addEventListener('click', closePaymentModal);
+  document.getElementById('paymentModal')?.addEventListener('click', (e) => {
+    if (e.target.id === 'paymentModal') closePaymentModal();
+  });
   document.getElementById('paymentForm')?.addEventListener('submit', handlePaymentSubmit);
 
   // Toggle de precio/ciclo manual en selector de planes
@@ -2047,9 +2058,34 @@ function initEventListeners() {
         closeM3Dialog(false);
         return;
       }
+      const settingsModal = document.getElementById('settingsModal');
+      if (settingsModal && !settingsModal.classList.contains('hidden')) {
+        closeSettingsModal();
+        return;
+      }
+      const profileModal = document.getElementById('profileModal');
+      if (profileModal && !profileModal.classList.contains('hidden')) {
+        closeProfileModal();
+        return;
+      }
+      const paymentModal = document.getElementById('paymentModal');
+      if (paymentModal && !paymentModal.classList.contains('hidden')) {
+        closePaymentModal();
+        return;
+      }
+      const sharedSubsModal = document.getElementById('sharedSubsModal');
+      if (sharedSubsModal && !sharedSubsModal.classList.contains('hidden')) {
+        closeSharedSubsModal();
+        return;
+      }
       const subDetailModal = document.getElementById('subscriptionDetailModal');
       if (subDetailModal && !subDetailModal.classList.contains('hidden')) {
         closeSubscriptionSummary();
+        return;
+      }
+      const subModal = document.getElementById('subscriptionModal');
+      if (subModal && !subModal.classList.contains('hidden')) {
+        closeModal();
         return;
       }
       const palModal = document.getElementById('commandPaletteModal');
@@ -2316,7 +2352,7 @@ function renderFriendsList() {
     const cleanPhone = (f.phone || '').replace(/[^0-9+]/g, '');
 
     return `
-    <div onclick="viewSharedSubsWithFriend(${f.id}, '${escapeHtml(f.name)}', ${f.linked_user_id || 'null'})" class="p-4 bg-[#211f26] border border-[#49454f]/40 rounded-2xl flex flex-col justify-between hover:border-[#d0bcff]/70 hover:bg-[#28262f] cursor-pointer transition space-y-3 group shadow-sm">
+    <div id="friend-card-${f.id}" onclick="viewSharedSubsWithFriend(${f.id}, '${escapeHtml(f.name)}', ${f.linked_user_id || 'null'}, this)" class="p-4 bg-[#211f26] border border-[#49454f]/40 rounded-2xl flex flex-col justify-between hover:border-[#d0bcff]/70 hover:bg-[#28262f] cursor-pointer transition space-y-3 group shadow-sm">
       <!-- Encabezado de la Tarjeta del Amigo -->
       <div>
         <div class="flex items-start justify-between">
@@ -2372,7 +2408,7 @@ function renderFriendsList() {
 
       <!-- Acciones Unificadas -->
       <div class="pt-2 border-t border-[#49454f]/30 flex items-center gap-1.5 text-xs" onclick="event.stopPropagation()">
-        <button onclick="viewSharedSubsWithFriend(${f.id}, '${escapeHtml(f.name)}', ${f.linked_user_id || 'null'})" class="flex-1 m3-btn-tonal text-[10px] py-1 px-2 flex items-center justify-center gap-1" title="Ver suscripciones individuales y planes">
+        <button onclick="viewSharedSubsWithFriend(${f.id}, '${escapeHtml(f.name)}', ${f.linked_user_id || 'null'}, this.closest('.p-4'))" class="flex-1 m3-btn-tonal text-[10px] py-1 px-2 flex items-center justify-center gap-1" title="Ver suscripciones individuales y planes">
           <i data-lucide="layers" class="w-3.5 h-3.5 text-[#d0bcff]"></i> Planes
         </button>
         <button onclick="openSplitPayModalForFriend(${f.id}, '${escapeHtml(f.name)}', ${f.linked_user_id || 'null'})" class="m3-btn-filled text-[10px] py-1 px-2.5 flex items-center justify-center gap-1" title="Solicitar pagar en conjunto">
@@ -3273,7 +3309,7 @@ async function handleSplitPaySubmit(e) {
 }
 
 // ================= SUSCRIPCIONES Y DIVIDIR PAGO CON AMIGO =================
-async function viewSharedSubsWithFriend(friendId, friendName, friendUserId = null) {
+async function viewSharedSubsWithFriend(friendId, friendName, friendUserId = null, sourceElem = null) {
   const modal = document.getElementById('sharedSubsModal');
   const title = document.getElementById('sharedSubsModalTitle');
   const subtitle = document.getElementById('sharedSubsModalSubtitle');
@@ -3291,7 +3327,11 @@ async function viewSharedSubsWithFriend(friendId, friendName, friendUserId = nul
   if (content) {
     content.innerHTML = `<div class="text-center py-8 text-xs text-[#cac4d0]">Cargando suscripciones...</div>`;
   }
-  modal?.classList.remove('hidden');
+
+  const triggerSource = sourceElem 
+    || (window.event?.currentTarget) 
+    || document.getElementById(`friend-card-${friendId}`);
+  openWithContainerTransform(modal, triggerSource, { borderRadius: '24px' });
   initIcons();
 
   try {
@@ -3483,7 +3523,7 @@ async function viewSharedSubsWithFriend(friendId, friendName, friendUserId = nul
 }
 
 function closeSharedSubsModal() {
-  document.getElementById('sharedSubsModal')?.classList.add('hidden');
+  closeWithContainerTransform('sharedSubsModal');
 }
 
 function openFriendModal(friend = null) {
@@ -5383,7 +5423,7 @@ function openCustomSubscription() {
   showDetailsForm('Suscripción Personalizada', false);
 }
 
-function openModal(sub = null) {
+function openModal(sub = null, sourceElem = null) {
   state.editingId = sub ? sub.id : null;
   const modal = document.getElementById('subscriptionModal');
   const btnSubmitText = document.getElementById('btnSubmitText');
@@ -5487,7 +5527,13 @@ function openModal(sub = null) {
   const sharedSearch = document.getElementById('sharedFriendsSearchInput');
   if (sharedSearch) sharedSearch.value = '';
   populateSharedFriendsCheckboxes(selectedFriendIds);
-  modal.classList.remove('hidden');
+
+  const triggerSource = sourceElem 
+    || (window.innerWidth < 640 ? document.getElementById('bottomBtnAddSub') : document.getElementById('btnOpenAddModal'))
+    || document.getElementById('btnOpenAddModal')
+    || document.getElementById('bottomBtnAddSub');
+
+  openWithContainerTransform(modal, triggerSource, { borderRadius: '24px' });
   initIcons();
 }
 
@@ -5640,8 +5686,9 @@ function selectPresetService(serviceIndex) {
 }
 
 function closeModal() {
-  document.getElementById('subscriptionModal')?.classList.add('hidden');
-  state.editingId = null;
+  closeWithContainerTransform('subscriptionModal', () => {
+    state.editingId = null;
+  });
 }
 
 function updateModalLiveCalculation() {
@@ -6071,7 +6118,7 @@ function selectLeadDays(days) {
   });
 }
 
-function openSettingsModal(defaultTab = 'general') {
+function openSettingsModal(defaultTab = 'general', sourceElem = null) {
   const modal = document.getElementById('settingsModal');
   if (state.settings) {
     const budgetInput = document.getElementById('settingBudget');
@@ -6114,13 +6161,16 @@ function openSettingsModal(defaultTab = 'general') {
   const currentTheme = localStorage.getItem('subtracker_theme') || 'dark';
   syncThemeSettingsUI(currentTheme === 'light');
   switchSettingsTab(defaultTab);
-  modal?.classList.remove('hidden');
+  const triggerSource = sourceElem 
+    || document.getElementById('btnOpenSettingsFromProfile') 
+    || document.getElementById('railBtnSettings');
+  openWithContainerTransform(modal, triggerSource, { borderRadius: '24px' });
   initIcons();
 }
 
 function closeSettingsModal() {
   toggleCurrencyDropdown(false);
-  document.getElementById('settingsModal')?.classList.add('hidden');
+  closeWithContainerTransform('settingsModal');
 }
 
 async function handleSettingsGeneralSubmit(e) {
@@ -6232,7 +6282,7 @@ function requestNotificationPermission() {
   });
 }
 
-function openManualPaymentModal() {
+function openManualPaymentModal(sourceElem = null) {
   const modal = document.getElementById('paymentModal');
   const select = document.getElementById('paySubSelect');
   if (!modal || !select) return;
@@ -6245,12 +6295,13 @@ function openManualPaymentModal() {
   if (state.subscriptions.length > 0) {
     document.getElementById('payAmount').value = state.subscriptions[0].price;
   }
-  modal.classList.remove('hidden');
+  const triggerSource = sourceElem || window.event?.currentTarget || document.getElementById('btnOpenManualPaymentModal');
+  openWithContainerTransform(modal, triggerSource, { borderRadius: '24px' });
   initIcons();
 }
 
 function closePaymentModal() {
-  document.getElementById('paymentModal')?.classList.add('hidden');
+  closeWithContainerTransform('paymentModal');
 }
 
 async function handlePaymentSubmit(e) {
@@ -6448,6 +6499,107 @@ function getStatusDotHtml(subId, status) {
       <span class="capitalize">${label}</span>
     </button>
   `;
+}
+
+// ================= MATERIAL 3 CONTAINER TRANSFORM UNIVERSAL =================
+function openWithContainerTransform(modalOrId, sourceElem = null, options = {}) {
+  const modal = typeof modalOrId === 'string' ? document.getElementById(modalOrId) : modalOrId;
+  if (!modal) return;
+
+  const dialog = modal.querySelector('.m3-dialog') || modal.firstElementChild;
+  if (!dialog) {
+    modal.classList.remove('hidden');
+    return;
+  }
+
+  if (modal._closeTimeout) {
+    clearTimeout(modal._closeTimeout);
+    modal._closeTimeout = null;
+  }
+
+  let trigger = sourceElem;
+  if (!trigger && window.event && window.event.currentTarget && typeof window.event.currentTarget.getBoundingClientRect === 'function') {
+    trigger = window.event.currentTarget;
+  }
+
+  const triggerRect = (trigger && typeof trigger.getBoundingClientRect === 'function') ? trigger.getBoundingClientRect() : null;
+
+  if (triggerRect && triggerRect.width > 0 && triggerRect.height > 0) {
+    modal.style.transition = 'none';
+    modal.style.opacity = '0';
+    modal.classList.remove('hidden');
+
+    const dialogRect = dialog.getBoundingClientRect();
+    const deltaX = triggerRect.left - dialogRect.left;
+    const deltaY = triggerRect.top - dialogRect.top;
+    const scaleX = triggerRect.width / dialogRect.width;
+    const scaleY = triggerRect.height / dialogRect.height;
+
+    modal._transformData = { deltaX, deltaY, scaleX, scaleY };
+
+    dialog.style.transformOrigin = 'top left';
+    dialog.style.transform = `translate3d(${deltaX}px, ${deltaY}px, 0) scale(${scaleX}, ${scaleY})`;
+    dialog.style.borderRadius = options.borderRadius || '24px';
+    dialog.style.opacity = '0.85';
+    dialog.style.transition = 'none';
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        modal.style.transition = 'opacity 300ms cubic-bezier(0.2, 0, 0, 1)';
+        modal.style.opacity = '1';
+
+        dialog.style.transition = 'transform 320ms cubic-bezier(0.2, 0, 0, 1), border-radius 320ms cubic-bezier(0.2, 0, 0, 1), opacity 240ms cubic-bezier(0.2, 0, 0, 1)';
+        dialog.style.transform = 'translate3d(0, 0, 0) scale(1, 1)';
+        dialog.style.borderRadius = '';
+        dialog.style.opacity = '1';
+      });
+    });
+  } else {
+    modal.classList.remove('hidden');
+    modal._transformData = null;
+    modal.style.opacity = '1';
+    dialog.style.transform = '';
+    dialog.style.opacity = '1';
+  }
+}
+
+function closeWithContainerTransform(modalOrId, callback = null) {
+  const modal = typeof modalOrId === 'string' ? document.getElementById(modalOrId) : modalOrId;
+  if (!modal || modal.classList.contains('hidden')) {
+    if (typeof callback === 'function') callback();
+    return;
+  }
+
+  const dialog = modal.querySelector('.m3-dialog') || modal.firstElementChild;
+
+  if (dialog && modal._transformData) {
+    const { deltaX, deltaY, scaleX, scaleY } = modal._transformData;
+    dialog.style.transition = 'transform 260ms cubic-bezier(0.3, 0, 0.8, 0.15), border-radius 260ms cubic-bezier(0.3, 0, 0.8, 0.15), opacity 200ms ease';
+    dialog.style.transform = `translate3d(${deltaX}px, ${deltaY}px, 0) scale(${scaleX}, ${scaleY})`;
+    dialog.style.borderRadius = '24px';
+    dialog.style.opacity = '0';
+
+    modal.style.transition = 'opacity 240ms ease';
+    modal.style.opacity = '0';
+
+    modal._closeTimeout = setTimeout(() => {
+      modal.classList.add('hidden');
+      modal.style.opacity = '';
+      modal.style.transition = '';
+      dialog.style.transform = '';
+      dialog.style.transformOrigin = '';
+      dialog.style.transition = '';
+      dialog.style.borderRadius = '';
+      dialog.style.opacity = '';
+      modal._transformData = null;
+      modal._closeTimeout = null;
+      if (typeof callback === 'function') callback();
+    }, 260);
+  } else {
+    modal.classList.add('hidden');
+    modal.style.opacity = '';
+    if (typeof callback === 'function') callback();
+  }
 }
 
 function escapeHtml(str) {
@@ -7951,49 +8103,8 @@ async function showSubscriptionSummary(subId, sourceElem = null) {
   const card = (sourceElem && sourceElem.nodeType ? sourceElem : null) 
     || document.getElementById(`sub-card-${sub.id}`) 
     || document.querySelector(`[data-sub-id="${sub.id}"]`);
-  const cardRect = card ? card.getBoundingClientRect() : null;
-  const dialog = modal?.querySelector('.m3-dialog') || document.getElementById('subDetailDialogContainer');
 
-  if (modal && dialog) {
-    if (cardRect && cardRect.width > 0 && cardRect.height > 0) {
-      modal.style.transition = 'none';
-      modal.style.opacity = '0';
-      modal.classList.remove('hidden');
-
-      const dialogRect = dialog.getBoundingClientRect();
-      const deltaX = cardRect.left - dialogRect.left;
-      const deltaY = cardRect.top - dialogRect.top;
-      const scaleX = cardRect.width / dialogRect.width;
-      const scaleY = cardRect.height / dialogRect.height;
-
-      modal._transformData = { deltaX, deltaY, scaleX, scaleY };
-
-      dialog.style.transformOrigin = 'top left';
-      dialog.style.transform = `translate3d(${deltaX}px, ${deltaY}px, 0) scale(${scaleX}, ${scaleY})`;
-      dialog.style.borderRadius = '24px';
-      dialog.style.opacity = '0.85';
-      dialog.style.transition = 'none';
-
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          modal.style.transition = 'opacity 300ms cubic-bezier(0.2, 0, 0, 1)';
-          modal.style.opacity = '1';
-
-          dialog.style.transition = 'transform 320ms cubic-bezier(0.2, 0, 0, 1), border-radius 320ms cubic-bezier(0.2, 0, 0, 1), opacity 240ms cubic-bezier(0.2, 0, 0, 1)';
-          dialog.style.transform = 'translate3d(0, 0, 0) scale(1, 1)';
-          dialog.style.borderRadius = '';
-          dialog.style.opacity = '1';
-        });
-      });
-    } else {
-      modal.classList.remove('hidden');
-      modal._transformData = null;
-      modal.style.opacity = '1';
-      dialog.style.transform = '';
-      dialog.style.opacity = '1';
-    }
-  }
-
+  openWithContainerTransform(modal, card, { borderRadius: '24px' });
   initIcons();
 }
 
@@ -8060,38 +8171,9 @@ async function loadSubPaymentHistory(subId) {
 }
 
 function closeSubscriptionSummary() {
-  const modal = document.getElementById('subscriptionDetailModal');
-  if (!modal || modal.classList.contains('hidden')) return;
-
-  const dialog = modal.querySelector('.m3-dialog') || document.getElementById('subDetailDialogContainer');
-  if (dialog && modal._transformData) {
-    const { deltaX, deltaY, scaleX, scaleY } = modal._transformData;
-    dialog.style.transition = 'transform 260ms cubic-bezier(0.3, 0, 0.8, 0.15), border-radius 260ms cubic-bezier(0.3, 0, 0.8, 0.15), opacity 200ms ease';
-    dialog.style.transform = `translate3d(${deltaX}px, ${deltaY}px, 0) scale(${scaleX}, ${scaleY})`;
-    dialog.style.borderRadius = '24px';
-    dialog.style.opacity = '0';
-
-    modal.style.transition = 'opacity 240ms ease';
-    modal.style.opacity = '0';
-
-    modal._closeTimeout = setTimeout(() => {
-      modal.classList.add('hidden');
-      modal.style.opacity = '';
-      modal.style.transition = '';
-      dialog.style.transform = '';
-      dialog.style.transformOrigin = '';
-      dialog.style.transition = '';
-      dialog.style.borderRadius = '';
-      dialog.style.opacity = '';
-      modal._transformData = null;
-      modal._closeTimeout = null;
-      state.selectedSummarySubId = null;
-    }, 260);
-  } else {
-    modal.classList.add('hidden');
-    modal.style.opacity = '';
+  closeWithContainerTransform('subscriptionDetailModal', () => {
     state.selectedSummarySubId = null;
-  }
+  });
 }
 
 window.showSubscriptionSummary = showSubscriptionSummary;

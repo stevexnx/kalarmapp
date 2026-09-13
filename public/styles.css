@@ -1287,6 +1287,14 @@ body.theme-light .sub-card-interactive:hover {
   will-change: transform, opacity, border-radius;
 }
 
+/* Disparadores M3 con micro-prensa táctil */
+#bottomBtnAddSub:active,
+.m3-fab-google:active,
+#btnHeaderOpenProfile:active {
+  transform: scale(0.92);
+  transition: transform 0.1s ease;
+}
+
 /* Botón Píldora "Marcar Pagado" en Tarjetas M3 */
 .m3-btn-paid-pill {
   display: inline-flex;
