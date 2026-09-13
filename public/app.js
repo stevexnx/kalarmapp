@@ -1810,11 +1810,67 @@ function initEventListeners() {
   // Notificaciones
   document.getElementById('btnEnableNotifications')?.addEventListener('click', requestNotificationPermission);
 
-  // Filtros
+  // Filtros & Búsqueda integrados en la barra
   document.getElementById('searchInput')?.addEventListener('input', debounce(() => loadSubscriptions(), 250));
-  document.getElementById('categoryFilter')?.addEventListener('change', () => loadSubscriptions());
-  document.getElementById('statusFilter')?.addEventListener('change', () => loadSubscriptions());
-  document.getElementById('sortBy')?.addEventListener('change', () => loadSubscriptions());
+  document.getElementById('categoryFilter')?.addEventListener('change', () => { syncFilterUI(); loadSubscriptions(); });
+  document.getElementById('statusFilter')?.addEventListener('change', () => { syncFilterUI(); loadSubscriptions(); });
+  document.getElementById('sortBy')?.addEventListener('change', () => { syncFilterUI(); loadSubscriptions(); });
+
+  document.getElementById('btnToggleSortMenu')?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    document.getElementById('filterDropdownMenu')?.classList.add('hidden');
+    document.getElementById('sortDropdownMenu')?.classList.toggle('hidden');
+  });
+
+  document.getElementById('btnToggleFilterMenu')?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    document.getElementById('sortDropdownMenu')?.classList.add('hidden');
+    document.getElementById('filterDropdownMenu')?.classList.toggle('hidden');
+  });
+
+  document.querySelectorAll('.sort-option-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const sortVal = btn.dataset.sort;
+      const select = document.getElementById('sortBy');
+      if (select) select.value = sortVal;
+      syncFilterUI();
+      loadSubscriptions();
+      document.getElementById('sortDropdownMenu')?.classList.add('hidden');
+    });
+  });
+
+  document.querySelectorAll('.filter-chip-status').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const val = btn.dataset.val;
+      const select = document.getElementById('statusFilter');
+      if (select) select.value = val;
+      syncFilterUI();
+      loadSubscriptions();
+    });
+  });
+
+  document.querySelectorAll('.filter-chip-category').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const val = btn.dataset.val;
+      const select = document.getElementById('categoryFilter');
+      if (select) select.value = val;
+      syncFilterUI();
+      loadSubscriptions();
+    });
+  });
+
+  document.getElementById('btnResetAllFilters')?.addEventListener('click', () => {
+    const cat = document.getElementById('categoryFilter');
+    const stat = document.getElementById('statusFilter');
+    if (cat) cat.value = 'all';
+    if (stat) stat.value = 'all';
+    syncFilterUI();
+    loadSubscriptions();
+  });
+
+  document.getElementById('btnCloseFilterMenu')?.addEventListener('click', () => {
+    document.getElementById('filterDropdownMenu')?.classList.add('hidden');
+  });
 
   // Vistas
   document.getElementById('viewModeGrid')?.addEventListener('click', () => setViewMode('grid'));
@@ -2048,6 +2104,16 @@ function initEventListeners() {
       e.preventDefault();
       toggleCommandPalette();
     } else if (e.key === 'Escape') {
+      const sortMenu = document.getElementById('sortDropdownMenu');
+      if (sortMenu && !sortMenu.classList.contains('hidden')) {
+        sortMenu.classList.add('hidden');
+        return;
+      }
+      const filterMenu = document.getElementById('filterDropdownMenu');
+      if (filterMenu && !filterMenu.classList.contains('hidden')) {
+        filterMenu.classList.add('hidden');
+        return;
+      }
       const notifDrawer = document.getElementById('notificationsDrawer');
       if (notifDrawer && notifDrawer.classList.contains('open')) {
         closeNotificationsDrawer();
@@ -2095,11 +2161,21 @@ function initEventListeners() {
     }
   });
 
-  // Cierre de dropdown de divisa al hacer click afuera
+  // Cierre de dropdowns al hacer click afuera
   document.addEventListener('click', (e) => {
     const container = document.getElementById('customCurrencyDropdownContainer');
     if (container && !container.contains(e.target)) {
       toggleCurrencyDropdown(false);
+    }
+    const sortBtn = document.getElementById('btnToggleSortMenu');
+    const sortMenu = document.getElementById('sortDropdownMenu');
+    if (sortMenu && !sortMenu.classList.contains('hidden') && !sortBtn?.contains(e.target) && !sortMenu.contains(e.target)) {
+      sortMenu.classList.add('hidden');
+    }
+    const filterBtn = document.getElementById('btnToggleFilterMenu');
+    const filterMenu = document.getElementById('filterDropdownMenu');
+    if (filterMenu && !filterMenu.classList.contains('hidden') && !filterBtn?.contains(e.target) && !filterMenu.contains(e.target)) {
+      filterMenu.classList.add('hidden');
     }
   });
 }
@@ -2113,6 +2189,7 @@ async function loadAllData() {
 }
 
 function renderAllViews() {
+  syncFilterUI();
   renderSubscriptions();
   renderKPIs();
   renderBudgetBar();
@@ -2163,12 +2240,98 @@ async function loadStats() {
   }
 }
 
+// ================= SINCRONIZACIÓN DE FILTROS Y ORDEN INTEGRADOS =================
+function syncFilterUI() {
+  const catVal = document.getElementById('categoryFilter')?.value || 'all';
+  const statusVal = document.getElementById('statusFilter')?.value || 'all';
+  const sortVal = document.getElementById('sortBy')?.value || 'date_asc';
+
+  // Sincronizar etiquetas y checks de Ordenar
+  const sortLabels = {
+    'date_asc': 'Corte',
+    'cost_desc': 'Mayor costo',
+    'cost_asc': 'Menor costo',
+    'name_asc': 'A - Z'
+  };
+  const sortLabelEl = document.getElementById('sortActiveLabel');
+  if (sortLabelEl) sortLabelEl.textContent = sortLabels[sortVal] || 'Corte';
+
+  document.querySelectorAll('.sort-option-btn').forEach(btn => {
+    const isSelected = btn.dataset.sort === sortVal;
+    const checkIcon = btn.querySelector('.sort-check');
+    if (isSelected) {
+      btn.classList.add('bg-[#d0bcff]/15', 'text-[#d0bcff]', 'font-semibold');
+      btn.classList.remove('text-[#e6e0e9]');
+      if (checkIcon) checkIcon.classList.remove('hidden');
+    } else {
+      btn.classList.remove('bg-[#d0bcff]/15', 'text-[#d0bcff]', 'font-semibold');
+      btn.classList.add('text-[#e6e0e9]');
+      if (checkIcon) checkIcon.classList.add('hidden');
+    }
+  });
+
+  // Sincronizar chips de Estado
+  document.querySelectorAll('.filter-chip-status').forEach(btn => {
+    if (btn.dataset.val === statusVal) {
+      btn.className = 'filter-chip-status px-2.5 py-1 rounded-full text-[11px] font-semibold transition cursor-pointer bg-[#d0bcff] text-[#381e72] shadow-sm';
+    } else {
+      btn.className = 'filter-chip-status px-2.5 py-1 rounded-full text-[11px] font-medium transition cursor-pointer bg-[#2b2930] text-[#cac4d0] hover:text-white';
+    }
+  });
+
+  // Sincronizar chips de Categoría
+  document.querySelectorAll('.filter-chip-category').forEach(btn => {
+    if (btn.dataset.val === catVal) {
+      btn.className = 'filter-chip-category px-2.5 py-1 rounded-full text-[11px] font-semibold transition cursor-pointer bg-[#d0bcff] text-[#381e72] shadow-sm';
+    } else {
+      btn.className = 'filter-chip-category px-2.5 py-1 rounded-full text-[11px] font-medium transition cursor-pointer bg-[#2b2930] text-[#cac4d0] hover:text-white';
+    }
+  });
+
+  // Contador de filtros activos
+  let count = 0;
+  if (catVal !== 'all') count++;
+  if (statusVal !== 'all') count++;
+
+  const badge = document.getElementById('activeFiltersBadge');
+  const btnFilter = document.getElementById('btnToggleFilterMenu');
+  if (badge) {
+    if (count > 0) {
+      badge.textContent = count;
+      badge.classList.remove('hidden');
+      if (btnFilter) {
+        btnFilter.classList.add('bg-[#d0bcff]/20', 'text-[#d0bcff]', 'border', 'border-[#d0bcff]/40');
+        btnFilter.classList.remove('text-[#cac4d0]');
+      }
+    } else {
+      badge.classList.add('hidden');
+      if (btnFilter) {
+        btnFilter.classList.remove('bg-[#d0bcff]/20', 'text-[#d0bcff]', 'border', 'border-[#d0bcff]/40');
+        btnFilter.classList.add('text-[#cac4d0]');
+      }
+    }
+  }
+
+  // Resaltar botón de orden si no es el por defecto
+  const btnSort = document.getElementById('btnToggleSortMenu');
+  if (btnSort) {
+    if (sortVal !== 'date_asc') {
+      btnSort.classList.add('bg-[#d0bcff]/15', 'text-[#d0bcff]');
+      btnSort.classList.remove('text-[#cac4d0]');
+    } else {
+      btnSort.classList.remove('bg-[#d0bcff]/15', 'text-[#d0bcff]');
+      btnSort.classList.add('text-[#cac4d0]');
+    }
+  }
+}
+
 async function loadSubscriptions() {
   try {
     const search = document.getElementById('searchInput')?.value.trim() || '';
     const category = document.getElementById('categoryFilter')?.value || 'all';
     const status = document.getElementById('statusFilter')?.value || 'all';
     const sort_by = document.getElementById('sortBy')?.value || 'date_asc';
+    syncFilterUI();
 
     const params = new URLSearchParams();
     if (search) params.append('search', search);

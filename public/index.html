@@ -422,53 +422,149 @@
       </div>
 
       <!-- SECCIÓN DE GESTIÓN Y LISTADO DE SUSCRIPCIONES -->
-      <div class="m3-card p-5 sm:p-6 space-y-5">
-        <div class="flex flex-col md:flex-row gap-4 justify-between items-stretch md:items-center">
-          <div class="relative flex-1 max-w-md m3-search-bar flex items-center px-3.5 py-1">
-            <i data-lucide="search" class="w-4 h-4 text-[#cac4d0] shrink-0"></i>
-            <input type="text" id="searchInput" placeholder="Buscar suscripción, servicio o nota..." 
-              class="w-full pl-3 pr-2 py-2 bg-transparent text-xs sm:text-sm text-[#e6e0e9] placeholder-[#938f99] focus:outline-none">
-          </div>
+      <div class="m3-card p-4 sm:p-6 space-y-4 sm:space-y-5">
+        <div class="flex items-center gap-2 sm:gap-3 justify-between">
+          
+          <!-- BARRA DE BÚSQUEDA INTEGRADA CON ORDEN Y FILTROS -->
+          <div class="relative flex-1 m3-search-bar flex items-center px-3 py-1 gap-1.5 sm:gap-2">
+            <i data-lucide="search" class="w-4 h-4 text-[#cac4d0] shrink-0 ml-1"></i>
+            <input type="text" id="searchInput" placeholder="Buscar suscripciones..." 
+              class="w-full pl-2 pr-1 py-1.5 bg-transparent text-xs sm:text-sm text-[#e6e0e9] placeholder-[#938f99] focus:outline-none min-w-0">
 
-          <div class="flex flex-wrap items-center gap-2.5">
-            <select id="categoryFilter" class="bg-[#211f26] border border-[#49454f]/60 rounded-full px-3.5 py-2 text-xs text-[#e6e0e9] focus:outline-none focus:border-[#d0bcff]">
-              <option value="all">Todas las Categorías</option>
-              <option value="Productividad">Productividad</option>
-              <option value="IA">Inteligencia Artificial (IA)</option>
-              <option value="Streaming">Streaming</option>
-              <option value="Software">Software</option>
-              <option value="Servicios">Servicios</option>
-              <option value="Salud & Fitness">Salud & Fitness</option>
-              <option value="Educación">Educación</option>
-              <option value="Gaming">Gaming</option>
-              <option value="Otros">Otros</option>
-            </select>
-
-            <select id="statusFilter" class="bg-[#211f26] border border-[#49454f]/60 rounded-full px-3.5 py-2 text-xs text-[#e6e0e9] focus:outline-none focus:border-[#d0bcff]">
-              <option value="all">Todos los Estados</option>
-              <option value="active">Activas</option>
-              <option value="trials">Pruebas Gratuitas (Trials)</option>
-              <option value="shared">Compartidas (Split)</option>
-              <option value="paused">Pausadas</option>
-              <option value="canceled">Canceladas</option>
-            </select>
-
-            <select id="sortBy" class="bg-[#211f26] border border-[#49454f]/60 rounded-full px-3.5 py-2 text-xs text-[#e6e0e9] focus:outline-none focus:border-[#d0bcff]">
-              <option value="date_asc">Fecha de corte más próxima</option>
-              <option value="cost_desc">Mayor costo anual</option>
-              <option value="cost_asc">Menor costo anual</option>
-              <option value="name_asc">Nombre (A - Z)</option>
-            </select>
-
-            <div class="inline-flex rounded-full bg-[#141218] p-1 border border-[#49454f]/40">
-              <button id="viewModeGrid" class="p-1.5 rounded-full bg-[#d0bcff] text-[#381e72] transition" title="Vista de tarjetas">
-                <i data-lucide="layout-grid" class="w-4 h-4"></i>
+            <!-- Botón de Ordenar integrado -->
+            <div class="relative shrink-0">
+              <button id="btnToggleSortMenu" type="button" 
+                class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs font-medium text-[#cac4d0] hover:text-white hover:bg-[#49454f]/40 transition active:scale-95 cursor-pointer"
+                title="Ordenar suscripciones">
+                <i data-lucide="arrow-down-up" class="w-3.5 h-3.5"></i>
+                <span id="sortActiveLabel" class="hidden md:inline text-[11px] font-medium text-[#e6e0e9]">Corte</span>
               </button>
-              <button id="viewModeTable" class="p-1.5 rounded-full text-[#cac4d0] hover:text-white transition" title="Vista de tabla">
-                <i data-lucide="table" class="w-4 h-4"></i>
+
+              <!-- Menú Desplegable de Orden (Dropdown M3) -->
+              <div id="sortDropdownMenu" class="hidden absolute right-0 top-full mt-2 w-56 bg-[#1d1b20] border border-[#49454f]/60 rounded-2xl shadow-2xl p-1.5 z-50 animate-scale-up backdrop-blur-md space-y-0.5">
+                <div class="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-[#cac4d0]/70">Ordenar por</div>
+                <button type="button" data-sort="date_asc" class="sort-option-btn w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs text-[#e6e0e9] hover:bg-[#36343b] transition text-left">
+                  <span>Próximo corte</span>
+                  <i data-lucide="check" class="w-3.5 h-3.5 text-[#d0bcff] sort-check"></i>
+                </button>
+                <button type="button" data-sort="cost_desc" class="sort-option-btn w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs text-[#e6e0e9] hover:bg-[#36343b] transition text-left">
+                  <span>Mayor costo</span>
+                  <i data-lucide="check" class="w-3.5 h-3.5 text-[#d0bcff] sort-check hidden"></i>
+                </button>
+                <button type="button" data-sort="cost_asc" class="sort-option-btn w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs text-[#e6e0e9] hover:bg-[#36343b] transition text-left">
+                  <span>Menor costo</span>
+                  <i data-lucide="check" class="w-3.5 h-3.5 text-[#d0bcff] sort-check hidden"></i>
+                </button>
+                <button type="button" data-sort="name_asc" class="sort-option-btn w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs text-[#e6e0e9] hover:bg-[#36343b] transition text-left">
+                  <span>Nombre (A - Z)</span>
+                  <i data-lucide="check" class="w-3.5 h-3.5 text-[#d0bcff] sort-check hidden"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Divisor sutil dentro de la barra de búsqueda -->
+            <div class="h-4 w-px bg-[#49454f]/40 shrink-0"></div>
+
+            <!-- Botón de Filtros integrado (Categoría + Estado) -->
+            <div class="relative shrink-0">
+              <button id="btnToggleFilterMenu" type="button" 
+                class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs font-medium text-[#cac4d0] hover:text-white hover:bg-[#49454f]/40 transition active:scale-95 cursor-pointer"
+                title="Filtrar por categoría y estado">
+                <i data-lucide="sliders-horizontal" class="w-3.5 h-3.5"></i>
+                <span class="hidden md:inline text-[11px] font-medium">Filtros</span>
+                <span id="activeFiltersBadge" class="hidden px-1.5 py-0.2 text-[10px] font-bold rounded-full bg-[#d0bcff] text-[#381e72]">0</span>
               </button>
+
+              <!-- Panel Desplegable de Filtros (Popover M3) -->
+              <div id="filterDropdownMenu" class="hidden absolute right-0 top-full mt-2 w-72 sm:w-80 bg-[#1d1b20] border border-[#49454f]/60 rounded-2xl shadow-2xl p-3.5 z-50 animate-scale-up backdrop-blur-md space-y-3">
+                <div class="flex items-center justify-between pb-2 border-b border-[#49454f]/30">
+                  <span class="text-xs font-bold text-white flex items-center gap-1.5">
+                    <i data-lucide="sliders-horizontal" class="w-3.5 h-3.5 text-[#d0bcff]"></i>
+                    Filtros
+                  </span>
+                  <button type="button" id="btnResetAllFilters" class="text-[11px] text-[#d0bcff] hover:underline cursor-pointer">
+                    Restablecer
+                  </button>
+                </div>
+
+                <!-- Filtro de Estado -->
+                <div>
+                  <label class="block text-[10px] font-semibold uppercase tracking-wider text-[#cac4d0] mb-1.5">Estado</label>
+                  <div class="flex flex-wrap gap-1.5" id="statusFilterChips">
+                    <button type="button" data-val="all" class="filter-chip-status px-2.5 py-1 rounded-full text-[11px] font-medium transition cursor-pointer bg-[#d0bcff] text-[#381e72]">Todos</button>
+                    <button type="button" data-val="active" class="filter-chip-status px-2.5 py-1 rounded-full text-[11px] font-medium transition cursor-pointer bg-[#2b2930] text-[#cac4d0] hover:text-white">Activas</button>
+                    <button type="button" data-val="trials" class="filter-chip-status px-2.5 py-1 rounded-full text-[11px] font-medium transition cursor-pointer bg-[#2b2930] text-[#cac4d0] hover:text-white">Pruebas (Trials)</button>
+                    <button type="button" data-val="shared" class="filter-chip-status px-2.5 py-1 rounded-full text-[11px] font-medium transition cursor-pointer bg-[#2b2930] text-[#cac4d0] hover:text-white">Compartidas</button>
+                    <button type="button" data-val="paused" class="filter-chip-status px-2.5 py-1 rounded-full text-[11px] font-medium transition cursor-pointer bg-[#2b2930] text-[#cac4d0] hover:text-white">Pausadas</button>
+                    <button type="button" data-val="canceled" class="filter-chip-status px-2.5 py-1 rounded-full text-[11px] font-medium transition cursor-pointer bg-[#2b2930] text-[#cac4d0] hover:text-white">Canceladas</button>
+                  </div>
+                </div>
+
+                <!-- Filtro de Categoría -->
+                <div>
+                  <label class="block text-[10px] font-semibold uppercase tracking-wider text-[#cac4d0] mb-1.5">Categoría</label>
+                  <div class="flex flex-wrap gap-1.5" id="categoryFilterChips">
+                    <button type="button" data-val="all" class="filter-chip-category px-2.5 py-1 rounded-full text-[11px] font-medium transition cursor-pointer bg-[#d0bcff] text-[#381e72]">Todas</button>
+                    <button type="button" data-val="Productividad" class="filter-chip-category px-2.5 py-1 rounded-full text-[11px] font-medium transition cursor-pointer bg-[#2b2930] text-[#cac4d0] hover:text-white">Productividad</button>
+                    <button type="button" data-val="IA" class="filter-chip-category px-2.5 py-1 rounded-full text-[11px] font-medium transition cursor-pointer bg-[#2b2930] text-[#cac4d0] hover:text-white">IA</button>
+                    <button type="button" data-val="Streaming" class="filter-chip-category px-2.5 py-1 rounded-full text-[11px] font-medium transition cursor-pointer bg-[#2b2930] text-[#cac4d0] hover:text-white">Streaming</button>
+                    <button type="button" data-val="Software" class="filter-chip-category px-2.5 py-1 rounded-full text-[11px] font-medium transition cursor-pointer bg-[#2b2930] text-[#cac4d0] hover:text-white">Software</button>
+                    <button type="button" data-val="Servicios" class="filter-chip-category px-2.5 py-1 rounded-full text-[11px] font-medium transition cursor-pointer bg-[#2b2930] text-[#cac4d0] hover:text-white">Servicios</button>
+                    <button type="button" data-val="Salud & Fitness" class="filter-chip-category px-2.5 py-1 rounded-full text-[11px] font-medium transition cursor-pointer bg-[#2b2930] text-[#cac4d0] hover:text-white">Salud</button>
+                    <button type="button" data-val="Educación" class="filter-chip-category px-2.5 py-1 rounded-full text-[11px] font-medium transition cursor-pointer bg-[#2b2930] text-[#cac4d0] hover:text-white">Educación</button>
+                    <button type="button" data-val="Gaming" class="filter-chip-category px-2.5 py-1 rounded-full text-[11px] font-medium transition cursor-pointer bg-[#2b2930] text-[#cac4d0] hover:text-white">Gaming</button>
+                    <button type="button" data-val="Otros" class="filter-chip-category px-2.5 py-1 rounded-full text-[11px] font-medium transition cursor-pointer bg-[#2b2930] text-[#cac4d0] hover:text-white">Otros</button>
+                  </div>
+                </div>
+
+                <div class="pt-2 border-t border-[#49454f]/30 flex justify-end">
+                  <button type="button" id="btnCloseFilterMenu" class="m3-btn-filled text-[11px] py-1.5 px-3.5 font-medium">
+                    Listo
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
+
+          <!-- BOTONES DE MODO DE VISTA (CUADRÍCULA / TABLA) -->
+          <div class="inline-flex rounded-full bg-[#141218] p-1 border border-[#49454f]/40 shrink-0">
+            <button id="viewModeGrid" type="button" class="p-1.5 rounded-full bg-[#d0bcff] text-[#381e72] transition cursor-pointer" title="Vista de tarjetas">
+              <i data-lucide="layout-grid" class="w-4 h-4"></i>
+            </button>
+            <button id="viewModeTable" type="button" class="p-1.5 rounded-full text-[#cac4d0] hover:text-white transition cursor-pointer" title="Vista de tabla">
+              <i data-lucide="table" class="w-4 h-4"></i>
+            </button>
+          </div>
+
+          <!-- Selects nativos ocultos para compatibilidad total con la lógica existente -->
+          <select id="categoryFilter" class="hidden">
+            <option value="all">Todas las Categorías</option>
+            <option value="Productividad">Productividad</option>
+            <option value="IA">Inteligencia Artificial (IA)</option>
+            <option value="Streaming">Streaming</option>
+            <option value="Software">Software</option>
+            <option value="Servicios">Servicios</option>
+            <option value="Salud & Fitness">Salud & Fitness</option>
+            <option value="Educación">Educación</option>
+            <option value="Gaming">Gaming</option>
+            <option value="Otros">Otros</option>
+          </select>
+
+          <select id="statusFilter" class="hidden">
+            <option value="all">Todos los Estados</option>
+            <option value="active">Activas</option>
+            <option value="trials">Pruebas Gratuitas (Trials)</option>
+            <option value="shared">Compartidas (Split)</option>
+            <option value="paused">Pausadas</option>
+            <option value="canceled">Canceladas</option>
+          </select>
+
+          <select id="sortBy" class="hidden">
+            <option value="date_asc">Fecha de corte más próxima</option>
+            <option value="cost_desc">Mayor costo anual</option>
+            <option value="cost_asc">Menor costo anual</option>
+            <option value="name_asc">Nombre (A - Z)</option>
+          </select>
         </div>
 
         <div id="subscriptionsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
