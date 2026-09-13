@@ -739,6 +739,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (badge) badge.textContent = state.friends.length;
         const railBadge = document.getElementById('railFriendsBadge');
         if (railBadge) railBadge.textContent = state.friends.length;
+        const bottomBadge = document.getElementById('bottomFriendsBadge');
+        if (bottomBadge) {
+          bottomBadge.textContent = state.friends.length;
+          bottomBadge.classList.toggle('hidden', state.friends.length === 0);
+        }
       }
       if (state.stats) {
         renderKPIs();
@@ -991,6 +996,23 @@ function renderUserProfile() {
     const friendsCountEl = document.getElementById('profileFriendsCount');
     if (friendsCountEl) friendsCountEl.textContent = state.friends ? state.friends.length : 0;
 
+    // Header Avatar y Perfil
+    const headerAvatar = document.getElementById('headerUserAvatarBadge');
+    const headerProfileBtn = document.getElementById('btnHeaderOpenProfile');
+    const headerLoginBtn = document.getElementById('btnHeaderOpenLogin');
+    headerProfileBtn?.classList.remove('hidden');
+    headerLoginBtn?.classList.add('hidden');
+    if (headerAvatar) {
+      headerAvatar.innerHTML = renderAvatarHtml({
+        name: uNameText,
+        color: bgColor,
+        icon: iconName,
+        size: 'w-8 h-8',
+        iconSize: 'w-4 h-4',
+        extraClasses: 'ring-2 ring-[#d0bcff]/50'
+      });
+    }
+
     // Rellenar input de display_name en el modal
     const inputDispName = document.getElementById('inputProfileDisplayName');
     if (inputDispName && !inputDispName.matches(':focus')) {
@@ -1001,12 +1023,21 @@ function renderUserProfile() {
     openLoginBtn?.classList.remove('hidden');
     railLoggedInMenu?.classList.add('hidden');
     railLoginBtn?.classList.remove('hidden');
+    const headerProfileBtn = document.getElementById('btnHeaderOpenProfile');
+    const headerLoginBtn = document.getElementById('btnHeaderOpenLogin');
+    headerProfileBtn?.classList.add('hidden');
+    headerLoginBtn?.classList.remove('hidden');
     closeRailProfilePopover();
     settingsUserCard?.classList.add('hidden');
     showWelcomeLanding();
   }
 
   initIcons();
+}
+
+function closeProfileModal() {
+  const modal = document.getElementById('profileModal');
+  if (modal) modal.classList.add('hidden');
 }
 
 function toggleRailProfilePopover() {
@@ -1622,6 +1653,21 @@ function initEventListeners() {
   document.getElementById('btnToggleNavRail')?.addEventListener('click', toggleNavRail);
   document.getElementById('btnOpenNavRail')?.addEventListener('click', toggleNavRail);
 
+  // Barra de funciones inferior (Android / Móvil)
+  document.getElementById('bottomBtnFriends')?.addEventListener('click', () => switchTab('friends'));
+  document.getElementById('bottomBtnCalendar')?.addEventListener('click', () => switchTab('calendar'));
+  document.getElementById('bottomBtnAddSub')?.addEventListener('click', () => openModal());
+  document.getElementById('bottomBtnSplitPay')?.addEventListener('click', () => switchTab('splitpay'));
+  document.getElementById('bottomBtnPayments')?.addEventListener('click', () => switchTab('payments'));
+
+  // Header Usuario y Notificaciones
+  document.getElementById('btnHeaderOpenProfile')?.addEventListener('click', openProfileModal);
+  document.getElementById('btnHeaderOpenLogin')?.addEventListener('click', () => openAuthModal('login'));
+  document.getElementById('btnOpenSettingsFromProfile')?.addEventListener('click', () => {
+    closeProfileModal();
+    openSettingsModal('general');
+  });
+
   // Navegación de Calendario
   document.getElementById('btnPrevMonth')?.addEventListener('click', () => changeCalendarMonth(-1));
   document.getElementById('btnNextMonth')?.addEventListener('click', () => changeCalendarMonth(1));
@@ -2143,6 +2189,11 @@ async function loadFriends() {
       if (badge) badge.textContent = state.friends.length;
       const railFriendsBadge = document.getElementById('railFriendsBadge');
       if (railFriendsBadge) railFriendsBadge.textContent = state.friends.length;
+      const bottomFriendsBadge = document.getElementById('bottomFriendsBadge');
+      if (bottomFriendsBadge) {
+        bottomFriendsBadge.textContent = state.friends.length;
+        bottomFriendsBadge.classList.toggle('hidden', state.friends.length === 0);
+      }
     }
     if (balancesData && balancesData.success) {
       state.friendBalances = balancesData.data;
@@ -2561,9 +2612,14 @@ function renderSplitPayRequests() {
   // Actualizar badges en Navigation Rail y Mobile Nav
   const railSplitPayBadge = document.getElementById('railSplitPayBadge');
   const splitPayBadgeCount = document.getElementById('splitPayBadgeCount');
+  const bottomSplitPayBadge = document.getElementById('bottomSplitPayBadge');
   if (railSplitPayBadge) {
     railSplitPayBadge.textContent = pendingReceived.length;
     railSplitPayBadge.classList.toggle('hidden', pendingReceived.length === 0);
+  }
+  if (bottomSplitPayBadge) {
+    bottomSplitPayBadge.textContent = pendingReceived.length;
+    bottomSplitPayBadge.classList.toggle('hidden', pendingReceived.length === 0);
   }
   if (splitPayBadgeCount) {
     splitPayBadgeCount.textContent = pendingReceived.length;
@@ -3566,8 +3622,13 @@ function switchTab(tab) {
   const railFriends = document.getElementById('railBtnFriends');
   const railSplit = document.getElementById('railBtnSplitPay');
 
+  const bottomFriends = document.getElementById('bottomBtnFriends');
+  const bottomCal = document.getElementById('bottomBtnCalendar');
+  const bottomSplit = document.getElementById('bottomBtnSplitPay');
+  const bottomPay = document.getElementById('bottomBtnPayments');
+
   [viewDash, viewCal, viewPay, viewFriends, viewSplit].forEach(v => v?.classList.add('hidden'));
-  [tabDash, tabCal, tabPay, tabFriends, tabSplit, railDash, railCal, railPay, railFriends, railSplit].forEach(t => {
+  [tabDash, tabCal, tabPay, tabFriends, tabSplit, railDash, railCal, railPay, railFriends, railSplit, bottomFriends, bottomCal, bottomSplit, bottomPay].forEach(t => {
     t?.classList.remove('active');
   });
 
@@ -3579,21 +3640,25 @@ function switchTab(tab) {
     viewCal?.classList.remove('hidden');
     tabCal?.classList.add('active');
     railCal?.classList.add('active');
+    bottomCal?.classList.add('active');
     renderCalendar();
   } else if (tab === 'payments') {
     viewPay?.classList.remove('hidden');
     tabPay?.classList.add('active');
     railPay?.classList.add('active');
+    bottomPay?.classList.add('active');
     loadPayments();
   } else if (tab === 'friends') {
     viewFriends?.classList.remove('hidden');
     tabFriends?.classList.add('active');
     railFriends?.classList.add('active');
+    bottomFriends?.classList.add('active');
     loadFriends();
   } else if (tab === 'splitpay') {
     viewSplit?.classList.remove('hidden');
     tabSplit?.classList.add('active');
     railSplit?.classList.add('active');
+    bottomSplit?.classList.add('active');
     loadFriends();
   }
   initIcons();
@@ -4544,6 +4609,8 @@ function updateCalendarBadge() {
   badge.textContent = cutsCount;
   const railBadge = document.getElementById('railCalendarBadge');
   if (railBadge) railBadge.textContent = cutsCount;
+  const bottomBadge = document.getElementById('bottomCalendarBadge');
+  if (bottomBadge) bottomBadge.textContent = cutsCount;
 }
 
 function renderCalendar() {
