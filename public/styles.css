@@ -1266,15 +1266,25 @@ body.theme-light #notificationsDrawer .drawer-filter-chip.active {
   display: flex;
   flex-direction: column;
   height: 100%;
+  will-change: transform;
 }
 .sub-card-interactive:hover {
   transform: translateY(-2px);
   border-color: rgba(208, 188, 255, 0.4);
   box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.5);
 }
+.sub-card-interactive:active {
+  transform: scale(0.975);
+  transition: transform 0.1s ease;
+}
 body.theme-light .sub-card-interactive:hover {
   border-color: #6750a4 !important;
   box-shadow: 0 8px 24px rgba(103, 80, 164, 0.12) !important;
+}
+
+/* Material 3 Container Transform Dialog */
+.m3-container-transform-dialog {
+  will-change: transform, opacity, border-radius;
 }
 
 /* Botón Píldora "Marcar Pagado" en Tarjetas M3 */

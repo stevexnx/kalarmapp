@@ -2047,6 +2047,11 @@ function initEventListeners() {
         closeM3Dialog(false);
         return;
       }
+      const subDetailModal = document.getElementById('subscriptionDetailModal');
+      if (subDetailModal && !subDetailModal.classList.contains('hidden')) {
+        closeSubscriptionSummary();
+        return;
+      }
       const palModal = document.getElementById('commandPaletteModal');
       if (palModal && !palModal.classList.contains('hidden')) {
         closeCommandPalette();
@@ -4108,7 +4113,7 @@ function createCardHtml(sub) {
   const opacityClass = isInactive ? 'opacity-70 hover:opacity-100 transition-opacity' : '';
 
   return `
-    <div class="m3-card sub-card-interactive p-5 relative overflow-hidden flex flex-col justify-between h-full m3-elevation-1 ${opacityClass}" onclick="showSubscriptionSummary(${sub.id})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();showSubscriptionSummary(${sub.id})}" tabindex="0" role="button" aria-label="Ver resumen de ${escapeHtml(sub.name)}" title="Ver resumen de ${escapeHtml(sub.name)}">
+    <div id="sub-card-${sub.id}" data-sub-id="${sub.id}" class="m3-card sub-card-interactive p-5 relative overflow-hidden flex flex-col justify-between h-full m3-elevation-1 ${opacityClass}" onclick="showSubscriptionSummary(${sub.id}, this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();showSubscriptionSummary(${sub.id}, this)}" tabindex="0" role="button" aria-label="Ver resumen de ${escapeHtml(sub.name)}" title="Ver resumen de ${escapeHtml(sub.name)}">
       <div class="absolute top-0 left-0 right-0 h-1.5" style="background-color: ${safeColor}"></div>
 
       <!-- Cuerpo principal de la tarjeta -->
@@ -4231,7 +4236,7 @@ function createTableRowHtml(sub) {
   const opacityClass = isInactive ? 'opacity-70 hover:opacity-100 transition-opacity' : '';
 
   return `
-    <tr class="hover:bg-[#211f26] transition cursor-pointer ${opacityClass}" onclick="showSubscriptionSummary(${sub.id})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();showSubscriptionSummary(${sub.id})}" tabindex="0" role="button" aria-label="Ver resumen de ${escapeHtml(sub.name)}" title="Ver resumen de ${escapeHtml(sub.name)}">
+    <tr id="sub-row-${sub.id}" data-sub-id="${sub.id}" class="hover:bg-[#211f26] transition cursor-pointer ${opacityClass}" onclick="showSubscriptionSummary(${sub.id}, this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();showSubscriptionSummary(${sub.id}, this)}" tabindex="0" role="button" aria-label="Ver resumen de ${escapeHtml(sub.name)}" title="Ver resumen de ${escapeHtml(sub.name)}">
       <td class="px-4 py-3.5">
         <div class="flex items-center gap-2.5">
           <div class="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 shadow-sm" style="background: linear-gradient(135deg, ${safeColor}22, ${safeColor}44); border: 1px solid ${safeColor}55">
@@ -4277,7 +4282,7 @@ function createTableRowHtml(sub) {
       </td>
       <td class="px-4 py-3.5 text-right space-x-1" onclick="event.stopPropagation()">
         <button onclick="markAsPaidAndAdvance(${sub.id})" title="Marcar como pagado" class="p-1.5 hover:bg-[#2b2930] rounded-full text-[#cac4d0] hover:text-[#a8d5b5] transition cursor-pointer"><i data-lucide="receipt" class="w-4 h-4"></i></button>
-        <button onclick="showSubscriptionSummary(${sub.id})" title="Ver resumen" class="p-1.5 hover:bg-[#2b2930] rounded-full text-[#cac4d0] hover:text-white transition cursor-pointer"><i data-lucide="eye" class="w-4 h-4"></i></button>
+        <button onclick="showSubscriptionSummary(${sub.id}, this.closest('tr'))" title="Ver resumen" class="p-1.5 hover:bg-[#2b2930] rounded-full text-[#cac4d0] hover:text-white transition cursor-pointer"><i data-lucide="eye" class="w-4 h-4"></i></button>
       </td>
     </tr>
   `;
@@ -7650,13 +7655,17 @@ function switchSubDetailTab(tabName = 'details') {
   }
 }
 
-async function showSubscriptionSummary(subId) {
+async function showSubscriptionSummary(subId, sourceElem = null) {
   const sub = (state.subscriptions || []).find(s => s.id === parseInt(subId));
   if (!sub) return;
 
   state.selectedSummarySubId = sub.id;
 
   const modal = document.getElementById('subscriptionDetailModal');
+  if (modal && modal._closeTimeout) {
+    clearTimeout(modal._closeTimeout);
+    modal._closeTimeout = null;
+  }
   const headerBar = document.getElementById('subDetailHeaderBar');
   const iconBox = document.getElementById('subDetailIconBox');
   const nameEl = document.getElementById('subDetailName');
@@ -7939,7 +7948,52 @@ async function showSubscriptionSummary(subId) {
   // Abrir en pestaña Detalles por defecto
   switchSubDetailTab('details');
 
-  modal?.classList.remove('hidden');
+  const card = (sourceElem && sourceElem.nodeType ? sourceElem : null) 
+    || document.getElementById(`sub-card-${sub.id}`) 
+    || document.querySelector(`[data-sub-id="${sub.id}"]`);
+  const cardRect = card ? card.getBoundingClientRect() : null;
+  const dialog = modal?.querySelector('.m3-dialog') || document.getElementById('subDetailDialogContainer');
+
+  if (modal && dialog) {
+    if (cardRect && cardRect.width > 0 && cardRect.height > 0) {
+      modal.style.transition = 'none';
+      modal.style.opacity = '0';
+      modal.classList.remove('hidden');
+
+      const dialogRect = dialog.getBoundingClientRect();
+      const deltaX = cardRect.left - dialogRect.left;
+      const deltaY = cardRect.top - dialogRect.top;
+      const scaleX = cardRect.width / dialogRect.width;
+      const scaleY = cardRect.height / dialogRect.height;
+
+      modal._transformData = { deltaX, deltaY, scaleX, scaleY };
+
+      dialog.style.transformOrigin = 'top left';
+      dialog.style.transform = `translate3d(${deltaX}px, ${deltaY}px, 0) scale(${scaleX}, ${scaleY})`;
+      dialog.style.borderRadius = '24px';
+      dialog.style.opacity = '0.85';
+      dialog.style.transition = 'none';
+
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          modal.style.transition = 'opacity 300ms cubic-bezier(0.2, 0, 0, 1)';
+          modal.style.opacity = '1';
+
+          dialog.style.transition = 'transform 320ms cubic-bezier(0.2, 0, 0, 1), border-radius 320ms cubic-bezier(0.2, 0, 0, 1), opacity 240ms cubic-bezier(0.2, 0, 0, 1)';
+          dialog.style.transform = 'translate3d(0, 0, 0) scale(1, 1)';
+          dialog.style.borderRadius = '';
+          dialog.style.opacity = '1';
+        });
+      });
+    } else {
+      modal.classList.remove('hidden');
+      modal._transformData = null;
+      modal.style.opacity = '1';
+      dialog.style.transform = '';
+      dialog.style.opacity = '1';
+    }
+  }
+
   initIcons();
 }
 
@@ -8007,8 +8061,37 @@ async function loadSubPaymentHistory(subId) {
 
 function closeSubscriptionSummary() {
   const modal = document.getElementById('subscriptionDetailModal');
-  modal?.classList.add('hidden');
-  state.selectedSummarySubId = null;
+  if (!modal || modal.classList.contains('hidden')) return;
+
+  const dialog = modal.querySelector('.m3-dialog') || document.getElementById('subDetailDialogContainer');
+  if (dialog && modal._transformData) {
+    const { deltaX, deltaY, scaleX, scaleY } = modal._transformData;
+    dialog.style.transition = 'transform 260ms cubic-bezier(0.3, 0, 0.8, 0.15), border-radius 260ms cubic-bezier(0.3, 0, 0.8, 0.15), opacity 200ms ease';
+    dialog.style.transform = `translate3d(${deltaX}px, ${deltaY}px, 0) scale(${scaleX}, ${scaleY})`;
+    dialog.style.borderRadius = '24px';
+    dialog.style.opacity = '0';
+
+    modal.style.transition = 'opacity 240ms ease';
+    modal.style.opacity = '0';
+
+    modal._closeTimeout = setTimeout(() => {
+      modal.classList.add('hidden');
+      modal.style.opacity = '';
+      modal.style.transition = '';
+      dialog.style.transform = '';
+      dialog.style.transformOrigin = '';
+      dialog.style.transition = '';
+      dialog.style.borderRadius = '';
+      dialog.style.opacity = '';
+      modal._transformData = null;
+      modal._closeTimeout = null;
+      state.selectedSummarySubId = null;
+    }, 260);
+  } else {
+    modal.classList.add('hidden');
+    modal.style.opacity = '';
+    state.selectedSummarySubId = null;
+  }
 }
 
 window.showSubscriptionSummary = showSubscriptionSummary;
