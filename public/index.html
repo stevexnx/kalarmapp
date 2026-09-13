@@ -434,28 +434,36 @@
             <!-- Botón de Ordenar integrado -->
             <div class="relative shrink-0">
               <button id="btnToggleSortMenu" type="button" 
-                class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs font-medium text-[#cac4d0] hover:text-white hover:bg-[#49454f]/40 transition active:scale-95 cursor-pointer"
+                class="h-8 px-2 sm:px-2.5 flex items-center justify-center gap-1.5 rounded-full text-xs font-medium text-[#cac4d0] hover:text-white hover:bg-[#49454f]/40 transition active:scale-95 cursor-pointer"
                 title="Ordenar suscripciones">
                 <i data-lucide="arrow-down-up" class="w-3.5 h-3.5"></i>
                 <span id="sortActiveLabel" class="hidden md:inline text-[11px] font-medium text-[#e6e0e9]">Corte</span>
               </button>
 
-              <!-- Menú Desplegable de Orden (Dropdown M3) -->
-              <div id="sortDropdownMenu" class="hidden absolute right-0 top-full mt-2 w-56 bg-[#1d1b20] border border-[#49454f]/60 rounded-2xl shadow-2xl p-1.5 z-50 animate-scale-up backdrop-blur-md space-y-0.5">
-                <div class="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-[#cac4d0]/70">Ordenar por</div>
-                <button type="button" data-sort="date_asc" class="sort-option-btn w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs text-[#e6e0e9] hover:bg-[#36343b] transition text-left">
+              <!-- Backdrop móvil para menú de orden -->
+              <div id="sortBackdrop" class="hidden fixed inset-0 z-40 bg-black/60 backdrop-blur-xs sm:hidden"></div>
+
+              <!-- Menú Desplegable de Orden (Centrado en móvil, Dropdown en PC) -->
+              <div id="sortDropdownMenu" class="hidden fixed inset-x-4 top-1/2 -translate-y-1/2 max-w-[280px] mx-auto sm:absolute sm:inset-x-auto sm:top-full sm:right-0 sm:translate-y-0 sm:mt-2 sm:w-56 sm:max-w-none sm:mx-0 bg-[#1d1b20] border border-[#49454f]/60 rounded-2xl shadow-2xl p-2 z-50 animate-scale-up backdrop-blur-md space-y-1">
+                <div class="flex items-center justify-between px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-[#cac4d0]/70 border-b border-[#49454f]/20 mb-1">
+                  <span>Ordenar por</span>
+                  <button type="button" id="btnCloseSortX" class="p-0.5 rounded-full text-[#cac4d0] hover:text-white sm:hidden cursor-pointer" title="Cerrar">
+                    <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                  </button>
+                </div>
+                <button type="button" data-sort="date_asc" class="sort-option-btn w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs text-[#e6e0e9] hover:bg-[#36343b] transition text-left cursor-pointer">
                   <span>Próximo corte</span>
                   <i data-lucide="check" class="w-3.5 h-3.5 text-[#d0bcff] sort-check"></i>
                 </button>
-                <button type="button" data-sort="cost_desc" class="sort-option-btn w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs text-[#e6e0e9] hover:bg-[#36343b] transition text-left">
+                <button type="button" data-sort="cost_desc" class="sort-option-btn w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs text-[#e6e0e9] hover:bg-[#36343b] transition text-left cursor-pointer">
                   <span>Mayor costo</span>
                   <i data-lucide="check" class="w-3.5 h-3.5 text-[#d0bcff] sort-check hidden"></i>
                 </button>
-                <button type="button" data-sort="cost_asc" class="sort-option-btn w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs text-[#e6e0e9] hover:bg-[#36343b] transition text-left">
+                <button type="button" data-sort="cost_asc" class="sort-option-btn w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs text-[#e6e0e9] hover:bg-[#36343b] transition text-left cursor-pointer">
                   <span>Menor costo</span>
                   <i data-lucide="check" class="w-3.5 h-3.5 text-[#d0bcff] sort-check hidden"></i>
                 </button>
-                <button type="button" data-sort="name_asc" class="sort-option-btn w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs text-[#e6e0e9] hover:bg-[#36343b] transition text-left">
+                <button type="button" data-sort="name_asc" class="sort-option-btn w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs text-[#e6e0e9] hover:bg-[#36343b] transition text-left cursor-pointer">
                   <span>Nombre (A - Z)</span>
                   <i data-lucide="check" class="w-3.5 h-3.5 text-[#d0bcff] sort-check hidden"></i>
                 </button>
@@ -468,23 +476,31 @@
             <!-- Botón de Filtros integrado (Categoría + Estado) -->
             <div class="relative shrink-0">
               <button id="btnToggleFilterMenu" type="button" 
-                class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs font-medium text-[#cac4d0] hover:text-white hover:bg-[#49454f]/40 transition active:scale-95 cursor-pointer"
+                class="h-8 px-2 sm:px-2.5 flex items-center justify-center gap-1.5 rounded-full text-xs font-medium text-[#cac4d0] hover:text-white hover:bg-[#49454f]/40 transition active:scale-95 cursor-pointer"
                 title="Filtrar por categoría y estado">
                 <i data-lucide="sliders-horizontal" class="w-3.5 h-3.5"></i>
                 <span class="hidden md:inline text-[11px] font-medium">Filtros</span>
                 <span id="activeFiltersBadge" class="hidden px-1.5 py-0.2 text-[10px] font-bold rounded-full bg-[#d0bcff] text-[#381e72]">0</span>
               </button>
 
-              <!-- Panel Desplegable de Filtros (Popover M3) -->
-              <div id="filterDropdownMenu" class="hidden absolute right-0 top-full mt-2 w-72 sm:w-80 bg-[#1d1b20] border border-[#49454f]/60 rounded-2xl shadow-2xl p-3.5 z-50 animate-scale-up backdrop-blur-md space-y-3">
-                <div class="flex items-center justify-between pb-2 border-b border-[#49454f]/30">
-                  <span class="text-xs font-bold text-white flex items-center gap-1.5">
+              <!-- Backdrop móvil para panel de filtros -->
+              <div id="filterBackdrop" class="hidden fixed inset-0 z-40 bg-black/60 backdrop-blur-xs sm:hidden"></div>
+
+              <!-- Panel Desplegable de Filtros (Centrado en móvil, Popover en PC) -->
+              <div id="filterDropdownMenu" class="hidden fixed inset-x-4 top-1/2 -translate-y-1/2 max-w-sm mx-auto max-h-[85vh] overflow-y-auto sm:absolute sm:inset-x-auto sm:top-full sm:right-0 sm:translate-y-0 sm:mt-2 sm:w-80 sm:max-w-none sm:mx-0 sm:max-h-none sm:overflow-visible bg-[#1d1b20] border border-[#49454f]/60 rounded-2xl shadow-2xl p-4 z-50 animate-scale-up backdrop-blur-md space-y-3.5">
+                <div class="flex items-center justify-between pb-2.5 border-b border-[#49454f]/30">
+                  <span class="text-xs font-bold text-white flex items-center gap-1.5 font-google-sans">
                     <i data-lucide="sliders-horizontal" class="w-3.5 h-3.5 text-[#d0bcff]"></i>
-                    Filtros
+                    Filtros de Búsqueda
                   </span>
-                  <button type="button" id="btnResetAllFilters" class="text-[11px] text-[#d0bcff] hover:underline cursor-pointer">
-                    Restablecer
-                  </button>
+                  <div class="flex items-center gap-2">
+                    <button type="button" id="btnResetAllFilters" class="text-[11px] text-[#d0bcff] hover:underline cursor-pointer font-medium">
+                      Restablecer
+                    </button>
+                    <button type="button" id="btnCloseFilterX" class="p-1 rounded-full text-[#cac4d0] hover:text-white hover:bg-[#36343b] transition sm:hidden cursor-pointer" title="Cerrar">
+                      <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
                 </div>
 
                 <!-- Filtro de Estado -->
@@ -518,7 +534,7 @@
                 </div>
 
                 <div class="pt-2 border-t border-[#49454f]/30 flex justify-end">
-                  <button type="button" id="btnCloseFilterMenu" class="m3-btn-filled text-[11px] py-1.5 px-3.5 font-medium">
+                  <button type="button" id="btnCloseFilterMenu" class="m3-btn-filled text-[11px] py-1.5 px-4 font-medium">
                     Listo
                   </button>
                 </div>

@@ -1816,17 +1816,42 @@ function initEventListeners() {
   document.getElementById('statusFilter')?.addEventListener('change', () => { syncFilterUI(); loadSubscriptions(); });
   document.getElementById('sortBy')?.addEventListener('change', () => { syncFilterUI(); loadSubscriptions(); });
 
+  const closeAllFilterMenus = () => {
+    document.getElementById('sortDropdownMenu')?.classList.add('hidden');
+    document.getElementById('sortBackdrop')?.classList.add('hidden');
+    document.getElementById('filterDropdownMenu')?.classList.add('hidden');
+    document.getElementById('filterBackdrop')?.classList.add('hidden');
+  };
+
   document.getElementById('btnToggleSortMenu')?.addEventListener('click', (e) => {
     e.stopPropagation();
-    document.getElementById('filterDropdownMenu')?.classList.add('hidden');
-    document.getElementById('sortDropdownMenu')?.classList.toggle('hidden');
+    const sortMenu = document.getElementById('sortDropdownMenu');
+    const sortBackdrop = document.getElementById('sortBackdrop');
+    const isClosed = sortMenu?.classList.contains('hidden');
+    closeAllFilterMenus();
+    if (isClosed) {
+      sortMenu?.classList.remove('hidden');
+      sortBackdrop?.classList.remove('hidden');
+    }
   });
 
   document.getElementById('btnToggleFilterMenu')?.addEventListener('click', (e) => {
     e.stopPropagation();
-    document.getElementById('sortDropdownMenu')?.classList.add('hidden');
-    document.getElementById('filterDropdownMenu')?.classList.toggle('hidden');
+    const filterMenu = document.getElementById('filterDropdownMenu');
+    const filterBackdrop = document.getElementById('filterBackdrop');
+    const isClosed = filterMenu?.classList.contains('hidden');
+    closeAllFilterMenus();
+    if (isClosed) {
+      filterMenu?.classList.remove('hidden');
+      filterBackdrop?.classList.remove('hidden');
+    }
   });
+
+  document.getElementById('sortBackdrop')?.addEventListener('click', closeAllFilterMenus);
+  document.getElementById('filterBackdrop')?.addEventListener('click', closeAllFilterMenus);
+  document.getElementById('btnCloseSortX')?.addEventListener('click', closeAllFilterMenus);
+  document.getElementById('btnCloseFilterX')?.addEventListener('click', closeAllFilterMenus);
+  document.getElementById('btnCloseFilterMenu')?.addEventListener('click', closeAllFilterMenus);
 
   document.querySelectorAll('.sort-option-btn').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -1835,7 +1860,7 @@ function initEventListeners() {
       if (select) select.value = sortVal;
       syncFilterUI();
       loadSubscriptions();
-      document.getElementById('sortDropdownMenu')?.classList.add('hidden');
+      closeAllFilterMenus();
     });
   });
 
@@ -1866,10 +1891,6 @@ function initEventListeners() {
     if (stat) stat.value = 'all';
     syncFilterUI();
     loadSubscriptions();
-  });
-
-  document.getElementById('btnCloseFilterMenu')?.addEventListener('click', () => {
-    document.getElementById('filterDropdownMenu')?.classList.add('hidden');
   });
 
   // Vistas
@@ -2107,11 +2128,13 @@ function initEventListeners() {
       const sortMenu = document.getElementById('sortDropdownMenu');
       if (sortMenu && !sortMenu.classList.contains('hidden')) {
         sortMenu.classList.add('hidden');
+        document.getElementById('sortBackdrop')?.classList.add('hidden');
         return;
       }
       const filterMenu = document.getElementById('filterDropdownMenu');
       if (filterMenu && !filterMenu.classList.contains('hidden')) {
         filterMenu.classList.add('hidden');
+        document.getElementById('filterBackdrop')?.classList.add('hidden');
         return;
       }
       const notifDrawer = document.getElementById('notificationsDrawer');
@@ -2171,11 +2194,13 @@ function initEventListeners() {
     const sortMenu = document.getElementById('sortDropdownMenu');
     if (sortMenu && !sortMenu.classList.contains('hidden') && !sortBtn?.contains(e.target) && !sortMenu.contains(e.target)) {
       sortMenu.classList.add('hidden');
+      document.getElementById('sortBackdrop')?.classList.add('hidden');
     }
     const filterBtn = document.getElementById('btnToggleFilterMenu');
     const filterMenu = document.getElementById('filterDropdownMenu');
     if (filterMenu && !filterMenu.classList.contains('hidden') && !filterBtn?.contains(e.target) && !filterMenu.contains(e.target)) {
       filterMenu.classList.add('hidden');
+      document.getElementById('filterBackdrop')?.classList.add('hidden');
     }
   });
 }
