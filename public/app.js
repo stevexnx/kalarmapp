@@ -6652,7 +6652,7 @@ function showToast(message, type = 'info') {
       : 'bg-[#141218] border-[#d0bcff]/40 text-[#e6e0e9] shadow-[#4f378b]/20');
 
   iconElem.innerHTML = iconHtml;
-  toast.className = `fixed bottom-6 right-6 z-[100] flex items-center gap-3 px-4 py-3 rounded-full shadow-2xl text-xs sm:text-sm font-medium border transition-all duration-300 ease-out font-google-sans ${colorClasses}`;
+  toast.className = `fixed bottom-6 right-6 z-[200] flex items-center gap-3 px-4 py-3 rounded-full shadow-2xl text-xs sm:text-sm font-medium border transition-all duration-300 ease-out font-google-sans ${colorClasses}`;
   initIcons();
 
   toast.classList.remove('translate-y-20', 'opacity-0', 'pointer-events-none');
