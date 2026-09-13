@@ -3,47 +3,23 @@
  * Gestión de suscripciones, fechas de corte, división de gastos y cobros.
  */
 
-// ================= INTERCEPTOR API & CONFIGURACIÓN SERVIDOR (CAPACITOR / ANDROID) =================
+// ================= INTERCEPTOR API (CAPACITOR NATIVO -> VERCEL + NEON) =================
 const _originalFetch = window.fetch;
 
 function getApiBaseUrl() {
-  const savedBase = localStorage.getItem('subtracker_api_base');
-  if (savedBase) {
-    return savedBase.replace(/\/+$/, '');
-  }
-  
-  // Detectar si estamos en Capacitor nativo o WebView local
   const isCapacitor = Boolean(window.Capacitor && (typeof window.Capacitor.isNativePlatform === 'function' ? window.Capacitor.isNativePlatform() : true));
   const isLocalOrigin = window.location.origin === 'https://localhost' || 
                         window.location.origin === 'capacitor://localhost' ||
                         window.location.protocol === 'file:';
   
   if (isCapacitor || isLocalOrigin) {
-    // IP local del servidor de desarrollo en la red Wi-Fi
-    return 'http://10.0.0.2:8000';
+    // Conectar directamente con el backend de producción en Vercel (Neon PostgreSQL)
+    return 'https://kalarmapp.vercel.app';
   }
   return '';
 }
 
 window.getApiBaseUrl = getApiBaseUrl;
-window.setApiBaseUrl = function(newUrl) {
-  const clean = (newUrl || '').trim().replace(/\/+$/, '');
-  if (clean) {
-    localStorage.setItem('subtracker_api_base', clean);
-  } else {
-    localStorage.removeItem('subtracker_api_base');
-  }
-  updateApiServerDisplay();
-  return clean;
-};
-
-function updateApiServerDisplay() {
-  const lbl = document.getElementById('lblApiServerBase');
-  if (lbl) {
-    const current = getApiBaseUrl();
-    lbl.textContent = current || 'Servidor Local (Mismo Origen)';
-  }
-}
 
 window.fetch = function(input, init) {
   if (typeof input === 'string' && input.startsWith('/api/')) {
@@ -784,7 +760,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   updateNavCurrencyBadge();
   initIcons();
   initEventListeners();
-  updateApiServerDisplay();
   await checkAuth();
   if (state.user) {
     await loadAllData();
@@ -1100,7 +1075,6 @@ function openAuthModal(mode = 'login') {
     closeBtn.classList.remove('hidden');
   }
 
-  updateApiServerDisplay();
   modal?.classList.remove('hidden');
   initIcons();
 }
@@ -1439,21 +1413,6 @@ function closeAuthModal() {
   }
 }
 
-function promptChangeApiServer() {
-  const current = getApiBaseUrl() || 'http://10.0.0.2:8000';
-  const input = prompt(
-    'Configura la dirección URL del servidor Backend:\n\n' +
-    '• Pruebas en red local Wi-Fi: http://10.0.0.2:8000\n' +
-    '• Servidor en la nube: https://mi-servidor.com\n\n' +
-    'Ingresa la URL del servidor:',
-    current
-  );
-  if (input !== null) {
-    const clean = window.setApiBaseUrl(input);
-    showToast(`Servidor configurado en: ${clean || 'Mismo origen local'}`, 'info');
-  }
-}
-
 async function handleAuthSubmit(e) {
   e.preventDefault();
   const username = document.getElementById('authUsername').value.trim();
@@ -1498,8 +1457,7 @@ async function handleAuthSubmit(e) {
       }
     } catch (err) {
       console.error('Login error:', err);
-      const serverUrl = getApiBaseUrl() || window.location.origin;
-      showToast(`Error de conexión con el servidor (${serverUrl}): ${err.message || 'Sin respuesta'}. Verifica que el backend esté corriendo en tu PC o presiona "Cambiar" abajo.`, 'error');
+      showToast('Error de conexión con el servidor. Verifica tu conexión a internet.', 'error');
     } finally {
       if (submitBtn) {
         submitBtn.disabled = false;
@@ -1557,8 +1515,7 @@ async function handleAuthSubmit(e) {
       }
     } catch (err) {
       console.error('Register error:', err);
-      const serverUrl = getApiBaseUrl() || window.location.origin;
-      showToast(`Error de conexión con el servidor (${serverUrl}): ${err.message || 'Sin respuesta'}. Verifica que el backend esté corriendo en tu PC o presiona "Cambiar" abajo.`, 'error');
+      showToast('Error de conexión con el servidor. Verifica tu conexión a internet.', 'error');
     } finally {
       if (submitBtn) {
         submitBtn.disabled = false;
@@ -1659,7 +1616,6 @@ function initEventListeners() {
   document.getElementById('tabAuthRegister')?.addEventListener('click', () => openAuthModal('register'));
   document.getElementById('btnTogglePassword')?.addEventListener('click', toggleAuthPasswordVisibility);
   document.getElementById('authForm')?.addEventListener('submit', handleAuthSubmit);
-  document.getElementById('btnChangeApiServer')?.addEventListener('click', promptChangeApiServer);
 
   // Restablecer / Recuperar Contraseña (desde Login)
   document.getElementById('btnForgotAuthPassword')?.addEventListener('click', () => openAuthModal('recovery'));
@@ -1913,26 +1869,6 @@ function initEventListeners() {
   document.getElementById('tabSettingsBackups')?.addEventListener('click', () => switchSettingsTab('backups'));
   document.getElementById('tabSettingsNotifications')?.addEventListener('click', () => switchSettingsTab('notifications'));
   document.getElementById('settingsGeneralForm')?.addEventListener('submit', handleSettingsGeneralSubmit);
-  document.getElementById('btnTestApiConnection')?.addEventListener('click', async () => {
-    const input = document.getElementById('settingApiServerInput');
-    const val = (input?.value || '').trim();
-    if (!val) {
-      showToast('Ingresa una URL para probar (ej. http://10.0.0.2:8000)', 'info');
-      return;
-    }
-    showToast('Probando conexión con el servidor...', 'info');
-    try {
-      const target = val.replace(/\/+$/, '') + '/api/settings';
-      const res = await _originalFetch(target, { headers: getAuthHeaders() });
-      if (res.ok || res.status === 401) {
-        showToast('¡Conexión exitosa con el servidor!', 'success');
-      } else {
-        showToast(`Servidor respondió con código ${res.status}`, 'warning');
-      }
-    } catch (e) {
-      showToast(`Fallo al conectar con ${val}: ${e.message}`, 'error');
-    }
-  });
   document.getElementById('settingThemeToggle')?.addEventListener('change', toggleThemeMode);
   document.getElementById('settingsNotificationsForm')?.addEventListener('submit', handleSettingsNotificationsSubmit);
   document.getElementById('btnTestWebhook')?.addEventListener('click', testWebhook);
@@ -6053,9 +5989,6 @@ function openSettingsModal(defaultTab = 'general') {
     selectBaseCurrency('USD');
   }
 
-  const apiInput = document.getElementById('settingApiServerInput');
-  if (apiInput) apiInput.value = getApiBaseUrl();
-
   updateBackupStorageSummary();
   renderUserProfile();
   const currentTheme = localStorage.getItem('subtracker_theme') || 'dark';
@@ -6101,10 +6034,6 @@ async function handleSettingsGeneralSubmit(e) {
       const privacyDefault = document.getElementById('settingPrivacyModeDefault')?.checked;
       if (privacyDefault !== undefined) {
         localStorage.setItem('subtracker_privacy', privacyDefault ? 'true' : 'false');
-      }
-      const apiServerInput = document.getElementById('settingApiServerInput');
-      if (apiServerInput) {
-        window.setApiBaseUrl(apiServerInput.value);
       }
       closeSettingsModal();
       await loadAllData();
