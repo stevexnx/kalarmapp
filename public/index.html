@@ -229,26 +229,6 @@
 
         <!-- Acciones en Top App Bar estilo Google -->
         <div class="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
-          <!-- Moneda Base Badge con Bandera -->
-          <button type="button" id="navBaseCurrencyContainer" onclick="openSettingsModal('general')" title="Moneda base activa (Clic para configurar)"
-            class="flex items-center gap-1 sm:gap-1.5 px-2.5 py-1 rounded-full bg-[#211f26] hover:bg-[#2b2930] border border-[#49454f]/40 text-xs text-[#cac4d0] transition cursor-pointer shrink-0">
-            <span id="navBaseCurrencyFlag" class="text-sm leading-none shrink-0">🇺🇸</span>
-            <span class="hidden md:inline text-[#cac4d0]">Moneda:</span>
-            <span id="navBaseCurrencyBadge" class="font-bold text-[#d0bcff] font-mono text-xs">USD ($)</span>
-          </button>
-
-          <!-- Botón Command Palette (Ctrl+K) -->
-          <button id="btnOpenCommandPalette" title="Buscar y comandos rápidos (Ctrl + K)" class="hidden md:inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#211f26] hover:bg-[#2b2930] text-xs text-[#cac4d0] hover:text-white border border-[#49454f]/50 transition">
-            <i data-lucide="search" class="w-3.5 h-3.5 text-[#d0bcff]"></i>
-            <span>Buscar...</span>
-            <kbd class="px-1.5 py-0.5 rounded bg-[#141218] border border-[#49454f]/60 text-[10px] text-[#938f99] font-mono">Ctrl K</kbd>
-          </button>
-
-          <!-- Botón Modo Privacidad (Ocultar / Mostrar cifras de dinero) -->
-          <button id="btnTogglePrivacyMode" title="Modo Privacidad: Ocultar o mostrar montos" class="inline-flex items-center justify-center p-2 rounded-full bg-[#211f26] hover:bg-[#2b2930] text-[#cac4d0] hover:text-[#d0bcff] border border-[#49454f]/50 transition shrink-0">
-            <i data-lucide="eye" id="iconPrivacyMode" class="w-4 h-4"></i>
-          </button>
-
           <!-- Botón Notificaciones en la barra superior -->
           <button type="button" id="btnToggleNotifications" onclick="toggleNotificationsDrawer()" title="Centro de Notificaciones y Avisos" class="relative inline-flex items-center justify-center p-2 rounded-full bg-[#211f26] hover:bg-[#2b2930] text-[#cac4d0] hover:text-[#d0bcff] border border-[#49454f]/50 transition cursor-pointer shrink-0">
             <i data-lucide="bell" id="iconNotificationBell" class="w-4 h-4"></i>
