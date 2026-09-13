@@ -4133,52 +4133,39 @@ function createCardHtml(sub) {
             </div>
           </div>
 
-          <!-- Burbuja interactiva de estado (Verde / Naranja / Gris) -->
+          <!-- Burbuja de Estado: Solo burbuja con color, no texto, no clickeable -->
           <div class="shrink-0 pt-0.5">
-            ${getStatusDotHtml(sub.id, sub.status)}
+            ${getStatusBubbleHtml(sub.status)}
           </div>
         </div>
 
-        <!-- Fecha de Corte -->
-        <div class="p-3 bg-[#1d1b20] rounded-2xl border border-[#49454f]/30 space-y-2">
-          <div class="flex items-center justify-between gap-2">
-            <div>
-              <span class="text-[10px] uppercase tracking-wider font-semibold text-[#cac4d0] flex items-center gap-1">
-                <i data-lucide="calendar" class="w-3 h-3 text-[#cac4d0]"></i> Fecha de Corte
-              </span>
-              <div class="text-xs font-bold text-[#e6e0e9] mt-0.5 font-google-sans">
-                ${formatDateFriendly(sub.next_billing_date)}
-              </div>
-            </div>
-
-            <span class="${badgeClass}">${daysText}</span>
-          </div>
-
-          ${(showTimeline && timeline) ? `
-            <div class="w-full bg-[#2b2930] h-1.5 rounded-full overflow-hidden mt-1" title="Progreso del período (${timeline.percent}%)">
-              <div class="h-full rounded-full transition-all duration-500 ${timeline.colorClass}" style="width: ${timeline.percent}%"></div>
-            </div>
-          ` : ''}
-        </div>
-
-        <!-- Monto del Cobro Correspondiente: Concepto a la izquierda, Monto destacado a la derecha -->
-        <div class="bg-[#211f26] border border-[#49454f]/35 rounded-2xl p-3.5 space-y-2">
-          <div class="flex items-center justify-between gap-3">
-            <!-- Lado Izquierdo: Concepto del ciclo y método de pago -->
+        <!-- Bloque Unificado: Fecha de corte a la izquierda, Cobro a la derecha -->
+        <div class="bg-[#1d1b20] border border-[#49454f]/35 rounded-2xl p-3.5 space-y-2.5">
+          <div class="flex items-start justify-between gap-3">
+            <!-- Lado Izquierdo: Fecha de Corte y días restantes -->
             <div class="min-w-0 flex-1 space-y-1">
-              <span class="text-[10px] uppercase font-bold tracking-wider ${isSharedSub ? 'text-[#a8d5b5]' : 'text-[#cac4d0]'} flex items-center gap-1">
-                ${isSharedSub ? `<i data-lucide="users" class="w-3 h-3 text-[#a8d5b5]"></i> Tu Cuota ${cycleLabel}` : `Cobro ${cycleLabel}`}
+              <span class="text-[10px] uppercase tracking-wider font-semibold text-[#cac4d0] flex items-center gap-1">
+                <i data-lucide="calendar" class="w-3 h-3 text-[#d0bcff]"></i> Fecha de Corte
               </span>
+              <div class="flex items-center gap-1.5 mt-1 flex-wrap">
+                <span class="text-xs sm:text-sm font-bold text-[#e6e0e9] font-google-sans leading-tight">
+                  ${formatDateFriendly(sub.next_billing_date)}
+                </span>
+                <span class="${badgeClass} text-[10px]">${daysText}</span>
+              </div>
               ${paymentMethodBadge ? `
-                <div class="pt-0.5">
+                <div class="pt-1">
                   ${paymentMethodBadge}
                 </div>
               ` : ''}
             </div>
 
-            <!-- Lado Derecho: Monto limpio sin redundancias -->
+            <!-- Lado Derecho: Cobro correspondiente -->
             <div class="text-right shrink-0">
-              <div class="text-xl font-extrabold text-white font-mono tracking-tight privacy-blur leading-tight">
+              <span class="text-[10px] uppercase font-bold tracking-wider ${isSharedSub ? 'text-[#a8d5b5]' : 'text-[#cac4d0]'} block">
+                ${isSharedSub ? `<i data-lucide="users" class="w-3 h-3 inline mr-0.5 text-[#a8d5b5]"></i>Tu Cuota` : `Cobro ${cycleLabel}`}
+              </span>
+              <div class="text-xl font-extrabold text-white font-mono tracking-tight privacy-blur leading-tight mt-1">
                 ${baseSymbol}${formatNumber(displayPrice)}
               </div>
               ${(showDailyCost && dailyEquiv) ? `
@@ -4193,6 +4180,12 @@ function createCardHtml(sub) {
               ` : ''}
             </div>
           </div>
+
+          ${(showTimeline && timeline) ? `
+            <div class="w-full bg-[#2b2930] h-1.5 rounded-full overflow-hidden mt-1" title="Progreso del período (${timeline.percent}%)">
+              <div class="h-full rounded-full transition-all duration-500 ${timeline.colorClass}" style="width: ${timeline.percent}%"></div>
+            </div>
+          ` : ''}
 
           ${isSharedSub ? `
             <div class="flex items-center justify-between text-[11px] text-[#cac4d0] pt-1.5 border-t border-[#49454f]/25">
@@ -6394,6 +6387,31 @@ function getStatusBadge(status) {
   if (status === 'active') return `<span class="m3-badge-success">Activa</span>`;
   if (status === 'paused') return `<span class="m3-badge-warning">Pausada</span>`;
   return `<span class="m3-badge-secondary">Cancelada</span>`;
+}
+
+function getStatusBubbleHtml(status) {
+  let dotColor = 'bg-emerald-400';
+  let ringColor = 'ring-emerald-400/30';
+  let badgeBg = 'bg-emerald-500/10 border-emerald-500/30';
+  let title = 'Estado: Activa (Modificable desde Ajustes de la tarjeta)';
+
+  if (status === 'paused') {
+    dotColor = 'bg-amber-400';
+    ringColor = 'ring-amber-400/30';
+    badgeBg = 'bg-amber-500/10 border-amber-500/30';
+    title = 'Estado: Pausada (Modificable desde Ajustes de la tarjeta)';
+  } else if (status === 'canceled' || status === 'cancelled') {
+    dotColor = 'bg-slate-400';
+    ringColor = 'ring-slate-400/30';
+    badgeBg = 'bg-slate-800 border-slate-700';
+    title = 'Estado: Cancelada (Modificable desde Ajustes de la tarjeta)';
+  }
+
+  return `
+    <div class="inline-flex items-center justify-center p-1.5 rounded-full border ${badgeBg} shadow-sm shrink-0" title="${title}" aria-label="${title}">
+      <span class="w-2.5 h-2.5 rounded-full ${dotColor} ring-4 ${ringColor}"></span>
+    </div>
+  `;
 }
 
 function getStatusDotHtml(subId, status) {
