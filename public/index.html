@@ -130,6 +130,15 @@
           </div>
           <span class="m3-rail-label">Split Pay</span>
         </button>
+
+        <!-- Destino 6: Avisos & Notificaciones -->
+        <button id="railBtnNotifications" class="m3-rail-item group" title="Centro de Notificaciones y Alertas">
+          <div class="m3-rail-pill relative">
+            <i data-lucide="bell" id="railIconBell" class="w-5 h-5 transition-transform group-hover:scale-110"></i>
+            <span id="railNotifBadge" class="hidden absolute -top-1 -right-1 min-w-[16px] h-[16px] px-1 rounded-full bg-rose-500 text-white font-bold text-[9px] flex items-center justify-center ring-2 ring-[#141218] animate-pulse">0</span>
+          </div>
+          <span class="m3-rail-label">Avisos</span>
+        </button>
       </nav>
     </div>
 
@@ -194,24 +203,24 @@
   </aside>
 
   <!-- ================= CONTENEDOR PRINCIPAL CON SCROLL ================= -->
-  <div class="flex-1 flex flex-col min-w-0 h-screen overflow-y-auto">
+  <div class="flex-1 flex flex-col min-w-0 h-screen overflow-y-auto overflow-x-hidden w-full">
 
     <!-- TOP APP BAR GOOGLE M3 -->
-    <header class="sticky top-0 z-30 m3-top-app-bar backdrop-blur-md bg-[#141218]/90 px-4 sm:px-6 lg:px-8 py-3.5">
-      <div class="w-full flex items-center justify-between gap-4">
+    <header class="sticky top-0 z-30 m3-top-app-bar backdrop-blur-md bg-[#141218]/90 px-3 sm:px-6 lg:px-8 py-3">
+      <div class="w-full flex items-center justify-between gap-2 sm:gap-4">
         
         <!-- Identificador Móvil / Título de la App -->
-        <div class="flex items-center gap-3">
-          <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#d0bcff] to-[#6750a4] hidden items-center justify-center shadow-md">
-            <i data-lucide="credit-card" class="w-5 h-5 text-[#141218]"></i>
+        <div class="flex items-center gap-2 sm:gap-3 min-w-0">
+          <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-tr from-[#d0bcff] to-[#6750a4] flex items-center justify-center shadow-md shrink-0">
+            <i data-lucide="credit-card" class="w-4 h-4 sm:w-5 sm:h-5 text-[#141218]"></i>
           </div>
-          <div>
-            <div class="flex items-center gap-2">
-              <h1 class="text-lg sm:text-xl font-bold tracking-tight text-[#e6e0e9] font-google-sans">
+          <div class="min-w-0">
+            <div class="flex items-center gap-1.5 sm:gap-2">
+              <h1 class="text-base sm:text-xl font-bold tracking-tight text-[#e6e0e9] font-google-sans truncate">
                 SubTracker
               </h1>
-              <span class="text-[10px] font-bold uppercase px-2.5 py-0.5 rounded-full bg-[#4a4458] text-[#e8def8]">
-                Material 3
+              <span class="text-[9px] sm:text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-[#4a4458] text-[#e8def8] shrink-0">
+                M3
               </span>
             </div>
             <p id="headerSubtitle" class="text-[11px] text-[#cac4d0] hidden sm:block">Control inteligente de suscripciones, amigos y cortes de pago</p>
@@ -219,68 +228,29 @@
         </div>
 
         <!-- Acciones en Top App Bar estilo Google -->
-        <div class="flex items-center gap-2 sm:gap-3">
+        <div class="flex items-center gap-1.5 sm:gap-3 shrink-0">
           <!-- Moneda Base Badge con Bandera -->
           <button type="button" id="navBaseCurrencyContainer" onclick="openSettingsModal('general')" title="Moneda base activa (Clic para configurar)"
-            class="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 rounded-full bg-[#211f26] hover:bg-[#2b2930] border border-[#49454f]/40 text-xs text-[#cac4d0] transition cursor-pointer">
+            class="flex items-center gap-1 sm:gap-1.5 px-2.5 py-1 rounded-full bg-[#211f26] hover:bg-[#2b2930] border border-[#49454f]/40 text-xs text-[#cac4d0] transition cursor-pointer shrink-0">
             <span id="navBaseCurrencyFlag" class="text-sm leading-none shrink-0">🇺🇸</span>
             <span class="hidden md:inline text-[#cac4d0]">Moneda:</span>
-            <span id="navBaseCurrencyBadge" class="font-bold text-[#d0bcff] font-mono">USD ($)</span>
+            <span id="navBaseCurrencyBadge" class="font-bold text-[#d0bcff] font-mono text-xs">USD ($)</span>
           </button>
 
           <!-- Botón Command Palette (Ctrl+K) -->
-          <button id="btnOpenCommandPalette" title="Buscar y comandos rápidos (Ctrl + K)" class="hidden sm:inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#211f26] hover:bg-[#2b2930] text-xs text-[#cac4d0] hover:text-white border border-[#49454f]/50 transition">
+          <button id="btnOpenCommandPalette" title="Buscar y comandos rápidos (Ctrl + K)" class="hidden md:inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#211f26] hover:bg-[#2b2930] text-xs text-[#cac4d0] hover:text-white border border-[#49454f]/50 transition">
             <i data-lucide="search" class="w-3.5 h-3.5 text-[#d0bcff]"></i>
-            <span class="hidden md:inline">Buscar...</span>
+            <span>Buscar...</span>
             <kbd class="px-1.5 py-0.5 rounded bg-[#141218] border border-[#49454f]/60 text-[10px] text-[#938f99] font-mono">Ctrl K</kbd>
           </button>
 
           <!-- Botón Modo Privacidad (Ocultar / Mostrar cifras de dinero) -->
-          <button id="btnTogglePrivacyMode" title="Modo Privacidad: Ocultar o mostrar montos" class="inline-flex items-center justify-center p-2 rounded-full bg-[#211f26] hover:bg-[#2b2930] text-[#cac4d0] hover:text-[#d0bcff] border border-[#49454f]/50 transition">
+          <button id="btnTogglePrivacyMode" title="Modo Privacidad: Ocultar o mostrar montos" class="inline-flex items-center justify-center p-2 rounded-full bg-[#211f26] hover:bg-[#2b2930] text-[#cac4d0] hover:text-[#d0bcff] border border-[#49454f]/50 transition shrink-0">
             <i data-lucide="eye" id="iconPrivacyMode" class="w-4 h-4"></i>
           </button>
 
-          <!-- Botón Ajustes (ahora en la barra vertical) -->
-          <button id="btnOpenSettingsModal" title="Ajustes y Configuración" class="hidden items-center justify-center p-2 text-xs rounded-full bg-[#211f26] hover:bg-[#2b2930] text-[#cac4d0] border border-[#49454f]/50 transition">
-            <i data-lucide="settings" class="w-4 h-4"></i>
-          </button>
-
-          <!-- Perfil / Login (ahora en la barra vertical) -->
-          <div id="userProfileContainer" class="hidden items-center gap-1.5 pl-1.5 border-l border-[#49454f]/40">
-            <!-- Botón Login -->
-            <button id="btnOpenLoginModal" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#d0bcff] hover:bg-[#eaddff] text-xs font-semibold text-[#381e72] shadow-sm transition active:scale-95">
-              <i data-lucide="log-in" class="w-3.5 h-3.5"></i>
-              <span>Iniciar Sesión</span>
-            </button>
-
-            <!-- Perfil Activo -->
-            <div id="userLoggedInMenu" class="hidden flex items-center gap-1">
-              <button id="btnOpenProfileModal" type="button" class="flex items-center gap-2 p-1 rounded-full hover:bg-[#211f26] transition cursor-pointer text-left group" title="Ver perfil y cuenta">
-                <div id="userAvatarBadge" class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-[#381e72] shadow ring-2 ring-[#d0bcff]/40 shrink-0 group-hover:ring-[#d0bcff] transition" style="background-color: #d0bcff">
-                  -
-                </div>
-                <div class="hidden sm:block text-left leading-tight pr-1">
-                  <div id="userDisplayNameText" class="text-xs font-bold text-[#e6e0e9] group-hover:text-[#d0bcff] transition">Usuario</div>
-                  <div id="userUsernameText" class="text-[10px] text-[#cac4d0]">@usuario</div>
-                </div>
-              </button>
-              <button id="btnLogout" type="button" class="p-2 rounded-full text-[#cac4d0] hover:text-[#f2b8b5] hover:bg-[#8c1d18]/20 transition cursor-pointer" title="Cerrar Sesión">
-                <i data-lucide="log-out" class="w-4 h-4"></i>
-              </button>
-            </div>
-          </div>
-
-          <!-- Botón Principal Google M3: "Nueva Suscripción" (Estilo "Get started" de material.io) -->
-          <button id="btnOpenAddModal" class="m3-btn-filled shrink-0 cursor-pointer shadow-md py-2 px-4 sm:px-5 text-xs sm:text-sm">
-            <i data-lucide="plus" class="w-4 h-4 stroke-[2.5]"></i>
-            <span>Nueva</span>
-          </button>
-
-          <!-- Botón Notificaciones & Avisos (Campana M3 con Badge de Alertas) - Ubicado a la derecha -->
-          <button type="button" id="btnToggleNotifications" onclick="toggleNotificationsDrawer()" title="Centro de Notificaciones y Alertas" class="relative inline-flex items-center justify-center p-2 rounded-full bg-[#211f26] hover:bg-[#2b2930] text-[#cac4d0] hover:text-[#d0bcff] border border-[#49454f]/50 transition cursor-pointer shrink-0">
-            <i data-lucide="bell" id="iconNotificationBell" class="w-4 h-4"></i>
-            <span id="notifBadgeCount" class="hidden absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-rose-500 text-white font-bold text-[10px] flex items-center justify-center ring-2 ring-[#141218] animate-pulse">0</span>
-          </button>
+          <!-- Compatibilidad oculta para listeners de notificación en cabecera previa -->
+          <button type="button" id="btnToggleNotifications" class="hidden" aria-hidden="true"></button>
         </div>
 
       </div>
@@ -2727,6 +2697,11 @@
       </div>
     </div>
   </div>
+
+  <!-- ================= FLOATING ACTION BUTTON (FAB) GOOGLE M3 ================= -->
+  <button id="btnOpenAddModal" class="m3-fab-google" title="Nueva Suscripción" aria-label="Añadir nueva suscripción">
+    <i data-lucide="plus" class="w-7 h-7 stroke-[2.5]"></i>
+  </button>
 
   <!-- ================= CENTRO DE NOTIFICACIONES & ALERTAS (DRAWER LATERAL M3) ================= -->
   <div id="notificationsBackdrop" onclick="closeNotificationsDrawer()" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] hidden transition-opacity opacity-0 duration-300"></div>

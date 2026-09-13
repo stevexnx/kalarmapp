@@ -1595,6 +1595,7 @@ function initEventListeners() {
   document.getElementById('railBtnSplitPay')?.addEventListener('click', () => switchTab('splitpay'));
   document.getElementById('railBtnSettings')?.addEventListener('click', () => openSettingsModal('general'));
   document.getElementById('railBtnBackup')?.addEventListener('click', () => openSettingsModal('backups'));
+  document.getElementById('railBtnNotifications')?.addEventListener('click', () => toggleNotificationsDrawer());
 
   // Navegación de Calendario
   document.getElementById('btnPrevMonth')?.addEventListener('click', () => changeCalendarMonth(-1));
@@ -7126,6 +7127,7 @@ function closeNotificationsDrawer() {
 
 function updateNotificationsBadge() {
   const badge = document.getElementById('notifBadgeCount');
+  const railBadge = document.getElementById('railNotifBadge');
   const drawerBadge = document.getElementById('drawerBadgeTotal');
   if (!state.stats) return;
 
@@ -7134,13 +7136,23 @@ function updateNotificationsBadge() {
   const insightsCount = (window._currentInsights || []).length;
   const budgetAlert = (state.stats.budget_status === 'danger' || state.stats.budget_status === 'warning') ? 1 : 0;
   const totalAlerts = trialsCount + upcomingCount + budgetAlert;
+  const displayCount = totalAlerts > 99 ? '99+' : totalAlerts;
 
   if (badge) {
     if (totalAlerts > 0) {
-      badge.textContent = totalAlerts > 99 ? '99+' : totalAlerts;
+      badge.textContent = displayCount;
       badge.classList.remove('hidden');
     } else {
       badge.classList.add('hidden');
+    }
+  }
+
+  if (railBadge) {
+    if (totalAlerts > 0) {
+      railBadge.textContent = displayCount;
+      railBadge.classList.remove('hidden');
+    } else {
+      railBadge.classList.add('hidden');
     }
   }
 

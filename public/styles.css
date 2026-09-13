@@ -65,11 +65,14 @@
   --md-shape-full: 9999px;
 }
 
-body {
+html, body {
   font-family: 'Google Sans Text', 'Google Sans', 'Roboto Flex', Roboto, -apple-system, sans-serif;
   background-color: var(--md-sys-color-background);
   color: var(--md-sys-color-on-surface);
   letter-spacing: -0.01em;
+  overflow-x: hidden;
+  max-width: 100vw;
+  width: 100%;
 }
 
 h1, h2, h3, h4, .font-google-sans {
@@ -175,29 +178,56 @@ textarea:focus-visible {
   line-height: 1.2;
 }
 
-/* Floating Action Button (FAB) M3 estilo Google Material */
+/* Floating Action Button (FAB) M3 Circular estilo Google Material */
 .m3-fab-google {
-  width: 56px;
-  height: 56px;
-  border-radius: 16px;
-  background-color: var(--md-sys-color-primary-container);
-  color: var(--md-sys-color-on-primary-container);
+  width: 58px;
+  height: 58px;
+  border-radius: 9999px; /* Botón perfectamente circular M3 */
+  background-color: var(--md-sys-color-primary);
+  color: var(--md-sys-color-on-primary);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 3px 8px 1px rgba(0, 0, 0, 0.4);
-  transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+  box-shadow: 0 4px 18px 2px rgba(0, 0, 0, 0.45), 0 2px 8px rgba(208, 188, 255, 0.25);
+  transition: all 0.22s cubic-bezier(0.2, 0, 0, 1);
   cursor: pointer;
   border: none;
+  position: fixed;
+  bottom: calc(22px + env(safe-area-inset-bottom, 0px));
+  right: calc(20px + env(safe-area-inset-right, 0px));
+  z-index: 50;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 .m3-fab-google:hover {
-  background-color: var(--md-sys-color-primary);
-  color: var(--md-sys-color-on-primary);
-  transform: scale(1.04);
-  box-shadow: 0 6px 14px 2px rgba(0, 0, 0, 0.45);
+  filter: brightness(1.08);
+  transform: scale(1.08);
+  box-shadow: 0 8px 24px 4px rgba(0, 0, 0, 0.55), 0 3px 12px rgba(208, 188, 255, 0.35);
 }
 .m3-fab-google:active {
-  transform: scale(0.96);
+  transform: scale(0.92);
+}
+
+@media (max-width: 640px) {
+  .m3-nav-rail {
+    width: 64px !important;
+    padding-left: 2px;
+    padding-right: 2px;
+    gap: 8px;
+  }
+  .m3-rail-pill {
+    width: 44px;
+    height: 30px;
+  }
+  .m3-rail-label {
+    font-size: 10px;
+  }
+  .m3-fab-google {
+    bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+    right: calc(16px + env(safe-area-inset-right, 0px));
+    width: 54px;
+    height: 54px;
+  }
 }
 
 /* Botón primario relleno Google M3 (Filled Button) */
