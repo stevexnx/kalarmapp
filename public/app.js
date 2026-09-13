@@ -1010,10 +1010,11 @@ function renderUserProfile() {
 }
 
 function toggleRailProfilePopover() {
-  const popover = document.getElementById('railProfilePopover');
-  if (!popover) return;
-  popover.classList.toggle('hidden');
-  initIcons();
+  if (state.user) {
+    openProfileModal();
+  } else {
+    openAuthModal('login');
+  }
 }
 
 function closeRailProfilePopover() {
@@ -1233,7 +1234,11 @@ let tempSelectedAvatarColor = '#6750A4';
 
 function openProfileModal() {
   const modal = document.getElementById('profileModal');
-  if (!modal || !state.user) return;
+  if (!modal) return;
+  if (!state.user) {
+    openAuthModal('login');
+    return;
+  }
 
   tempSelectedAvatarIcon = state.user.avatar_icon || 'user';
   tempSelectedAvatarColor = state.user.avatar_color || '#6750A4';
@@ -1639,12 +1644,21 @@ function initEventListeners() {
   // Modal de Perfil de Usuario
   document.getElementById('btnOpenProfileModal')?.addEventListener('click', openProfileModal);
 
-  // Perfil en Barra Lateral Izquierda (Rail) y Popover M3
+  // Perfil en Barra Lateral Izquierda (Rail) y Modal M3
   document.getElementById('railBtnOpenProfile')?.addEventListener('click', (e) => {
+    e.preventDefault();
     e.stopPropagation();
-    toggleRailProfilePopover();
+    if (state.user) {
+      openProfileModal();
+    } else {
+      openAuthModal('login');
+    }
   });
-  document.getElementById('railBtnOpenLogin')?.addEventListener('click', () => openAuthModal('login'));
+  document.getElementById('railBtnOpenLogin')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    openAuthModal('login');
+  });
   document.getElementById('railPopoverBtnProfile')?.addEventListener('click', () => {
     closeRailProfilePopover();
     openProfileModal();
@@ -1656,6 +1670,13 @@ function initEventListeners() {
   document.getElementById('railPopoverBtnLogout')?.addEventListener('click', () => {
     closeRailProfilePopover();
     handleLogout();
+  });
+
+  // Cerrar modal de perfil al hacer clic en el fondo (backdrop)
+  document.getElementById('profileModal')?.addEventListener('click', (e) => {
+    if (e.target === document.getElementById('profileModal')) {
+      document.getElementById('profileModal')?.classList.add('hidden');
+    }
   });
 
   // Cerrar popover del rail al hacer clic fuera
@@ -7485,6 +7506,8 @@ window.selectAvatarColor = selectAvatarColor;
 window.openProfileModal = openProfileModal;
 window.openAvatarEditorModal = openAvatarEditorModal;
 window.closeAvatarEditorModal = closeAvatarEditorModal;
+window.openAuthModal = openAuthModal;
+window.closeAuthModal = closeAuthModal;
 
 // ================= MODAL: RESUMEN DE SUSCRIPCIÓN (CLICK EN TARJETA) =================
 function switchSubDetailTab(tabName = 'details') {

@@ -155,13 +155,13 @@
       <!-- Contenedor del Perfil en el Rail -->
       <div id="railUserProfileContainer" class="relative flex flex-col items-center">
         <!-- Botón Iniciar Sesión en Rail (cuando no hay sesión) -->
-        <button id="railBtnOpenLogin" class="p-2 rounded-full text-[#cac4d0] hover:text-[#d0bcff] hover:bg-[#2b2930] transition cursor-pointer" title="Iniciar Sesión">
+        <button id="railBtnOpenLogin" type="button" onclick="openAuthModal('login')" class="p-2 rounded-full text-[#cac4d0] hover:text-[#d0bcff] hover:bg-[#2b2930] transition cursor-pointer" title="Iniciar Sesión">
           <i data-lucide="log-in" class="w-5 h-5"></i>
         </button>
 
         <!-- Menú de Usuario Logueado en Rail -->
         <div id="railUserLoggedInMenu" class="hidden relative flex flex-col items-center">
-          <button id="railBtnOpenProfile" type="button" class="relative p-0.5 rounded-full transition-transform hover:scale-110 active:scale-95 cursor-pointer group focus:outline-none" title="Mi Cuenta">
+          <button id="railBtnOpenProfile" type="button" onclick="openProfileModal()" class="relative p-0.5 rounded-full transition-transform hover:scale-110 active:scale-95 cursor-pointer group focus:outline-none" title="Mi Cuenta">
             <div id="railUserAvatarBadge" class="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold text-[#381e72] shadow ring-2 ring-[#d0bcff]/40 group-hover:ring-[#d0bcff] transition" style="background-color: #d0bcff">
               -
             </div>
@@ -750,7 +750,7 @@
   </div> <!-- Fin del contenedor flex-1 principal -->
 
   <!-- ================= MODAL: MI CUENTA / PERFIL (M3 PREMIUM) ================= -->
-  <div id="profileModal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-black/70 backdrop-blur-sm p-3 sm:p-5 flex items-start sm:items-center justify-center">
+  <div id="profileModal" class="fixed inset-0 z-[80] hidden overflow-y-auto bg-black/70 backdrop-blur-sm p-3 sm:p-5 flex items-start sm:items-center justify-center">
     <div class="relative w-full max-w-md m3-dialog p-4 sm:p-6 my-auto space-y-4 animate-scale-up border border-[#49454f]/50 shadow-2xl">
       <!-- Encabezado del Modal -->
       <div class="flex items-center justify-between border-b border-[#49454f]/30 pb-3">
@@ -900,7 +900,7 @@
   </div>
 
   <!-- ================= MODAL: PERSONALIZAR AVATAR E ICONO (M3 PREMIUM) ================= -->
-  <div id="avatarEditorModal" class="fixed inset-0 z-[60] hidden overflow-y-auto bg-black/75 backdrop-blur-sm p-4 flex items-center justify-center">
+  <div id="avatarEditorModal" class="fixed inset-0 z-[90] hidden overflow-y-auto bg-black/75 backdrop-blur-sm p-4 flex items-center justify-center">
     <div class="relative w-full max-w-md m3-dialog p-5 sm:p-6 space-y-4 animate-scale-up">
       <div class="flex items-center justify-between border-b border-[#49454f]/30 pb-3">
         <h3 class="text-base font-bold text-white flex items-center gap-2 font-google-sans">
