@@ -72,8 +72,12 @@ class SubscriptionAPIHandler(http.server.SimpleHTTPRequestHandler):
     def _set_headers(self, status=200, content_type='application/json'):
         self.send_response(status)
         self.send_header('Content-Type', content_type)
-        allowed_origin = os.environ.get('ALLOWED_ORIGIN', '*')
+        client_origin = self.headers.get('Origin')
+        allowed_origin = os.environ.get('ALLOWED_ORIGIN')
+        if not allowed_origin:
+            allowed_origin = client_origin if client_origin else '*'
         self.send_header('Access-Control-Allow-Origin', allowed_origin)
+        self.send_header('Access-Control-Allow-Credentials', 'true')
         self.send_header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
         self.send_header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Auth-Token')
         self.end_headers()

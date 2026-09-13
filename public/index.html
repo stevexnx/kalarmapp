@@ -1288,6 +1288,17 @@
               <span id="btnSubmitAuthText">Entrar a mi Cuenta</span>
             </button>
           </div>
+
+          <!-- Configuración de Servidor API (Útil para app nativa / Android) -->
+          <div id="apiServerConfigRow" class="pt-3 border-t border-[#49454f]/30 flex items-center justify-between text-[11px] text-[#cac4d0]">
+            <div class="flex items-center gap-1.5 overflow-hidden">
+              <i data-lucide="server" class="w-3.5 h-3.5 text-[#d0bcff] shrink-0"></i>
+              <span class="truncate">Servidor: <b id="lblApiServerBase" class="text-white font-mono font-normal">Detectando...</b></span>
+            </div>
+            <button type="button" id="btnChangeApiServer" class="text-[#d0bcff] hover:underline font-semibold shrink-0 ml-2">
+              Cambiar
+            </button>
+          </div>
         </form>
       </div>
 
@@ -2443,6 +2454,23 @@
                   <div class="m3-switch-track"><div class="m3-switch-thumb"></div></div>
                 </label>
               </div>
+            <!-- Servidor Backend y Conexión API (Móvil / Web) -->
+            <div class="p-4 rounded-2xl bg-[#1d1b20] border border-[#49454f]/40 space-y-2">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2 text-white font-semibold font-google-sans">
+                  <i data-lucide="server" class="w-4 h-4 text-[#d0bcff]"></i>
+                  <label for="settingApiServerInput">Dirección del Servidor API</label>
+                </div>
+                <span class="text-[10px] text-[#cac4d0] px-2 py-0.5 rounded-full bg-[#2b2930]">Capacitor / Red</span>
+              </div>
+              <p class="text-[11px] text-[#cac4d0]">Ruta del backend para sincronizar tus suscripciones y datos desde la app móvil o web.</p>
+              <div class="flex gap-2 items-center">
+                <input type="text" id="settingApiServerInput" placeholder="http://10.0.0.2:8000" class="m3-text-field font-mono text-xs flex-1">
+                <button type="button" id="btnTestApiConnection" class="m3-btn-tonal py-2.5 px-3 text-xs shrink-0 flex items-center gap-1.5" title="Probar conexión">
+                  <i data-lucide="activity" class="w-3.5 h-3.5"></i>
+                  <span>Probar</span>
+                </button>
+              </div>
             </div>
           </div>
 
@@ -2692,7 +2720,7 @@
   </div>
 
   <!-- TOAST NOTIFICACIÓN FLOTANTE -->
-  <div id="toast" class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 pointer-events-none transition-all duration-300 ease-out flex items-center gap-3 px-4 py-3 rounded-xl shadow-2xl text-xs sm:text-sm font-medium border">
+  <div id="toast" class="fixed bottom-6 right-6 z-[100] transform translate-y-20 opacity-0 pointer-events-none transition-all duration-300 ease-out flex items-center gap-3 px-4 py-3 rounded-xl shadow-2xl text-xs sm:text-sm font-medium border">
     <div id="toastIcon"></div>
     <span id="toastMessage"></span>
   </div>
