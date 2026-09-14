@@ -2,8 +2,10 @@
 Servidor HTTP RESTful, autenticación, amigos, soporte PWA y calendario para SubTracker Pro.
 """
 import http.server
+import ipaddress
 import json
 import os
+import socket
 import urllib.parse
 import urllib.request
 import time
@@ -13,11 +15,38 @@ from . import db
 
 PUBLIC_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'public')
 
+# Orígenes a los que se permite lecturas entre dominios (CORS). Nunca reflejar
+# el Origin del cliente: eso permitiría a sitios maliciosos leer respuestas
+# autenticadas (las credenciales no viajan en cookies, pero el token viaja en
+# headers y un origen arbitrario no debería poder leer las respuestas).
+DEFAULT_ALLOWED_ORIGINS = {
+    'http://localhost:8000',
+    'http://127.0.0.1:8000',
+    'https://localhost',
+    'capacitor://localhost',
+    'https://kalarmapp.vercel.app',
+}
+
+
+def get_allowed_origins():
+    """Devuelve la lista de orígenes permitidos (env ALLOWED_ORIGINS, separados por coma)."""
+    env_origins = os.environ.get('ALLOWED_ORIGINS', '')
+    origins = {o.strip().rstrip('/') for o in env_origins.split(',') if o.strip()}
+    return origins or DEFAULT_ALLOWED_ORIGINS
+
+
 _rate_limit_store = {}
 
 def check_rate_limit(ip, path, max_attempts=10, period=60):
     now = time.time()
     key = f"{ip}:{path}"
+    
+    # GC preventivo para evitar crecimiento infinito del diccionario
+    if len(_rate_limit_store) > 5000:
+        for k in list(_rate_limit_store.keys()):
+            _rate_limit_store[k] = [t for t in _rate_limit_store[k] if now - t < period]
+            if not _rate_limit_store[k]:
+                del _rate_limit_store[k]
     
     if key not in _rate_limit_store:
         _rate_limit_store[key] = []
@@ -28,6 +57,43 @@ def check_rate_limit(ip, path, max_attempts=10, period=60):
         return False
         
     _rate_limit_store[key].append(now)
+    return True
+
+
+def is_safe_webhook_url(url):
+    """Valida URLs de webhook para prevenir SSRF.
+
+    - Solo se admiten esquemas HTTPS.
+    - Solo hosts de proveedores de webhook conocidos (Discord, Slack, Telegram).
+    - Se rechazan IPs privadas/link-local/reservadas tras resolución DNS.
+    """
+    if not url:
+        return False
+    try:
+        parsed = urllib.parse.urlparse(url)
+    except ValueError:
+        return False
+    if parsed.scheme != 'https' or not parsed.hostname:
+        return False
+    host = parsed.hostname.lower()
+    allowed_host_suffixes = (
+        '.discord.com', 'discord.com', 'discordapp.com', '.discordapp.com',
+        'hooks.slack.com', 'api.telegram.org',
+    )
+    if not any(host.endswith(sfx) for sfx in allowed_host_suffixes):
+        return False
+    try:
+        infos = socket.getaddrinfo(host, parsed.port or 443, type=socket.SOCK_STREAM)
+    except socket.gaierror:
+        return False
+    for inf in infos:
+        try:
+            ip = ipaddress.ip_address(inf[4][0])
+        except ValueError:
+            return False
+        if (ip.is_private or ip.is_loopback or ip.is_link_local
+                or ip.is_reserved or ip.is_multicast or ip.is_unspecified):
+            return False
     return True
 
 
@@ -69,15 +135,22 @@ class SubscriptionAPIHandler(http.server.SimpleHTTPRequestHandler):
         self.send_header('Content-Security-Policy', csp_policy)
         super().end_headers()
 
+    def _apply_cors_headers(self):
+        """Aplica CORS de forma estricta: solo orígenes de una lista permitida.
+
+        Cuando el Origin no está en la whitelist, NO se envía
+        Access-Control-Allow-Origin: el navegador bloquea la lectura.
+        """
+        client_origin = self.headers.get('Origin')
+        if client_origin and client_origin.rstrip('/') in get_allowed_origins():
+            self.send_header('Access-Control-Allow-Origin', client_origin)
+            self.send_header('Access-Control-Allow-Credentials', 'true')
+        self.send_header('Vary', 'Origin')
+
     def _set_headers(self, status=200, content_type='application/json'):
         self.send_response(status)
         self.send_header('Content-Type', content_type)
-        client_origin = self.headers.get('Origin')
-        allowed_origin = os.environ.get('ALLOWED_ORIGIN')
-        if not allowed_origin:
-            allowed_origin = client_origin if client_origin else '*'
-        self.send_header('Access-Control-Allow-Origin', allowed_origin)
-        self.send_header('Access-Control-Allow-Credentials', 'true')
+        self._apply_cors_headers()
         self.send_header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
         self.send_header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Auth-Token')
         self.end_headers()
@@ -228,8 +301,15 @@ class SubscriptionAPIHandler(http.server.SimpleHTTPRequestHandler):
         elif path == '/api/payments':
             user = self._get_current_user()
             sub_id = query_params.get('sub_id', [None])[0]
-            limit = int(query_params.get('limit', [100])[0])
-            payments = db.get_payment_history(user_id=user['id'], sub_id=int(sub_id) if sub_id else None, limit=limit)
+            try:
+                limit = max(1, min(int(query_params.get('limit', [100])[0]), 1000))
+            except (ValueError, TypeError):
+                limit = 100
+            try:
+                sid = int(sub_id) if sub_id else None
+            except (ValueError, TypeError):
+                sid = None
+            payments = db.get_payment_history(user_id=user['id'], sub_id=sid, limit=limit)
             self._send_json({'success': True, 'data': payments})
             return
 
@@ -247,7 +327,7 @@ class SubscriptionAPIHandler(http.server.SimpleHTTPRequestHandler):
             self.send_response(200)
             self.send_header('Content-Type', 'text/calendar; charset=utf-8')
             self.send_header('Content-Disposition', 'attachment; filename="suscripciones.ics"')
-            self.send_header('Access-Control-Allow-Origin', '*')
+            self._apply_cors_headers()
             self.end_headers()
             self.wfile.write(ics_content.encode('utf-8'))
             return
@@ -259,7 +339,7 @@ class SubscriptionAPIHandler(http.server.SimpleHTTPRequestHandler):
             self.send_response(200)
             self.send_header('Content-Type', 'application/json; charset=utf-8')
             self.send_header('Content-Disposition', 'attachment; filename="subscriptions_backup.json"')
-            self.send_header('Access-Control-Allow-Origin', '*')
+            self._apply_cors_headers()
             self.end_headers()
             self.wfile.write(json.dumps(subs, indent=2, ensure_ascii=False).encode('utf-8'))
             return
@@ -333,6 +413,11 @@ class SubscriptionAPIHandler(http.server.SimpleHTTPRequestHandler):
 
         # 3. Restablecer Contraseña (Público: desde Login/Bienvenida)
         elif path == '/api/auth/reset-password':
+            client_ip = self.client_address[0]
+            # Endpoint sensible sin autenticación: aplicar rate limit agresivo
+            if not check_rate_limit(client_ip, path, max_attempts=5, period=300):
+                self._send_error('Demasiadas solicitudes', status=429)
+                return
             data = self._read_json_body() or {}
             identifier = data.get('identifier', '').strip()
             recovery_email = data.get('recovery_email', '').strip()
@@ -569,6 +654,10 @@ class SubscriptionAPIHandler(http.server.SimpleHTTPRequestHandler):
             webhook_url = data.get('webhook_url', '').strip()
             if not webhook_url:
                 self._send_error('Debes proporcionar una URL de Webhook')
+                return
+            # Prevención SSRF: solo HTTPS de proveedores conocidos y sin IPs privadas
+            if not is_safe_webhook_url(webhook_url):
+                self._send_error('URL de webhook no permitida (solo HTTPS de Discord, Slack o Telegram)', 400)
                 return
 
             payload = {

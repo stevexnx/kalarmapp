@@ -1,0 +1,15 @@
+# Evita incluir datos sensibles y artefactos locales en la imagen
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+.git
+android/
+node_modules/
+__pycache__/
+*.py[cod]
+.env
+.DS_Store
+tests/
+test_app.py
+*.md

@@ -554,7 +554,8 @@ def init_db(db_path=None):
     cursor.execute("SELECT COUNT(*) as count FROM users")
     count_row = cursor.fetchone()
     count_val = count_row['count'] if isinstance(count_row, dict) else count_row[0]
-    if count_val == 0:
+    allow_default_admin = os.environ.get('DISABLE_DEFAULT_ADMIN', '') not in ('1', 'true', 'yes')
+    if count_val == 0 and allow_default_admin:
         pwd_hash, salt = hash_password('admin123')
         now_str = datetime.now().isoformat()
         cursor.execute("""
@@ -720,9 +721,14 @@ def reset_password_with_recovery(identifier: str, recovery_email: str = '', new_
         conn.close()
         raise ValueError('No se encontró ningún usuario con ese nombre o correo')
 
-    # Si se proporcionó un recovery_email explícito diferente al ident, verificar que coincida con el usuario
+    # Seguridad anti-takeover: el recovery_email SIEMPRE debe coincidir con el correo
+    # registrado de la cuenta. Sin esta verificación, cualquiera que conozca el nombre
+    # de usuario podría apropiarse de la cuenta (account takeover).
     user_email = (user['email'] or '').strip().lower()
-    if rec_email and user_email and rec_email != user_email and rec_email != user['username'].lower():
+    if not rec_email:
+        conn.close()
+        raise ValueError('El correo de recuperación es obligatorio')
+    if not user_email or rec_email != user_email:
         conn.close()
         raise ValueError('El correo de recuperación no coincide con la cuenta')
 
@@ -1918,6 +1924,10 @@ def generate_ics_calendar(user_id=1, db_path=None):
 # ================= DATOS DE DEMOSTRACIÓN =================
 def seed_demo_data(user_id=1, db_path=None):
     """Siembra datos iniciales vinculados al usuario."""
+    # En entornos reales de producción se desactiva con DISABLE_DEMO_DATA=1
+    # para no insertar suscripciones/amigos de demostración en cuentas reales.
+    if os.environ.get('DISABLE_DEMO_DATA', '') in ('1', 'true', 'yes'):
+        return
     init_db(db_path)
     current = get_all_subscriptions(user_id=user_id, db_path=db_path)
     if current:

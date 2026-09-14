@@ -5,6 +5,12 @@ __pycache__/
 .env
 node_modules/
 
+# Base de datos local (contiene datos de usuarios reales — NUNCA commitear)
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
 # Android / Capacitor build artifacts
 android/.gradle/
 android/build/

@@ -8,6 +8,7 @@ import tempfile
 import json
 import threading
 import urllib.request
+import urllib.error
 import socket
 from datetime import date, timedelta
 
@@ -458,9 +459,20 @@ class TestServerAPI(unittest.TestCase):
             new_log_res = json.loads(resp.read().decode('utf-8'))
             self.assertTrue(new_log_res['success'])
 
-        # 4. Restablecer contraseña sin sesión activa (recuperación con correo o username)
+        # 4. Intentar restablecer contraseña SIN recovery_email debe fallar (anti-takeover)
+        rec_no_email = json.dumps({
+            'identifier': f'{user_test}@example.com',
+            'new_password': 'recovered_pass_789'
+        }).encode('utf-8')
+        rec_fail_req = urllib.request.Request(f"{self.base_url}/api/auth/reset-password", data=rec_no_email, headers={"Content-Type": "application/json"}, method="POST")
+        with self.assertRaises(urllib.error.HTTPError) as ctx:
+            urllib.request.urlopen(rec_fail_req)
+        self.assertEqual(ctx.exception.code, 400)
+
+        # 4b. Con recovery_email correcto debe funcionar
         rec_data = json.dumps({
             'identifier': f'{user_test}@example.com',
+            'recovery_email': f'{user_test}@example.com',
             'new_password': 'recovered_pass_789'
         }).encode('utf-8')
         rec_req = urllib.request.Request(f"{self.base_url}/api/auth/reset-password", data=rec_data, headers={"Content-Type": "application/json"}, method="POST")
@@ -469,6 +481,17 @@ class TestServerAPI(unittest.TestCase):
             rec_res = json.loads(resp.read().decode('utf-8'))
             self.assertTrue(rec_res['success'])
 
+        # 4c. Con recovery_email incorrecto debe fallar
+        rec_wrong = json.dumps({
+            'identifier': f'{user_test}@example.com',
+            'recovery_email': 'otra@persona.com',
+            'new_password': 'recovered_pass_789'
+        }).encode('utf-8')
+        rec_wrong_req = urllib.request.Request(f"{self.base_url}/api/auth/reset-password", data=rec_wrong, headers={"Content-Type": "application/json"}, method="POST")
+        with self.assertRaises(urllib.error.HTTPError) as ctx:
+            urllib.request.urlopen(rec_wrong_req)
+        self.assertEqual(ctx.exception.code, 400)
+
         # 5. Comprobar login con la contraseña recuperada
         final_log = json.dumps({'username': user_test, 'password': 'recovered_pass_789'}).encode('utf-8')
         f_req = urllib.request.Request(f"{self.base_url}/api/auth/login", data=final_log, headers={"Content-Type": "application/json"}, method="POST")
@@ -476,6 +499,95 @@ class TestServerAPI(unittest.TestCase):
             self.assertEqual(resp.status, 200)
             f_res = json.loads(resp.read().decode('utf-8'))
             self.assertTrue(f_res['success'])
+
+    def test_cors_rejects_unknown_origin(self):
+        """Verifica que el servidor NO envía Access-Control-Allow-Origin para
+        orígenes no autorizados (previene sitios maliciosos de leer respuestas)."""
+        # Login para tener token
+        login_data = json.dumps({'username': 'admin', 'password': 'admin123'}).encode('utf-8')
+        req = urllib.request.Request(f"{self.base_url}/api/auth/login", data=login_data,
+                                     headers={"Content-Type": "application/json"}, method="POST")
+        with urllib.request.urlopen(req) as resp:
+            token = json.loads(resp.read().decode('utf-8'))['token']
+
+        # Petición con Origin malicioso
+        me_req = urllib.request.Request(f"{self.base_url}/api/auth/me",
+                                        headers={"Authorization": f"Bearer {token}",
+                                                  "Origin": "https://evil.example.com"})
+        with urllib.request.urlopen(me_req) as resp:
+            acao = resp.getheader('Access-Control-Allow-Origin')
+            # NO debe existir o NO debe ser el origin malicioso
+            self.assertTrue(acao is None or acao != 'https://evil.example.com',
+                            f'CORS leak: Access-Control-Allow-Origin={acao}')
+
+    def test_cors_allows_local_origin(self):
+        """Verifica que el servidor SÍ envía CORS para orígenes legítimos."""
+        login_data = json.dumps({'username': 'admin', 'password': 'admin123'}).encode('utf-8')
+        req = urllib.request.Request(f"{self.base_url}/api/auth/login", data=login_data,
+                                     headers={"Content-Type": "application/json"}, method="POST")
+        with urllib.request.urlopen(req) as resp:
+            token = json.loads(resp.read().decode('utf-8'))['token']
+
+        me_req = urllib.request.Request(f"{self.base_url}/api/auth/me",
+                                        headers={"Authorization": f"Bearer {token}",
+                                                  "Origin": "http://localhost:8000"})
+        with urllib.request.urlopen(me_req) as resp:
+            acao = resp.getheader('Access-Control-Allow-Origin')
+            self.assertEqual(acao, 'http://localhost:8000')
+
+    def test_ssrf_webhook_rejects_private_ip(self):
+        """Verifica que el servidor rechaza webhooks hacia IPs privadas (SSRF)."""
+        login_data = json.dumps({'username': 'admin', 'password': 'admin123'}).encode('utf-8')
+        req = urllib.request.Request(f"{self.base_url}/api/auth/login", data=login_data,
+                                     headers={"Content-Type": "application/json"}, method="POST")
+        with urllib.request.urlopen(req) as resp:
+            token = json.loads(resp.read().decode('utf-8'))['token']
+
+        webhook_data = json.dumps({'webhook_url': 'http://127.0.0.1:8000/api/admin'}).encode('utf-8')
+        w_req = urllib.request.Request(f"{self.base_url}/api/notifications/test",
+                                       data=webhook_data,
+                                       headers={"Content-Type": "application/json",
+                                                 "Authorization": f"Bearer {token}"},
+                                       method="POST")
+        with self.assertRaises(urllib.error.HTTPError) as ctx:
+            urllib.request.urlopen(w_req)
+        self.assertEqual(ctx.exception.code, 400)
+
+    def test_ssrf_webhook_rejects_non_webhook_host(self):
+        """Verifica que el servidor rechaza hosts que no son proveedores de webhook conocidos."""
+        login_data = json.dumps({'username': 'admin', 'password': 'admin123'}).encode('utf-8')
+        req = urllib.request.Request(f"{self.base_url}/api/auth/login", data=login_data,
+                                     headers={"Content-Type": "application/json"}, method="POST")
+        with urllib.request.urlopen(req) as resp:
+            token = json.loads(resp.read().decode('utf-8'))['token']
+
+        webhook_data = json.dumps({'webhook_url': 'https://evil.example.com/hook'}).encode('utf-8')
+        w_req = urllib.request.Request(f"{self.base_url}/api/notifications/test",
+                                       data=webhook_data,
+                                       headers={"Content-Type": "application/json",
+                                                 "Authorization": f"Bearer {token}"},
+                                       method="POST")
+        with self.assertRaises(urllib.error.HTTPError) as ctx:
+            urllib.request.urlopen(w_req)
+        self.assertEqual(ctx.exception.code, 400)
+
+    def test_ssrf_webhook_rejects_http(self):
+        """Verifica que el servidor rechaza URLs no HTTPS (SSRF vía HTTP)."""
+        login_data = json.dumps({'username': 'admin', 'password': 'admin123'}).encode('utf-8')
+        req = urllib.request.Request(f"{self.base_url}/api/auth/login", data=login_data,
+                                     headers={"Content-Type": "application/json"}, method="POST")
+        with urllib.request.urlopen(req) as resp:
+            token = json.loads(resp.read().decode('utf-8'))['token']
+
+        webhook_data = json.dumps({'webhook_url': 'http://hooks.slack.com/xxx'}).encode('utf-8')
+        w_req = urllib.request.Request(f"{self.base_url}/api/notifications/test",
+                                       data=webhook_data,
+                                       headers={"Content-Type": "application/json",
+                                                 "Authorization": f"Bearer {token}"},
+                                       method="POST")
+        with self.assertRaises(urllib.error.HTTPError) as ctx:
+            urllib.request.urlopen(w_req)
+        self.assertEqual(ctx.exception.code, 400)
 
 if __name__ == '__main__':
     unittest.main()
