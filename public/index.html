@@ -2,14 +2,14 @@
 <html lang="es" class="h-full bg-slate-900 text-slate-100">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>SubTracker Pro - Gestor de Suscripciones y Amigos</title>
   
   <!-- PWA & Mobile Icons -->
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" type="image/svg+xml" href="/icon.svg">
   <link rel="apple-touch-icon" href="/icon.svg">
-  <meta name="theme-color" content="#4f46e5">
+  <meta name="theme-color" content="#141218">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
@@ -1030,8 +1030,8 @@
   </div>
 
   <!-- ================= MODAL: PERSONALIZAR AVATAR E ICONO (M3 PREMIUM) ================= -->
-  <div id="avatarEditorModal" class="fixed inset-0 z-[90] hidden overflow-y-auto bg-black/75 backdrop-blur-sm p-4 flex items-center justify-center">
-    <div class="relative w-full max-w-md m3-dialog p-5 sm:p-6 space-y-4 animate-scale-up">
+  <div id="avatarEditorModal" class="fixed inset-0 z-[90] hidden overflow-y-auto bg-black/75 backdrop-blur-sm p-4 flex items-start sm:items-center justify-center">
+    <div class="relative w-full max-w-md m3-dialog my-auto p-5 sm:p-6 space-y-4 animate-scale-up">
       <div class="flex items-center justify-between border-b border-[#49454f]/30 pb-3">
         <h3 class="text-base font-bold text-white flex items-center gap-2 font-google-sans">
           <i data-lucide="palette" class="w-5 h-5 text-[#d0bcff]"></i> Personalizar Avatar
@@ -1291,8 +1291,8 @@
   </div>
 
   <!-- ================= MODAL: FORMULARIO LOGIN / REGISTRO ================= -->
-  <div id="authModal" class="fixed inset-0 z-[65] hidden overflow-y-auto bg-black/80 backdrop-blur-md p-4 flex items-center justify-center transition-all duration-300">
-    <div class="relative w-full max-w-md m3-dialog overflow-hidden p-6 sm:p-8 space-y-6 animate-scale-up border border-[#49454f]/50 shadow-2xl">
+  <div id="authModal" class="fixed inset-0 z-[65] hidden overflow-y-auto bg-black/80 backdrop-blur-md p-4 flex items-start sm:items-center justify-center transition-all duration-300">
+    <div class="relative w-full max-w-md m3-dialog overflow-hidden my-auto p-6 sm:p-8 space-y-6 animate-scale-up border border-[#49454f]/50 shadow-2xl">
       
       <!-- Botón Cerrar (sólo visible si ya hay usuario autenticado o para volver a landing) -->
       <button id="btnCloseAuthModal" class="absolute top-4 right-4 text-[#cac4d0] hover:text-white p-2 rounded-full hover:bg-[#2b2930] transition z-10" title="Cerrar ventana">
@@ -1468,8 +1468,8 @@
   </div>
 
   <!-- ================= MODAL: AÑADIR / EDITAR AMIGO ================= -->
-  <div id="friendModal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-black/70 backdrop-blur-sm p-4 flex items-center justify-center">
-    <div class="relative w-full max-w-md m3-dialog p-6 space-y-4 animate-scale-up">
+  <div id="friendModal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-black/70 backdrop-blur-sm p-4 flex items-start sm:items-center justify-center">
+    <div class="relative w-full max-w-md m3-dialog my-auto p-6 space-y-4 animate-scale-up">
       <div class="flex items-center justify-between border-b border-[#49454f]/40 pb-3">
         <h3 id="friendModalTitle" class="text-base font-bold text-white flex items-center gap-2 font-google-sans">
           <i data-lucide="user-plus" class="w-5 h-5 text-[#a8d5b5]"></i>
@@ -1517,8 +1517,8 @@
   </div>
 
   <!-- ================= MODAL: BUSCAR USUARIOS REGISTRADOS ================= -->
-  <div id="userSearchModal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-black/70 backdrop-blur-sm p-4 flex items-center justify-center">
-    <div class="relative w-full max-w-md m3-dialog p-6 space-y-4 animate-scale-up">
+  <div id="userSearchModal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-black/70 backdrop-blur-sm p-4 flex items-start sm:items-center justify-center">
+    <div class="relative w-full max-w-md m3-dialog my-auto p-6 space-y-4 animate-scale-up">
       <div class="flex items-center justify-between border-b border-[#49454f]/40 pb-3">
         <h3 class="text-base font-bold text-white flex items-center gap-2 font-google-sans">
           <i data-lucide="user-search" class="w-5 h-5 text-[#d0bcff]"></i>
@@ -1550,8 +1550,8 @@
   </div>
 
   <!-- ================= MODAL: CREAR SOLICITUD DE PAGO EN CONJUNTO (SPLIT PAY) ================= -->
-  <div id="splitPayModal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-black/70 backdrop-blur-sm p-4 flex items-center justify-center">
-    <div class="relative w-full max-w-md m3-dialog p-6 space-y-4 animate-scale-up">
+  <div id="splitPayModal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-black/70 backdrop-blur-sm p-4 flex items-start sm:items-center justify-center">
+    <div class="relative w-full max-w-md m3-dialog my-auto p-6 space-y-4 animate-scale-up">
       <div class="flex items-center justify-between border-b border-[#49454f]/40 pb-3">
         <h3 class="text-base font-bold text-white flex items-center gap-2 font-google-sans">
           <i data-lucide="split" class="w-5 h-5 text-[#d0bcff]"></i>
@@ -1618,8 +1618,8 @@
   </div>
 
   <!-- ================= MODAL: SUSCRIPCIONES Y DIVIDIR PAGO CON AMIGO ================= -->
-  <div id="sharedSubsModal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-black/80 p-4 flex items-center justify-center">
-    <div class="relative w-full max-w-xl m3-dialog p-6 space-y-4 m3-container-transform-dialog">
+  <div id="sharedSubsModal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-black/80 p-4 flex items-start sm:items-center justify-center">
+    <div class="relative w-full max-w-xl m3-dialog my-auto p-6 space-y-4 m3-container-transform-dialog">
       <div class="flex items-center justify-between border-b border-[#49454f]/40 pb-3">
         <div>
           <h3 id="sharedSubsModalTitle" class="text-base font-bold text-white flex items-center gap-2 font-google-sans">
@@ -1644,8 +1644,8 @@
   </div>
 
   <!-- ================= MODAL: DETALLES DE SOLICITUD DE PAGO EN CONJUNTO ================= -->
-  <div id="splitPayDetailModal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-black/75 backdrop-blur-sm p-4 flex items-center justify-center">
-    <div class="relative w-full max-w-md m3-dialog p-6 space-y-4 animate-scale-up">
+  <div id="splitPayDetailModal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-black/75 backdrop-blur-sm p-4 flex items-start sm:items-center justify-center">
+    <div class="relative w-full max-w-md m3-dialog my-auto p-6 space-y-4 animate-scale-up">
       <div class="flex items-center justify-between border-b border-[#49454f]/40 pb-3">
         <h3 class="text-base font-bold text-white flex items-center gap-2 font-google-sans">
           <i data-lucide="split" class="w-5 h-5 text-[#d0bcff]"></i>
@@ -2721,8 +2721,8 @@
   </div>
 
   <!-- ================= MODAL: REGISTRAR PAGO MANUAL ================= -->
-  <div id="paymentModal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-black/70 backdrop-blur-sm p-4 flex items-center justify-center">
-    <div class="relative w-full max-w-md m3-dialog p-6 space-y-4 m3-container-transform-dialog">
+  <div id="paymentModal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-black/70 backdrop-blur-sm p-4 flex items-start sm:items-center justify-center">
+    <div class="relative w-full max-w-md m3-dialog my-auto p-6 space-y-4 m3-container-transform-dialog">
       <div class="flex items-center justify-between border-b border-[#49454f]/40 pb-3">
         <h3 class="text-base font-bold text-white flex items-center gap-2 font-google-sans">
           <i data-lucide="receipt" class="w-5 h-5 text-[#a8d5b5]"></i> Registrar Pago Real
@@ -2798,8 +2798,8 @@
   </div>
 
   <!-- MODAL DIÁLOGO DE CONFIRMACIÓN Y ALERTA ESTILO GOOGLE M3 -->
-  <div id="m3ConfirmModal" class="hidden fixed inset-0 z-[150] overflow-y-auto bg-black/80 backdrop-blur-sm p-4 flex items-center justify-center transition-all duration-200">
-    <div class="relative w-full max-w-md m3-dialog p-6 space-y-4 animate-scale-up border border-[#49454f]/50 shadow-2xl">
+  <div id="m3ConfirmModal" class="hidden fixed inset-0 z-[150] overflow-y-auto bg-black/80 backdrop-blur-sm p-4 flex items-start sm:items-center justify-center transition-all duration-200">
+    <div class="relative w-full max-w-md m3-dialog my-auto p-6 space-y-4 animate-scale-up border border-[#49454f]/50 shadow-2xl">
       <div class="flex items-start gap-3.5">
         <div id="m3ConfirmIconContainer" class="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 shadow-inner">
           <div id="m3ConfirmIcon"></div>
@@ -2945,6 +2945,6 @@
     </div>
   </aside>
 
-  <script src="/app.js?v=2.9.2"></script>
+  <script src="/app.js?v=2.9.3"></script>
 </body>
 </html>

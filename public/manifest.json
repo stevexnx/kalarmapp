@@ -4,8 +4,8 @@
   "description": "Gestor inteligente de suscripciones, fechas de corte, pagos reales y costos anuales",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0f172a",
-  "theme_color": "#4f46e5",
+  "background_color": "#141218",
+  "theme_color": "#141218",
   "icons": [
     {
       "src": "/icon.svg",
