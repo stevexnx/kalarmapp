@@ -1683,8 +1683,7 @@ function initEventListeners() {
   document.getElementById('btnOpenLoginModal')?.addEventListener('click', () => openAuthModal('login'));
   document.getElementById('btnLandingLogin')?.addEventListener('click', () => openAuthModal('login'));
   document.getElementById('btnLandingRegister')?.addEventListener('click', () => openAuthModal('register'));
-  document.getElementById('btnHeroRegister')?.addEventListener('click', () => openAuthModal('register'));
-  document.getElementById('btnHeroLogin')?.addEventListener('click', () => openAuthModal('login'));
+  
   document.getElementById('btnBackToWelcome')?.addEventListener('click', () => {
     closeAuthModal();
     showWelcomeLanding();
