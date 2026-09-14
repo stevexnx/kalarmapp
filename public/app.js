@@ -4465,7 +4465,7 @@ function createTableRowHtml(sub) {
 
   return `
     <tr id="sub-row-${sub.id}" data-sub-id="${sub.id}" class="hover:bg-[#211f26] transition cursor-pointer ${opacityClass}" onclick="showSubscriptionSummary(${sub.id}, this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();showSubscriptionSummary(${sub.id}, this)}" tabindex="0" role="button" aria-label="Ver resumen de ${escapeHtml(sub.name)}" title="Ver resumen de ${escapeHtml(sub.name)}">
-      <td class="px-4 py-3.5">
+      <td class="px-3 py-3">
         <div class="flex items-center gap-2.5">
           <div class="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 shadow-sm" style="background: linear-gradient(135deg, ${safeColor}22, ${safeColor}44); border: 1px solid ${safeColor}55">
             ${iconHtml}
@@ -4481,16 +4481,16 @@ function createTableRowHtml(sub) {
           </div>
         </div>
       </td>
-      <td class="px-4 py-3.5">
+      <td class="px-3 py-3">
         <span class="m3-badge-secondary">
           ${escapeHtml(sub.category)}
         </span>
       </td>
-      <td class="px-4 py-3.5">
+      <td class="px-3 py-3">
         <div class="font-medium text-[#e6e0e9]">${formatDateFriendly(sub.next_billing_date)}</div>
         <span class="${badgeClass}">${daysText}</span>
       </td>
-      <td class="px-4 py-3.5 font-mono">
+      <td class="px-3 py-3 font-mono">
         ${isDifferentCurrency ? `
           <div class="font-bold text-white privacy-blur">${baseSymbol}${formatNumber(convertedPrice)} <span class="text-[11px] text-[#cac4d0] font-normal">/${cycleLabel.toLowerCase()}</span></div>
           <div class="text-[11px] text-[#d0bcff] font-semibold privacy-blur">orig. ${subSymbol}${formatNumber(sub.price)} ${subCurr}</div>
@@ -4499,16 +4499,16 @@ function createTableRowHtml(sub) {
           <div class="text-[11px] text-[#cac4d0]">${cycleLabel}</div>
         `}
       </td>
-      <td class="px-4 py-3.5 font-mono">
+      <td class="px-3 py-3 font-mono">
         <div class="font-extrabold text-[#d0bcff] privacy-blur">${baseSymbol}${formatNumber(convertedAnnual)} / año</div>
         <div class="text-[10px] text-[#cac4d0] privacy-blur">
           (${baseSymbol}${formatNumber(convertedMonthly)} / mes${isDifferentCurrency ? ` &bull; orig. ${subSymbol}${formatNumber(sub.annual_cost)}` : ''})
         </div>
       </td>
-      <td class="px-4 py-3.5" onclick="event.stopPropagation()">
+      <td class="px-3 py-3" onclick="event.stopPropagation()">
         ${getStatusDotHtml(sub.id, sub.status)}
       </td>
-      <td class="px-4 py-3.5 text-right space-x-1" onclick="event.stopPropagation()">
+      <td class="px-3 py-3 text-right space-x-1" onclick="event.stopPropagation()">
         <button onclick="markAsPaidAndAdvance(${sub.id})" title="Marcar como pagado" class="p-1.5 hover:bg-[#2b2930] rounded-full text-[#cac4d0] hover:text-[#a8d5b5] transition cursor-pointer"><i data-lucide="receipt" class="w-4 h-4"></i></button>
         <button onclick="showSubscriptionSummary(${sub.id}, this.closest('tr'))" title="Ver resumen" class="p-1.5 hover:bg-[#2b2930] rounded-full text-[#cac4d0] hover:text-white transition cursor-pointer"><i data-lucide="eye" class="w-4 h-4"></i></button>
       </td>
@@ -4535,11 +4535,11 @@ function renderPaymentHistory(payments) {
 
   tbody.innerHTML = payments.map(p => `
     <tr class="hover:bg-slate-800/40 transition">
-      <td class="px-4 py-3 font-medium text-slate-200">${formatDateFriendly(p.payment_date)}</td>
-      <td class="px-4 py-3 font-bold text-white">${escapeHtml(p.subscription_name)}</td>
-      <td class="px-4 py-3 font-mono font-bold text-emerald-400">${CURRENCY_SYMBOLS[p.currency] || '$'}${formatNumber(p.amount)}</td>
-      <td class="px-4 py-3 text-slate-400">${escapeHtml(p.payment_method || 'Tarjeta')}</td>
-      <td class="px-4 py-3 text-slate-400 text-xs">${escapeHtml(p.notes || '-')}</td>
+      <td class="px-3 py-3 font-medium text-slate-200">${formatDateFriendly(p.payment_date)}</td>
+      <td class="px-3 py-3 font-bold text-white">${escapeHtml(p.subscription_name)}</td>
+      <td class="px-3 py-3 font-mono font-bold text-emerald-400">${CURRENCY_SYMBOLS[p.currency] || '$'}${formatNumber(p.amount)}</td>
+      <td class="px-3 py-3 text-slate-400">${escapeHtml(p.payment_method || 'Tarjeta')}</td>
+      <td class="px-3 py-3 text-slate-400 text-xs">${escapeHtml(p.notes || '-')}</td>
     </tr>
   `).join('');
 }

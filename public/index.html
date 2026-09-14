@@ -206,7 +206,7 @@
   <div class="flex-1 flex flex-col min-w-0 h-screen overflow-y-auto overflow-x-hidden w-full">
 
     <!-- TOP APP BAR GOOGLE M3 -->
-    <header class="sticky top-0 z-30 m3-top-app-bar backdrop-blur-md bg-[#141218]/90 px-3 sm:px-6 lg:px-8 py-3 border-b border-[#49454f]/30">
+    <header class="sticky top-0 z-30 m3-top-app-bar backdrop-blur-md bg-[#141218]/90 px-3 sm:px-6 lg:px-8 py-2.5 sm:py-3 border-b border-[#49454f]/30">
       <div class="w-full flex items-center justify-between gap-2 sm:gap-4">
         
         <!-- Identificador / Marca en Header (Clic en el icono te manda al inicio) -->
@@ -287,16 +287,16 @@
     </div>
 
     <!-- CONTENIDO PRINCIPAL -->
-    <main class="flex-1 w-full px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+    <main class="flex-1 w-full px-3 sm:px-6 lg:px-8 py-3 sm:py-6 space-y-3 sm:space-y-6">
 
     <!-- ================= SECCIÓN 1: VISTA DASHBOARD PRINCIPAL ================= -->
-    <div id="viewDashboard" class="space-y-6">
+    <div id="viewDashboard" class="space-y-3 sm:space-y-6">
 
       <!-- TARJETAS DE RESUMEN FINANCIERO (KPIs) CON ESTILO M3 -->
-      <div id="kpiGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+      <div id="kpiGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         
         <!-- KPI 1: Gasto Mensual -->
-        <div class="m3-card kpi-card p-5 relative overflow-hidden">
+        <div class="m3-card kpi-card p-4 sm:p-5 relative overflow-hidden">
           <div class="flex items-center justify-between">
             <span class="text-xs font-semibold text-[#cac4d0] uppercase tracking-wider">Gasto Mensual Total</span>
             <div class="kpi-icon-box w-9 h-9 rounded-xl bg-[#4a4458]/40 border border-[#49454f]/50 flex items-center justify-center text-[#d0bcff]">
@@ -310,7 +310,7 @@
         </div>
 
         <!-- KPI 2: Gasto Anual Proyectado -->
-        <div class="m3-card kpi-card p-5 relative overflow-hidden">
+        <div class="m3-card kpi-card p-4 sm:p-5 relative overflow-hidden">
           <div class="flex items-center justify-between">
             <span class="text-xs font-semibold text-[#cac4d0] uppercase tracking-wider flex items-center gap-1.5">
               <i data-lucide="sparkles" class="w-3.5 h-3.5 text-[#d0bcff]"></i>
@@ -327,7 +327,7 @@
         </div>
 
         <!-- KPI 3: Próximos Cortes (7 días) -->
-        <div class="m3-card kpi-card p-5 relative overflow-hidden">
+        <div class="m3-card kpi-card p-4 sm:p-5 relative overflow-hidden">
           <div class="flex items-center justify-between">
             <span class="text-xs font-semibold text-[#cac4d0] uppercase tracking-wider">Cortes en 7 Días</span>
             <div class="kpi-icon-box w-9 h-9 rounded-xl bg-[#643f14]/40 border border-[#49454f]/50 flex items-center justify-center text-[#f2c18d]">
@@ -341,7 +341,7 @@
         </div>
 
         <!-- KPI 4: Ahorro por Cuentas Compartidas -->
-        <div class="m3-card kpi-card p-5 relative overflow-hidden">
+        <div class="m3-card kpi-card p-4 sm:p-5 relative overflow-hidden">
           <div class="flex items-center justify-between">
             <span class="text-xs font-semibold text-[#cac4d0] uppercase tracking-wider">Ahorro Compartido</span>
             <div class="kpi-icon-box w-9 h-9 rounded-xl bg-[#2b5037]/50 border border-[#49454f]/50 flex items-center justify-center text-[#a8d5b5]">
@@ -359,7 +359,7 @@
       <div>
         <!-- Botón Acordeón -->
         <button id="chartsAccordionBtn" type="button" onclick="toggleChartsAccordion()"
-          class="w-full flex items-center justify-between px-4 py-2.5 rounded-2xl bg-[#1d1b20] hover:bg-[#2b2930] border border-[#49454f]/40 transition group mb-3">
+          class="w-full flex items-center justify-between px-4 py-2.5 rounded-2xl bg-[#1d1b20] hover:bg-[#2b2930] border border-[#49454f]/40 transition group mb-2">
           <div class="flex items-center gap-2.5">
             <i data-lucide="bar-chart-3" class="w-4 h-4 text-[#d0bcff]"></i>
             <span class="text-xs font-semibold text-white font-google-sans">Analítica y Gráficos</span>
@@ -369,8 +369,8 @@
 
         <!-- Contenido Colapsable -->
         <div id="chartsAccordionContent">
-          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div class="m3-card p-5 lg:p-6 flex flex-col justify-between">
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-3 lg:gap-6">
+            <div class="m3-card p-4 lg:p-6 flex flex-col justify-between">
               <div>
                 <div class="flex items-center justify-between mb-4">
                   <div>
@@ -389,7 +389,7 @@
               <div id="categoryBreakdownList" class="mt-4 pt-3 border-t border-[#49454f]/40 space-y-2 max-h-40 overflow-y-auto pr-1"></div>
             </div>
 
-            <div class="lg:col-span-2 m3-card p-5 lg:p-6 flex flex-col justify-between">
+            <div class="lg:col-span-2 m3-card p-4 lg:p-6 flex flex-col justify-between">
               <div>
                 <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
                   <div>
@@ -422,7 +422,7 @@
       </div>
 
       <!-- SECCIÓN DE GESTIÓN Y LISTADO DE SUSCRIPCIONES -->
-      <div class="m3-card p-4 sm:p-6 space-y-4 sm:space-y-5">
+      <div class="m3-card p-3 sm:p-6 space-y-3 sm:space-y-5">
         <div class="flex items-center gap-2 sm:gap-3 justify-between">
           
           <!-- BARRA DE BÚSQUEDA INTEGRADA CON ORDEN Y FILTROS -->
@@ -583,19 +583,19 @@
           </select>
         </div>
 
-        <div id="subscriptionsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+        <div id="subscriptionsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4"></div>
 
         <div id="subscriptionsTableContainer" class="hidden overflow-x-auto rounded-2xl border border-[#49454f]/40">
           <table class="w-full text-left text-xs sm:text-sm">
             <thead class="bg-[#141218] text-[#cac4d0] border-b border-[#49454f]/40 uppercase tracking-wider text-[11px]">
               <tr>
-                <th scope="col" class="px-4 py-3.5">Servicio</th>
-                <th scope="col" class="px-4 py-3.5">Categoría</th>
-                <th scope="col" class="px-4 py-3.5">Fecha de Corte</th>
-                <th scope="col" class="px-4 py-3.5">Cobro Recurrente</th>
-                <th scope="col" class="px-4 py-3.5">Costo Anual</th>
-                <th scope="col" class="px-4 py-3.5">Estado</th>
-                <th scope="col" class="px-4 py-3.5 text-right">Acciones</th>
+                <th scope="col" class="px-3 py-3">Servicio</th>
+                <th scope="col" class="px-3 py-3">Categoría</th>
+                <th scope="col" class="px-3 py-3">Fecha de Corte</th>
+                <th scope="col" class="px-3 py-3">Cobro Recurrente</th>
+                <th scope="col" class="px-3 py-3">Costo Anual</th>
+                <th scope="col" class="px-3 py-3">Estado</th>
+                <th scope="col" class="px-3 py-3 text-right">Acciones</th>
               </tr>
             </thead>
             <tbody id="subscriptionsTableBody" class="divide-y divide-[#49454f]/30 text-[#e6e0e9]"></tbody>
@@ -619,8 +619,8 @@
     </div>
 
     <!-- ================= SECCIÓN 2: VISTA HISTORIAL DE PAGOS ================= -->
-    <div id="viewPayments" class="hidden space-y-6">
-      <div class="m3-card p-5 sm:p-6 space-y-4">
+    <div id="viewPayments" class="hidden space-y-3 sm:space-y-6">
+      <div class="m3-card p-4 sm:p-6 space-y-3 sm:space-y-4">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#49454f]/40 pb-4">
           <div>
             <h2 class="text-base font-bold text-white flex items-center gap-2 font-google-sans">
@@ -641,11 +641,11 @@
           <table class="w-full text-left text-xs sm:text-sm">
             <thead class="bg-[#141218] text-[#cac4d0] border-b border-[#49454f]/40 uppercase tracking-wider text-[11px]">
               <tr>
-                <th class="px-4 py-3.5">Fecha de Pago</th>
-                <th class="px-4 py-3.5">Suscripción</th>
-                <th class="px-4 py-3.5">Monto Pagado</th>
-                <th class="px-4 py-3.5">Método</th>
-                <th class="px-4 py-3.5">Notas / Referencia</th>
+                <th class="px-3 py-3">Fecha de Pago</th>
+                <th class="px-3 py-3">Suscripción</th>
+                <th class="px-3 py-3">Monto Pagado</th>
+                <th class="px-3 py-3">Método</th>
+                <th class="px-3 py-3">Notas / Referencia</th>
               </tr>
             </thead>
             <tbody id="paymentHistoryTableBody" class="divide-y divide-[#49454f]/30 text-[#e6e0e9]"></tbody>
@@ -655,11 +655,11 @@
     </div>
 
     <!-- ================= SECCIÓN 3: VISTA AMIGOS & CUENTAS COMPARTIDAS ================= -->
-    <div id="viewFriends" class="hidden space-y-6">
+    <div id="viewFriends" class="hidden space-y-3 sm:space-y-6">
       
       <!-- Resumen de Deudas y Saldos de Amigos -->
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div class="m3-card p-5">
+        <div class="m3-card p-4 sm:p-5">
           <div class="flex items-center justify-between">
             <span class="text-xs font-semibold uppercase tracking-wider text-[#cac4d0]">Total por Cobrar a Amigos (Mes)</span>
             <div class="w-9 h-9 rounded-xl bg-[#2b5037]/50 text-[#a8d5b5] flex items-center justify-center">
@@ -672,7 +672,7 @@
           </div>
         </div>
 
-        <div class="m3-card p-5 flex flex-col justify-between">
+        <div class="m3-card p-4 sm:p-5 flex flex-col justify-between">
           <div class="flex items-center justify-between">
             <span class="text-xs font-semibold uppercase tracking-wider text-[#cac4d0]">Comunidad & Amigos</span>
             <div class="flex items-center gap-2">
@@ -709,7 +709,7 @@
       </div>
 
       <!-- Sección Unificada: Contactos, Amigos y Cobros Compartidos -->
-      <div class="m3-card p-5 sm:p-6 space-y-4">
+      <div class="m3-card p-4 sm:p-6 space-y-3 sm:space-y-4">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <h3 class="text-sm font-bold text-white flex items-center gap-2 font-google-sans">
@@ -734,9 +734,9 @@
     </div>
 
     <!-- ================= SECCIÓN 3.5: VISTA PAGOS EN CONJUNTO (SPLIT PAY) ================= -->
-    <div id="viewSplitPay" class="hidden space-y-6">
+    <div id="viewSplitPay" class="hidden space-y-3 sm:space-y-6">
       <!-- Encabezado de Vista Split Pay -->
-      <div class="m3-card p-5 sm:p-6 space-y-4">
+      <div class="m3-card p-4 sm:p-6 space-y-3 sm:space-y-4">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div class="flex items-center gap-3">
             <div class="w-10 h-10 rounded-2xl bg-[#d0bcff]/15 flex items-center justify-center text-[#d0bcff] shrink-0">
@@ -770,10 +770,10 @@
     </div>
 
     <!-- ================= SECCIÓN 4: VISTA CALENDARIO DE CORTES ================= -->
-    <div id="viewCalendar" class="hidden space-y-6">
+    <div id="viewCalendar" class="hidden space-y-3 sm:space-y-6">
       
       <!-- Barra Superior del Calendario: Navegación de Mes y Resumen -->
-      <div class="m3-card p-4 sm:p-5 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
+      <div class="m3-card p-3 sm:p-5 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 sm:gap-4">
         <div class="flex items-center gap-3">
           <div class="w-10 h-10 rounded-2xl bg-[#d0bcff]/15 flex items-center justify-center text-[#d0bcff] shrink-0">
             <i data-lucide="calendar" class="w-5 h-5"></i>
@@ -816,7 +816,7 @@
       </div>
 
       <!-- Cuadrícula Principal del Calendario -->
-      <div class="m3-card p-3 sm:p-5 overflow-hidden space-y-3">
+      <div class="m3-card p-2.5 sm:p-5 overflow-hidden space-y-2.5">
         <!-- Encabezados de Días de la Semana -->
         <div class="grid grid-cols-7 gap-1 sm:gap-2 text-center text-xs font-semibold text-[#cac4d0] border-b border-[#49454f]/40 pb-2">
           <div>Lun</div>
@@ -835,7 +835,7 @@
       </div>
 
       <!-- Detalle del Día Seleccionado -->
-      <div id="calendarDayDetailsCard" class="m3-card p-5 sm:p-6 space-y-4">
+      <div id="calendarDayDetailsCard" class="m3-card p-4 sm:p-6 space-y-3 sm:space-y-4">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#49454f]/40 pb-3">
           <div class="flex items-center gap-2">
             <i data-lucide="clock" class="w-4 h-4 text-[#d0bcff]"></i>
@@ -1278,7 +1278,7 @@
     </main>
 
     <!-- Footer minimalista -->
-    <footer class="w-full border-t border-[#49454f]/30 py-6 px-6 text-center text-xs text-[#cac4d0]/70 z-10">
+    <footer class="w-full border-t border-[#49454f]/30 py-4 px-4 text-center text-xs text-[#cac4d0]/70 z-10">
       <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
         <span>&copy; SubTracker Pro. Diseñado con Google Material Design 3.</span>
         <div class="flex items-center gap-4">
