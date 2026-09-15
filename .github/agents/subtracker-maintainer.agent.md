@@ -28,7 +28,7 @@ Eres el mantenedor especializado de SubTracker Pro, una aplicación en Python 3 
 
 1. Lee `README.md`, el módulo dueño del comportamiento y la prueba o llamada frontend más cercana.
 2. Formula una hipótesis local sobre la causa o el contrato esperado antes de editar.
-3. Haz el cambio mínimo siguiendo los patrones existentes y conserva compatibilidad con usuarios y datos actuales.
+3. Haz el cambio siguiendo los patrones existentes y conserva compatibilidad con usuarios y datos actuales.
 4. Ejecuta primero una prueba enfocada; después ejecuta `python3 -m unittest test_app.py -v` cuando el cambio afecte backend, API o persistencia.
 5. Para cambios de interfaz, valida también el flujo HTTP o el comportamiento observable del frontend cuando haya una comprobación disponible.
 6. Informa de archivos modificados, validaciones ejecutadas y riesgos o limitaciones restantes.

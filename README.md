@@ -66,20 +66,37 @@ python3 -m unittest test_app.py -v
 
 ```
 kalarm/
-├── app.py                  # Lanzador del servidor web
-├── Dockerfile              # Contenedor Docker Alpine
-├── docker-compose.yml      # Despliegue con volumen persistente
+├── app.py                  # Lanzador del servidor web (Python 3, sin deps)
+├── Dockerfile / docker-compose.yml
+├── requirements.txt        # Backend deps
 ├── test_app.py             # Suite de pruebas unitarias
-├── README.md               # Documentación en español
+├── vercel.json             # Config despliegue serverless
+├── capacitor.config.json   # Build móvil Android/iOS
 ├── backend/
 │   ├── __init__.py
 │   ├── db.py               # SQLite, Auth, Amigos, Finanzas y .ics
 │   └── server.py           # Servidor RESTful y enrutador PWA
-└── public/
-    ├── index.html          # Interfaz SPA con login y amigos
-    ├── styles.css          # Estilos y animaciones
-    ├── app.js              # Lógica de cliente, reactividad y auth
-    ├── manifest.json       # Manifiesto PWA para celular
-    ├── sw.js               # Service Worker offline
-    └── icon.svg            # Icono vectorial oficial
+├── public/
+│   ├── index.html          # Interfaz SPA con login y amigos
+│   ├── styles.css          # Estilos y animaciones
+│   ├── app.js              # Lógica de cliente, reactividad y auth
+│   ├── manifest.json       # Manifiesto PWA para celular
+│   ├── sw.js               # Service Worker offline
+│   └── icon.svg            # Icono vectorial oficial
+├── .agent/                 # Skills y reglas para agentes de IA
+├── .gemini/                # Duplicados sync de skills (AGENTS)
+├── .hermes/  .github/  .impeccable/
+└── android/                # Proyecto nativo Capacitor
 ```
+
+---
+
+## 🧼 Mantenimiento y Calidad de Código
+
+Auditoría reciente de código muerto y optimización de tokens:
+
+- **Código muerto eliminado**: funciones huérfanas (`getCurrencySymbol`, `getCutOffHumanMessage`, `toggleRailProfilePopover`, `openBackupModal`, `getStatusBadge`) y `console.log` residuales en `app.js`.
+- **Sintaxis validada**: `node --check public/app.js` sin errores tras las eliminaciones.
+- **Documentación auxiliar**: revisión de solapamientos y redundancias entre archivos `.md`.
+
+> ⚠️ Para reintroducir funciones eliminadas, consulta el historial del repositorio (`git show fc969dc -- public/app.js`) antes de reescribirlas desde cero.

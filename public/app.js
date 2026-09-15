@@ -1798,7 +1798,29 @@ function initEventListeners() {
   document.getElementById('btnEnableNotifications')?.addEventListener('click', requestNotificationPermission);
 
   // Filtros & Búsqueda integrados en la barra
-  document.getElementById('searchInput')?.addEventListener('input', debounce(() => loadSubscriptions(), 250));
+  const searchInputElem = document.getElementById('searchInput');
+  const clearSearchBtn = document.getElementById('btnClearSearchInput');
+
+  searchInputElem?.addEventListener('input', (e) => {
+    if (clearSearchBtn) {
+      clearSearchBtn.classList.toggle('hidden', !e.target.value);
+    }
+  });
+  searchInputElem?.addEventListener('input', debounce(() => loadSubscriptions(), 250));
+
+  clearSearchBtn?.addEventListener('click', () => {
+    if (searchInputElem) {
+      searchInputElem.value = '';
+      clearSearchBtn.classList.add('hidden');
+      searchInputElem.focus();
+      loadSubscriptions();
+    }
+  });
+
+  document.getElementById('btnEmptyResetFilters')?.addEventListener('click', () => {
+    resetAllFilters();
+  });
+
   document.getElementById('categoryFilter')?.addEventListener('change', () => { syncFilterUI(); loadSubscriptions(); });
   document.getElementById('statusFilter')?.addEventListener('change', () => { syncFilterUI(); loadSubscriptions(); });
   document.getElementById('sortBy')?.addEventListener('change', () => { syncFilterUI(); loadSubscriptions(); });
@@ -1809,6 +1831,12 @@ function initEventListeners() {
     document.getElementById('filterDropdownMenu')?.classList.add('hidden');
     document.getElementById('filterBackdrop')?.classList.add('hidden');
   };
+
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      closeAllFilterMenus();
+    }
+  });
 
   document.getElementById('btnToggleSortMenu')?.addEventListener('click', (e) => {
     e.stopPropagation();
@@ -4123,6 +4151,28 @@ function renderSubscriptions() {
     grid.classList.add('hidden');
     tableContainer.classList.add('hidden');
     emptyState.classList.remove('hidden');
+
+    const search = document.getElementById('searchInput')?.value.trim() || '';
+    const category = document.getElementById('categoryFilter')?.value || 'all';
+    const status = document.getElementById('statusFilter')?.value || 'all';
+    const isFiltered = Boolean(search || category !== 'all' || status !== 'all');
+
+    const titleElem = document.getElementById('emptyStateTitle');
+    const descElem = document.getElementById('emptyStateDescription');
+    const resetBtn = document.getElementById('btnEmptyResetFilters');
+
+    if (titleElem && descElem) {
+      if (isFiltered) {
+        titleElem.textContent = 'Sin resultados para estos filtros';
+        descElem.textContent = 'Ninguna suscripción coincide con tu búsqueda o filtros actuales. Prueba a limpiar los criterios.';
+        if (resetBtn) resetBtn.classList.remove('hidden');
+      } else {
+        titleElem.textContent = 'No tienes suscripciones registradas';
+        descElem.textContent = 'Agrega tu primera suscripción para comenzar a monitorear fechas de corte, gastos y alertas.';
+        if (resetBtn) resetBtn.classList.add('hidden');
+      }
+    }
+
     initIcons();
     return;
   }

@@ -430,6 +430,9 @@
             <i data-lucide="search" class="w-4 h-4 text-[#cac4d0] shrink-0 ml-1"></i>
             <input type="text" id="searchInput" placeholder="Buscar suscripciones..." 
               class="w-full pl-2 pr-1 py-1.5 bg-transparent text-xs sm:text-sm text-[#e6e0e9] placeholder-[#938f99] focus:outline-none min-w-0">
+            <button type="button" id="btnClearSearchInput" class="hidden p-1 rounded-full text-[#cac4d0] hover:text-white hover:bg-[#49454f]/40 transition cursor-pointer" title="Limpiar búsqueda">
+              <i data-lucide="x" class="w-3.5 h-3.5"></i>
+            </button>
 
             <!-- Botón de Ordenar integrado -->
             <div class="relative shrink-0">
@@ -602,17 +605,22 @@
           </table>
         </div>
 
-        <div id="emptyState" class="hidden py-16 text-center">
-          <div class="w-16 h-16 rounded-2xl bg-[#211f26] border border-[#49454f]/50 mx-auto flex items-center justify-center text-[#cac4d0] mb-4">
-            <i data-lucide="folder-search" class="w-8 h-8"></i>
+        <div id="emptyState" class="hidden py-14 px-4 text-center">
+          <div class="w-16 h-16 rounded-2xl bg-[#211f26] border border-[#49454f]/50 mx-auto flex items-center justify-center text-[#cac4d0] mb-4 shadow-inner">
+            <i data-lucide="folder-search" class="w-8 h-8 text-[#d0bcff]"></i>
           </div>
-          <h3 class="text-base font-semibold text-white font-google-sans">No se encontraron suscripciones</h3>
-          <p class="text-xs text-[#cac4d0] max-w-sm mx-auto mt-1">
-            Agrega una nueva suscripción para comenzar a monitorear tus cobros.
+          <h3 id="emptyStateTitle" class="text-base font-semibold text-white font-google-sans">No se encontraron suscripciones</h3>
+          <p id="emptyStateDescription" class="text-xs text-[#cac4d0] max-w-sm mx-auto mt-1.5 leading-relaxed">
+            Agrega una nueva suscripción o modifica los filtros activos para comenzar a monitorear tus cobros.
           </p>
-          <button id="btnEmptyAdd" class="mt-4 m3-btn-filled">
-            <i data-lucide="plus" class="w-4 h-4"></i> Crear Suscripción
-          </button>
+          <div class="mt-5 flex flex-wrap items-center justify-center gap-2.5">
+            <button id="btnEmptyResetFilters" type="button" class="hidden m3-btn-outline text-xs py-2 px-4">
+              <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Restablecer Filtros
+            </button>
+            <button id="btnEmptyAdd" type="button" class="m3-btn-filled text-xs py-2 px-4">
+              <i data-lucide="plus" class="w-3.5 h-3.5"></i> Crear Suscripción
+            </button>
+          </div>
         </div>
       </div>
 
