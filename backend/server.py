@@ -25,6 +25,8 @@ DEFAULT_ALLOWED_ORIGINS = {
     'https://localhost',
     'capacitor://localhost',
     'https://kalarmapp.vercel.app',
+    'http://localhost:8400',
+    'http://127.0.0.1:8400',
 }
 
 
@@ -124,13 +126,14 @@ class SubscriptionAPIHandler(http.server.SimpleHTTPRequestHandler):
         self.send_header('X-Frame-Options', 'DENY')
         self.send_header('Referrer-Policy', 'strict-origin-when-cross-origin')
         self.send_header('Permissions-Policy', 'camera=(), microphone=(), geolocation=()')
+        live_dev = " http://localhost:8400 http://127.0.0.1:8400"
         csp_policy = (
             "default-src 'self'; "
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdn.tailwindcss.com https://unpkg.com; "
+            f"script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdn.tailwindcss.com https://unpkg.com{live_dev}; "
             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
             "font-src 'self' https://fonts.gstatic.com data:; "
             "img-src 'self' data: https: blob:; "
-            "connect-src 'self' https:;"
+            f"connect-src 'self' https:{live_dev};"
         )
         self.send_header('Content-Security-Policy', csp_policy)
         super().end_headers()

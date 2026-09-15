@@ -241,17 +241,10 @@
             <span id="notifBadgeCount" class="hidden absolute -top-1 -right-1 min-w-[17px] h-[17px] px-1 rounded-full bg-rose-500 text-white font-bold text-[9px] flex items-center justify-center ring-2 ring-[#141218] animate-pulse">0</span>
           </button>
 
-          <!-- Botón de Usuario / Perfil en la barra superior -->
-          <div id="headerUserProfileContainer" class="flex items-center shrink-0">
-            <button id="btnHeaderOpenLogin" type="button" onclick="openAuthModal('login')" class="hidden p-2 rounded-full text-[#cac4d0] hover:text-[#d0bcff] hover:bg-[#2b2930] border border-[#49454f]/50 transition cursor-pointer" title="Iniciar Sesión">
-              <i data-lucide="log-in" class="w-4 h-4"></i>
-            </button>
-            <button id="btnHeaderOpenProfile" type="button" onclick="openProfileModal()" class="relative p-0.5 rounded-full transition-transform hover:scale-105 active:scale-95 cursor-pointer group focus:outline-none" title="Mi Cuenta y Perfil">
-              <div id="headerUserAvatarBadge" class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-[#381e72] ring-2 ring-[#d0bcff]/50 group-hover:ring-[#d0bcff] transition shrink-0" style="background-color: #d0bcff">
-                -
-              </div>
-              <span class="absolute bottom-0 right-0 w-2 h-2 rounded-full bg-emerald-400 ring-2 ring-[#141218]" title="En línea"></span>
-            </button>
+          <!-- Contenedor de usuario oculto para preservar IDs del script sin mostrar botón ni burbuja -->
+          <div id="headerUserProfileContainer" class="hidden" style="display: none !important;">
+            <button id="btnHeaderOpenLogin" type="button" class="hidden"></button>
+            <button id="btnHeaderOpenProfile" type="button" class="hidden"><div id="headerUserAvatarBadge"></div></button>
           </div>
         </div>
 
@@ -2945,5 +2938,8 @@
   </aside>
 
   <script src="/app.js?v=2.9.3"></script>
+<!-- impeccable-live-start -->
+<script src="http://localhost:8400/live.js?token=883dac13-24f8-4065-9b4f-f9d3d0590665"></script>
+<!-- impeccable-live-end -->
 </body>
 </html>
