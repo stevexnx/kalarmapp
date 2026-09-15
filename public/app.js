@@ -88,10 +88,6 @@ const CURRENCY_SYMBOLS = {
   'GBP': '£'
 };
 
-function getCurrencySymbol(code) {
-  return CURRENCY_SYMBOLS[code] || '$';
-}
-
 function updateNavCurrencyBadge() {
   const code = state.baseCurrencyCode || state.settings?.base_currency || 'USD';
   const symbol = state.currency || CURRENCY_SYMBOLS[code] || '$';
@@ -793,7 +789,7 @@ function initPWA() {
       // En desarrollo: desregistrar SW activos y limpiar caches para evitar bloqueos de caché
       navigator.serviceWorker.getRegistrations().then(registrations => {
         for (const reg of registrations) {
-          reg.unregister().then(() => console.log('SW desregistrado para entorno de desarrollo'));
+          reg.unregister();
         }
       });
       if ('caches' in window) {
@@ -808,7 +804,7 @@ function initPWA() {
         navigator.serviceWorker.register('/sw.js').then(reg => {
           // Chequear si hay actualización inmediatamente
           reg.update();
-        }).catch(err => console.log('SW error:', err));
+        }).catch(() => { /* SW registrado en próxima recarga */ });
       });
     }
   }
@@ -1042,14 +1038,6 @@ function renderUserProfile() {
 
 function closeProfileModal() {
   closeWithContainerTransform('profileModal');
-}
-
-function toggleRailProfilePopover() {
-  if (state.user) {
-    openProfileModal();
-  } else {
-    openAuthModal('login');
-  }
 }
 
 function closeRailProfilePopover() {
@@ -4187,19 +4175,6 @@ function getPaymentMethodIcon(method) {
   return 'credit-card';
 }
 
-function getCutOffHumanMessage(days) {
-  if (days === null || days === undefined || isNaN(days)) return '';
-  if (days < 0) {
-    const abs = Math.abs(days);
-    return abs === 1 ? 'Venció ayer' : `Venció hace ${abs} días`;
-  }
-  if (days === 0) return '🚨 Vence hoy (revisa fondos)';
-  if (days === 1) return '⏰ Vence mañana';
-  if (days <= 3) return `⚠️ Faltan solo ${days} días para renovar`;
-  if (days <= 7) return `Faltan ${days} días para el cobro`;
-  return `Faltan ${days} días para tu próximo cobro`;
-}
-
 function getDailyEquivalent(price, cycle) {
   if (!price || isNaN(price) || price <= 0) return null;
   let daily = 0;
@@ -6518,11 +6493,7 @@ async function handlePaymentSubmit(e) {
     console.error('Error registrando pago:', err);
   }
 }
-
-function openBackupModal() {
-  openSettingsModal('backups');
-}
-
+ 
 function closeBackupModal() {
   closeSettingsModal();
 }
@@ -6624,12 +6595,6 @@ function getCutOffBadgeInfo(days) {
   if (days === 1) return { text: 'Mañana', badgeClass: 'm3-badge-warning' };
   if (days <= 7) return { text: `En ${days} días`, badgeClass: 'm3-badge-warning' };
   return { text: `En ${days} días`, badgeClass: 'm3-badge-secondary' };
-}
-
-function getStatusBadge(status) {
-  if (status === 'active') return `<span class="m3-badge-success">Activa</span>`;
-  if (status === 'paused') return `<span class="m3-badge-warning">Pausada</span>`;
-  return `<span class="m3-badge-secondary">Cancelada</span>`;
 }
 
 function getStatusBubbleHtml(status) {
