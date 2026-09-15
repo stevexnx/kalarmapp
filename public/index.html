@@ -587,20 +587,20 @@
 
         <div id="subscriptionsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4"></div>
 
-        <div id="subscriptionsTableContainer" class="hidden overflow-x-auto rounded-2xl border border-[#49454f]/40">
+        <div id="subscriptionsTableContainer" class="hidden overflow-x-auto rounded-2xl border border-white/[0.06] bg-[#1d1b20]/40 backdrop-blur-sm">
           <table class="w-full text-left text-xs sm:text-sm">
-            <thead class="bg-[#141218] text-[#cac4d0] border-b border-[#49454f]/40 uppercase tracking-wider text-[11px]">
+            <thead class="bg-[#141218]/90 text-[#cac4d0]/80 border-b border-white/[0.06] uppercase tracking-wider text-[11px] font-medium">
               <tr>
-                <th scope="col" class="px-3 py-3">Servicio</th>
-                <th scope="col" class="px-3 py-3">Categoría</th>
-                <th scope="col" class="px-3 py-3">Fecha de Corte</th>
-                <th scope="col" class="px-3 py-3">Cobro Recurrente</th>
-                <th scope="col" class="px-3 py-3">Costo Anual</th>
-                <th scope="col" class="px-3 py-3">Estado</th>
-                <th scope="col" class="px-3 py-3 text-right">Acciones</th>
+                <th scope="col" class="px-4 py-3.5 font-semibold">Servicio</th>
+                <th scope="col" class="px-4 py-3.5 font-semibold">Categoría y Plan</th>
+                <th scope="col" class="px-4 py-3.5 font-semibold">Próximo Cobro</th>
+                <th scope="col" class="px-4 py-3.5 font-semibold text-right">Cobro Recurrente</th>
+                <th scope="col" class="px-4 py-3.5 font-semibold text-right">Costo Anual</th>
+                <th scope="col" class="px-4 py-3.5 font-semibold text-center">Estado</th>
+                <th scope="col" class="px-4 py-3.5 font-semibold text-right">Acciones</th>
               </tr>
             </thead>
-            <tbody id="subscriptionsTableBody" class="divide-y divide-[#49454f]/30 text-[#e6e0e9]"></tbody>
+            <tbody id="subscriptionsTableBody" class="divide-y divide-white/[0.04] text-[#e6e0e9]"></tbody>
           </table>
         </div>
 
@@ -780,52 +780,52 @@
     <div id="viewCalendar" class="hidden space-y-3 sm:space-y-6">
       
       <!-- Barra Superior del Calendario: Navegación de Mes y Resumen -->
-      <div class="m3-card p-3 sm:p-5 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 sm:gap-4">
+      <div class="m3-card p-3.5 sm:p-5 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 sm:gap-4 border border-white/[0.06]">
         <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-2xl bg-[#d0bcff]/15 flex items-center justify-center text-[#d0bcff] shrink-0">
+          <div class="w-10 h-10 rounded-2xl bg-[#d0bcff]/10 text-[#d0bcff] flex items-center justify-center shrink-0">
             <i data-lucide="calendar" class="w-5 h-5"></i>
           </div>
           <div>
-            <h2 id="calendarMonthTitle" class="text-lg sm:text-xl font-bold text-white capitalize font-google-sans">
+            <h2 id="calendarMonthTitle" class="text-base sm:text-lg font-bold text-white capitalize font-google-sans">
               Septiembre 2026
             </h2>
-            <p class="text-xs text-[#cac4d0]">Todos los cobros y fechas de corte programados en este mes</p>
+            <p class="text-xs text-[#cac4d0]/70">Cobros y fechas de corte programados en este mes</p>
           </div>
         </div>
 
         <!-- Controles de Navegación -->
         <div class="flex flex-wrap items-center gap-2">
-          <div class="inline-flex rounded-full bg-[#141218] p-1.5">
-            <button id="btnPrevMonth" title="Mes anterior" class="p-2 rounded-full text-[#cac4d0] hover:text-white hover:bg-[#2b2930] transition">
+          <div class="inline-flex rounded-full bg-[#141218]/90 border border-white/[0.05] p-1">
+            <button id="btnPrevMonth" title="Mes anterior" aria-label="Mes anterior" class="p-2 rounded-full text-[#cac4d0] hover:text-white hover:bg-[#2b2930] transition cursor-pointer">
               <i data-lucide="chevron-left" class="w-4 h-4"></i>
             </button>
-            <button id="btnTodayMonth" class="px-3 py-1.5 rounded-full text-xs font-semibold text-[#e6e0e9] hover:text-white hover:bg-[#2b2930] transition">
+            <button id="btnTodayMonth" class="px-3.5 py-1.5 rounded-full text-xs font-semibold text-[#e6e0e9] hover:text-white hover:bg-[#2b2930] transition cursor-pointer">
               Hoy
             </button>
-            <button id="btnNextMonth" title="Mes siguiente" class="p-2 rounded-full text-[#cac4d0] hover:text-white hover:bg-[#2b2930] transition">
+            <button id="btnNextMonth" title="Mes siguiente" aria-label="Mes siguiente" class="p-2 rounded-full text-[#cac4d0] hover:text-white hover:bg-[#2b2930] transition cursor-pointer">
               <i data-lucide="chevron-right" class="w-4 h-4"></i>
             </button>
           </div>
 
           <!-- Métricas Rápidas del Mes -->
-          <div class="flex items-center gap-3 bg-[#141218] rounded-2xl px-3.5 py-1.5 text-xs">
+          <div class="flex items-center gap-3 px-3 py-1.5 text-xs">
             <div>
-              <span class="text-[10px] text-[#cac4d0] uppercase tracking-wider block">Cortes</span>
-              <span id="calendarTotalCuts" class="font-bold text-[#d0bcff] text-sm">0</span>
+              <span class="text-[10px] text-[#cac4d0]/70 uppercase tracking-wider block font-medium">Cortes</span>
+              <span id="calendarTotalCuts" class="font-bold text-[#d0bcff] text-sm font-mono">0</span>
             </div>
-            <div class="h-6 w-px bg-[#49454f]/40"></div>
+            <div class="h-6 w-px bg-white/[0.08]"></div>
             <div>
-              <span class="text-[10px] text-[#cac4d0] uppercase tracking-wider block">Gasto Estimado</span>
-              <span id="calendarTotalExpense" class="font-bold text-[#a8d5b5] text-sm">$0.00</span>
+              <span class="text-[10px] text-[#cac4d0]/70 uppercase tracking-wider block font-medium">Gasto Estimado</span>
+              <span id="calendarTotalExpense" class="font-bold text-[#a8d5b5] text-sm font-mono">$0.00</span>
             </div>
           </div>
         </div>
       </div>
 
       <!-- Cuadrícula Principal del Calendario -->
-      <div class="m3-card p-2.5 sm:p-5 overflow-hidden space-y-2.5">
+      <div class="m3-card p-2.5 sm:p-5 overflow-hidden space-y-2.5 border border-white/[0.06]">
         <!-- Encabezados de Días de la Semana -->
-        <div class="grid grid-cols-7 gap-1 sm:gap-2 text-center text-xs font-semibold text-[#cac4d0] border-b border-[#49454f]/40 pb-2">
+        <div class="grid grid-cols-7 gap-1 sm:gap-2 text-center text-xs font-semibold text-[#cac4d0]/70 border-b border-white/[0.06] pb-2 uppercase tracking-wider text-[11px]">
           <div>Lun</div>
           <div>Mar</div>
           <div>Mié</div>
@@ -841,16 +841,21 @@
         </div>
       </div>
 
-      <!-- Detalle del Día Seleccionado -->
-      <div id="calendarDayDetailsCard" class="m3-card p-4 sm:p-6 space-y-3 sm:space-y-4">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#49454f]/40 pb-3">
-          <div class="flex items-center gap-2">
-            <i data-lucide="clock" class="w-4 h-4 text-[#d0bcff]"></i>
-            <h3 id="calendarSelectedDateTitle" class="text-sm sm:text-base font-bold text-white font-google-sans">
-              Cortes para el día seleccionado
-            </h3>
+      <!-- Detalle del Día Seleccionado (Sección plana para evitar nested cards) -->
+      <div id="calendarDayDetailsCard" class="space-y-3 sm:space-y-4 pt-1">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/[0.06] pb-3">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-lg bg-white/[0.04] text-[#d0bcff] flex items-center justify-center shrink-0">
+              <i data-lucide="clock" class="w-4 h-4"></i>
+            </div>
+            <div>
+              <h3 id="calendarSelectedDateTitle" class="text-sm sm:text-base font-bold text-white font-google-sans">
+                Cortes para el día seleccionado
+              </h3>
+              <p class="text-[11px] text-[#cac4d0]/70">Detalle individual de cada suscripción que renueva en esta fecha</p>
+            </div>
           </div>
-          <span id="calendarSelectedDateBadge" class="text-xs px-3 py-0.5 rounded-full bg-[#211f26] border border-[#49454f]/50 text-[#d0bcff] font-mono">
+          <span id="calendarSelectedDateBadge" class="text-xs px-3 py-1 rounded-full bg-[#1d1b20] border border-white/[0.06] text-[#d0bcff] font-mono w-fit">
             Selecciona un día
           </span>
         </div>
@@ -2073,11 +2078,11 @@
         </div>
 
         <!-- MODO PRUEBA GRATUITA (Interruptor M3 & Alarma preventiva) -->
-        <div id="subTrialSectionContainer" class="p-3 sm:p-3.5 bg-[#1d1b20]/60 border border-white/5 rounded-2xl space-y-2.5 transition-all">
+        <div id="subTrialSectionContainer" class="pt-3.5 border-t border-white/[0.06] space-y-2.5 transition-all">
           <div class="flex items-center justify-between gap-3">
             <div class="flex items-center gap-2.5 min-w-0">
-              <div class="w-8 h-8 rounded-xl bg-[#f2b8b5]/10 text-[#f2b8b5] flex items-center justify-center shrink-0">
-                <i data-lucide="timer" class="w-4 h-4"></i>
+              <div class="w-7 h-7 rounded-lg bg-white/[0.04] text-[#cac4d0] flex items-center justify-center shrink-0">
+                <i data-lucide="timer" class="w-3.5 h-3.5"></i>
               </div>
               <div class="min-w-0">
                 <span class="text-xs sm:text-sm font-semibold text-white block font-google-sans truncate">
@@ -2095,8 +2100,8 @@
             </label>
           </div>
 
-          <div id="trialFieldsContainer" class="hidden pt-2.5 border-t border-white/5">
-            <label class="block text-xs font-medium text-[#f2b8b5] mb-1" for="subTrialEndDate">
+          <div id="trialFieldsContainer" class="hidden pt-2.5 border-t border-white/[0.04]">
+            <label class="block text-xs font-medium text-[#cac4d0] mb-1" for="subTrialEndDate">
               Fecha límite para cancelar la prueba gratuita:
             </label>
             <input type="date" id="subTrialEndDate" class="m3-text-field py-2 text-xs">
@@ -2104,11 +2109,11 @@
         </div>
 
         <!-- SUSCRIPCIÓN COMPARTIDA (INTERRUPTOR M3 & SELECCIÓN DE AMIGOS) -->
-        <div class="p-3.5 sm:p-4 bg-[#1d1b20]/60 border border-white/5 rounded-2xl space-y-3.5 transition-all">
+        <div class="pt-3.5 border-t border-white/[0.06] space-y-3.5 transition-all">
           <div class="flex items-center justify-between gap-3">
             <div class="flex items-center gap-2.5 min-w-0">
-              <div class="w-8 h-8 rounded-xl bg-[#2b5037]/30 text-[#a8d5b5] flex items-center justify-center shrink-0">
-                <i data-lucide="users" class="w-4 h-4"></i>
+              <div class="w-7 h-7 rounded-lg bg-white/[0.04] text-[#a8d5b5] flex items-center justify-center shrink-0">
+                <i data-lucide="users" class="w-3.5 h-3.5"></i>
               </div>
               <div class="min-w-0">
                 <span class="text-xs sm:text-sm font-semibold text-white block font-google-sans truncate">
@@ -2126,7 +2131,7 @@
             </label>
           </div>
 
-          <div id="sharedFieldsContainer" class="hidden pt-3 border-t border-[#49454f]/40 space-y-3.5 animate-m3-slide">
+          <div id="sharedFieldsContainer" class="hidden pt-3 border-t border-white/[0.04] space-y-3.5 animate-m3-slide">
             
             <!-- 1. Buscador y Lista de Contactos Interactivos -->
             <div class="space-y-2">
@@ -2143,67 +2148,67 @@
 
               <!-- Buscador de Contactos en vivo -->
               <div class="relative flex items-center">
-                <i data-lucide="search" class="w-3.5 h-3.5 text-[#cac4d0] absolute left-3 pointer-events-none"></i>
+                <i data-lucide="search" class="w-3.5 h-3.5 text-[#cac4d0]/60 absolute left-3 pointer-events-none"></i>
                 <input type="text" id="sharedFriendsSearchInput" placeholder="Buscar por nombre, teléfono o correo..." 
-                       class="w-full pl-9 pr-3 py-2 bg-[#141218] border border-[#49454f]/40 rounded-xl text-xs text-white placeholder-[#938f99] focus:outline-none focus:border-[#d0bcff] transition">
+                       class="w-full pl-9 pr-3 py-2 bg-[#141218] border border-white/[0.08] rounded-xl text-xs text-white placeholder-[#938f99] focus:outline-none focus:border-[#d0bcff] transition">
               </div>
 
               <!-- Contenedor con Scroll de Contact Pills táctiles -->
-              <div id="sharedFriendsCheckboxList" class="flex flex-wrap gap-2 max-h-36 overflow-y-auto p-2.5 bg-[#141218] rounded-2xl text-xs">
+              <div id="sharedFriendsCheckboxList" class="flex flex-wrap gap-2 max-h-36 overflow-y-auto p-2 bg-[#141218]/60 border border-white/[0.04] rounded-xl text-xs">
                 <!-- Inyectado dinámicamente por app.js -->
               </div>
             </div>
 
-            <!-- 2. Tarjeta de Desglose Automático y Cuotas (Split Breakdown Card) -->
-            <div class="p-3.5 bg-[#141218]/60 rounded-2xl space-y-2.5">
-              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#49454f]/40 pb-2.5">
+            <!-- 2. Desglose Automático y Cuotas (Plano y Limpio) -->
+            <div class="space-y-2.5 pt-1">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/[0.04] pb-2">
                 <div class="flex items-center gap-2">
                   <span class="text-xs font-bold text-white flex items-center gap-1.5 font-google-sans">
                     <i data-lucide="pie-chart" class="w-3.5 h-3.5 text-[#a8d5b5]"></i>
                     Desglose Equitativo
                   </span>
-                  <span id="sharedFriendsSelectedCount" class="text-[10px] px-2 py-0.5 rounded-full bg-[#2b5037] text-[#a8d5b5] font-semibold">
+                  <span id="sharedFriendsSelectedCount" class="text-[10px] px-2 py-0.5 rounded-full bg-[#2b5037]/60 text-[#a8d5b5] font-semibold border border-[#a8d5b5]/20">
                     0 amigos seleccionados
                   </span>
                 </div>
 
                 <!-- Total Integrantes (Tú + amigos seleccionados) automático -->
                 <div class="flex items-center gap-2">
-                  <span class="text-[11px] text-[#cac4d0]">Total integrantes:</span>
+                  <span class="text-[11px] text-[#cac4d0]/70">Total integrantes:</span>
                   <input type="hidden" id="subSharedCount" value="1">
-                  <div class="flex items-center gap-1.5 bg-[#141218] rounded-xl px-2.5 py-1 text-xs">
-                    <i data-lucide="users-2" class="w-3.5 h-3.5 text-[#d0bcff]"></i>
+                  <div class="flex items-center gap-1.5 px-2 py-0.5 text-xs">
+                    <i data-lucide="users" class="w-3.5 h-3.5 text-[#d0bcff]"></i>
                     <span id="sharedTotalCountBadge" class="font-bold text-white font-mono">1</span>
-                    <span class="text-[10px] text-[#cac4d0]">(tú + amigos)</span>
+                    <span class="text-[10px] text-[#cac4d0]/60">(tú + amigos)</span>
                   </div>
                 </div>
               </div>
 
-              <!-- Resumen Visual de Cuotas -->
-              <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 pt-1">
-                <div class="bg-[#141218]/80 p-2.5 rounded-xl">
-                  <span class="text-[10px] uppercase text-[#cac4d0] block tracking-wider">Costo Total</span>
+              <!-- Resumen Visual de Cuotas: 3 columnas limpias sin cajas de tarjetas anidadas -->
+              <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-0.5">
+                <div class="p-1">
+                  <span class="text-[10px] uppercase text-[#cac4d0]/70 block tracking-wider font-medium">Costo Total</span>
                   <span id="sharedSummaryTotal" class="text-xs font-bold text-white font-mono mt-0.5 block">$0.00</span>
                 </div>
-                <div class="bg-[#141218]/80 p-2.5 rounded-xl">
-                  <span class="text-[10px] uppercase text-[#a8d5b5] block tracking-wider font-semibold">Tu Cuota Personal</span>
-                  <span id="sharedSummaryMyShare" class="text-sm font-extrabold text-[#a8d5b5] font-mono mt-0.5 block">$0.00</span>
+                <div class="p-1">
+                  <span class="text-[10px] uppercase text-[#a8d5b5] block tracking-wider font-medium">Tu Cuota</span>
+                  <span id="sharedSummaryMyShare" class="text-xs sm:text-sm font-bold text-[#a8d5b5] font-mono mt-0.5 block">$0.00</span>
                 </div>
-                <div class="col-span-2 sm:col-span-1 bg-[#141218]/80 p-2.5 rounded-xl">
-                  <span class="text-[10px] uppercase text-[#d0bcff] block tracking-wider font-semibold">A cobrar a cada amigo</span>
+                <div class="col-span-2 sm:col-span-1 p-1">
+                  <span class="text-[10px] uppercase text-[#d0bcff] block tracking-wider font-medium">Cuota por Amigo</span>
                   <span id="sharedSummaryFriendShare" class="text-xs font-bold text-[#d0bcff] font-mono mt-0.5 block">$0.00</span>
                 </div>
               </div>
 
               <!-- Ajuste Manual Opcional (Toggle discreto) -->
-              <div class="pt-1.5 flex items-center justify-between text-[11px]">
-                <button type="button" id="btnToggleCustomSharePrice" onclick="toggleCustomSharePriceFields()" class="text-[#cac4d0] hover:text-[#d0bcff] flex items-center gap-1 underline transition">
+              <div class="pt-1 flex items-center justify-between text-[11px]">
+                <button type="button" id="btnToggleCustomSharePrice" onclick="toggleCustomSharePriceFields()" class="text-[#cac4d0]/70 hover:text-[#d0bcff] flex items-center gap-1 underline transition cursor-pointer">
                   <i data-lucide="sliders" class="w-3 h-3"></i>
                   <span id="btnToggleCustomShareText">Ajustar monto personal manualmente</span>
                 </button>
                 <div id="customShareContainer" class="hidden flex items-center gap-1.5">
-                  <span class="text-[#cac4d0]">Tu parte:</span>
-                  <input type="number" id="subMySharePrice" step="0.01" min="0" placeholder="0.00" class="w-24 px-2 py-1 bg-[#141218] border border-[#d0bcff]/50 rounded-lg text-xs font-mono font-bold text-white focus:outline-none">
+                  <span class="text-[#cac4d0]/70">Tu parte:</span>
+                  <input type="number" id="subMySharePrice" step="0.01" min="0" placeholder="0.00" class="w-24 px-2 py-1 bg-[#141218] border border-[#d0bcff]/40 rounded-lg text-xs font-mono font-bold text-white focus:outline-none">
                 </div>
               </div>
             </div>
@@ -2212,10 +2217,10 @@
         </div>
 
         <!-- BARRA DE CÁLCULO INSTANTÁNEO COMPACTA - Quieter -->
-        <div class="bg-[#1d1b20]/70 border border-white/5 rounded-2xl p-3 sm:p-3.5">
+        <div class="py-2.5 px-1 border-t border-b border-white/[0.04]">
           <div class="flex items-center justify-between gap-3">
             <div class="flex items-center gap-2.5 min-w-0">
-              <div class="w-6 h-6 rounded-lg bg-[#d0bcff]/10 flex items-center justify-center text-[#d0bcff] shrink-0">
+              <div class="w-6 h-6 rounded-lg bg-white/[0.04] flex items-center justify-center text-[#d0bcff] shrink-0">
                 <i data-lucide="calculator" class="w-3 h-3"></i>
               </div>
               <div class="min-w-0">
@@ -2223,7 +2228,7 @@
                 <span id="formCalcMonthly" class="text-xs sm:text-sm font-bold text-white font-mono leading-tight block truncate"><span class="currency-symbol">$</span>0.00 / mes</span>
               </div>
             </div>
-            <div class="text-right pl-3 border-l border-white/5 shrink-0">
+            <div class="text-right pl-3 border-l border-white/[0.06] shrink-0">
               <span class="text-[10px] uppercase font-medium text-[#cac4d0]/70 tracking-wider block">Costo anual estimado</span>
               <span id="formCalcAnnual" class="text-xs sm:text-sm font-bold text-[#d0bcff] font-mono leading-tight block"><span class="currency-symbol">$</span>0.00 / año</span>
             </div>
@@ -2245,10 +2250,10 @@
             <input type="date" id="subNextBillingDate" required class="m3-text-field py-2 text-xs">
             <!-- Chips de fecha rápida -->
             <div class="flex flex-wrap gap-1 mt-1.5">
-              <button type="button" onclick="setQuickBillingDate('today')" class="text-[10px] px-2 py-0.5 rounded-md bg-[#211f26]/80 border border-white/5 text-[#cac4d0]/80 hover:text-white hover:border-white/20 transition cursor-pointer">Hoy</button>
-              <button type="button" onclick="setQuickBillingDate('tomorrow')" class="text-[10px] px-2 py-0.5 rounded-md bg-[#211f26]/80 border border-white/5 text-[#cac4d0]/80 hover:text-white hover:border-white/20 transition cursor-pointer">Mañana</button>
-              <button type="button" onclick="setQuickBillingDate('15days')" class="text-[10px] px-2 py-0.5 rounded-md bg-[#211f26]/80 border border-white/5 text-[#cac4d0]/80 hover:text-white hover:border-white/20 transition cursor-pointer">15 días</button>
-              <button type="button" onclick="setQuickBillingDate('1month')" class="text-[10px] px-2 py-0.5 rounded-md bg-[#211f26]/80 border border-white/5 text-[#cac4d0]/80 hover:text-white hover:border-white/20 transition cursor-pointer">1 mes</button>
+              <button type="button" onclick="setQuickBillingDate('today')" class="text-[10px] px-2 py-0.5 rounded-md bg-white/[0.03] border border-white/[0.06] text-[#cac4d0]/70 hover:text-white hover:border-white/20 transition cursor-pointer">Hoy</button>
+              <button type="button" onclick="setQuickBillingDate('tomorrow')" class="text-[10px] px-2 py-0.5 rounded-md bg-white/[0.03] border border-white/[0.06] text-[#cac4d0]/70 hover:text-white hover:border-white/20 transition cursor-pointer">Mañana</button>
+              <button type="button" onclick="setQuickBillingDate('15days')" class="text-[10px] px-2 py-0.5 rounded-md bg-white/[0.03] border border-white/[0.06] text-[#cac4d0]/70 hover:text-white hover:border-white/20 transition cursor-pointer">15 días</button>
+              <button type="button" onclick="setQuickBillingDate('1month')" class="text-[10px] px-2 py-0.5 rounded-md bg-white/[0.03] border border-white/[0.06] text-[#cac4d0]/70 hover:text-white hover:border-white/20 transition cursor-pointer">1 mes</button>
             </div>
           </div>
 
@@ -2260,10 +2265,10 @@
             <input type="text" id="subPaymentMethod" placeholder="Ej: Visa, PayPal..." class="m3-text-field py-2 text-xs">
             <!-- Chips rápidos debajo del input -->
             <div class="flex flex-wrap gap-1 mt-1.5">
-              <button type="button" onclick="setQuickPaymentMethod('Visa')" class="text-[10px] px-2 py-0.5 rounded-md bg-[#211f26]/80 border border-white/5 text-[#cac4d0]/80 hover:text-white hover:border-white/20 transition">Visa</button>
-              <button type="button" onclick="setQuickPaymentMethod('Mastercard')" class="text-[10px] px-2 py-0.5 rounded-md bg-[#211f26]/80 border border-white/5 text-[#cac4d0]/80 hover:text-white hover:border-white/20 transition">Mastercard</button>
-              <button type="button" onclick="setQuickPaymentMethod('PayPal')" class="text-[10px] px-2 py-0.5 rounded-md bg-[#211f26]/80 border border-white/5 text-[#cac4d0]/80 hover:text-white hover:border-white/20 transition">PayPal</button>
-              <button type="button" onclick="setQuickPaymentMethod('Efectivo')" class="text-[10px] px-2 py-0.5 rounded-md bg-[#211f26]/80 border border-white/5 text-[#cac4d0]/80 hover:text-white hover:border-white/20 transition">Efectivo</button>
+              <button type="button" onclick="setQuickPaymentMethod('Visa')" class="text-[10px] px-2 py-0.5 rounded-md bg-white/[0.03] border border-white/[0.06] text-[#cac4d0]/70 hover:text-white hover:border-white/20 transition cursor-pointer">Visa</button>
+              <button type="button" onclick="setQuickPaymentMethod('Mastercard')" class="text-[10px] px-2 py-0.5 rounded-md bg-white/[0.03] border border-white/[0.06] text-[#cac4d0]/70 hover:text-white hover:border-white/20 transition cursor-pointer">Mastercard</button>
+              <button type="button" onclick="setQuickPaymentMethod('PayPal')" class="text-[10px] px-2 py-0.5 rounded-md bg-white/[0.03] border border-white/[0.06] text-[#cac4d0]/70 hover:text-white hover:border-white/20 transition cursor-pointer">PayPal</button>
+              <button type="button" onclick="setQuickPaymentMethod('Efectivo')" class="text-[10px] px-2 py-0.5 rounded-md bg-white/[0.03] border border-white/[0.06] text-[#cac4d0]/70 hover:text-white hover:border-white/20 transition cursor-pointer">Efectivo</button>
             </div>
           </div>
 
@@ -2317,22 +2322,22 @@
               </div>
             </div>
 
-              <!-- Selector de Color con Swatches M3 -->
+              <!-- Selector de Color con Swatches M3 Tonales -->
               <div class="sm:col-span-2">
-                <label class="block text-xs font-medium text-[#cac4d0] mb-1.5">Color distintivo de la tarjeta</label>
-                <div class="flex items-center gap-2 flex-wrap">
-                  <button type="button" onclick="setQuickColor('#d0bcff')" class="w-6 h-6 rounded-full border-2 border-white/20 hover:scale-110 transition cursor-pointer shadow-sm text-[#381e72]" style="background-color: #d0bcff; color: #381e72;" title="Lavanda"></button>
-                  <button type="button" onclick="setQuickColor('#38d39f')" class="w-6 h-6 rounded-full border-2 border-white/20 hover:scale-110 transition cursor-pointer shadow-sm" style="background-color: #38d39f;" title="Esmeralda"></button>
-                  <button type="button" onclick="setQuickColor('#38bdf8')" class="w-6 h-6 rounded-full border-2 border-white/20 hover:scale-110 transition cursor-pointer shadow-sm" style="background-color: #38bdf8;" title="Cian"></button>
-                  <button type="button" onclick="setQuickColor('#f59e0b')" class="w-6 h-6 rounded-full border-2 border-white/20 hover:scale-110 transition cursor-pointer shadow-sm" style="background-color: #f59e0b;" title="Ámbar"></button>
-                  <button type="button" onclick="setQuickColor('#f43f5e')" class="w-6 h-6 rounded-full border-2 border-white/20 hover:scale-110 transition cursor-pointer shadow-sm" style="background-color: #f43f5e;" title="Coral"></button>
-                  <button type="button" onclick="setQuickColor('#a855f7')" class="w-6 h-6 rounded-full border-2 border-white/20 hover:scale-110 transition cursor-pointer shadow-sm" style="background-color: #a855f7;" title="Púrpura"></button>
-                  <button type="button" onclick="setQuickColor('#64748b')" class="w-6 h-6 rounded-full border-2 border-white/20 hover:scale-110 transition cursor-pointer shadow-sm" style="background-color: #64748b;" title="Grafito"></button>
+                <label class="block text-xs font-medium text-[#cac4d0]/80 mb-1.5">Color distintivo de la tarjeta</label>
+                <div class="flex items-center gap-2.5 flex-wrap">
+                  <button type="button" onclick="setQuickColor('#d0bcff')" class="w-6 h-6 rounded-full border border-white/20 hover:scale-110 transition cursor-pointer shadow-sm" style="background-color: #d0bcff;" title="Lavanda (Primario)"></button>
+                  <button type="button" onclick="setQuickColor('#a8d5b5')" class="w-6 h-6 rounded-full border border-white/20 hover:scale-110 transition cursor-pointer shadow-sm" style="background-color: #a8d5b5;" title="Menta (Éxito)"></button>
+                  <button type="button" onclick="setQuickColor('#f2c18d')" class="w-6 h-6 rounded-full border border-white/20 hover:scale-110 transition cursor-pointer shadow-sm" style="background-color: #f2c18d;" title="Ámbar (Aviso)"></button>
+                  <button type="button" onclick="setQuickColor('#efb8c8')" class="w-6 h-6 rounded-full border border-white/20 hover:scale-110 transition cursor-pointer shadow-sm" style="background-color: #efb8c8;" title="Rosa suave (Terciario)"></button>
+                  <button type="button" onclick="setQuickColor('#f2b8b5')" class="w-6 h-6 rounded-full border border-white/20 hover:scale-110 transition cursor-pointer shadow-sm" style="background-color: #f2b8b5;" title="Coral (Alerta)"></button>
+                  <button type="button" onclick="setQuickColor('#ccc2dc')" class="w-6 h-6 rounded-full border border-white/20 hover:scale-110 transition cursor-pointer shadow-sm" style="background-color: #ccc2dc;" title="Lavanda grisáceo"></button>
+                  <button type="button" onclick="setQuickColor('#a5a0ab')" class="w-6 h-6 rounded-full border border-white/20 hover:scale-110 transition cursor-pointer shadow-sm" style="background-color: #a5a0ab;" title="Grafito"></button>
                   <!-- Selector nativo integrado -->
-                  <div class="relative flex items-center justify-center w-6 h-6 rounded-full border border-[#49454f] overflow-hidden cursor-pointer shrink-0" title="Color personalizado">
+                  <div class="relative flex items-center justify-center w-6 h-6 rounded-full border border-white/20 overflow-hidden cursor-pointer shrink-0" title="Color personalizado">
                     <input type="color" id="subColor" value="#d0bcff" oninput="setQuickColor(this.value)" class="w-10 h-10 rounded-full cursor-pointer bg-transparent border-0 p-0 absolute -top-2 -left-2">
                   </div>
-                  <span id="selectedColorHexLabel" class="text-[11px] font-mono text-[#cac4d0] ml-1">#d0bcff</span>
+                  <span id="selectedColorHexLabel" class="text-[11px] font-mono text-[#cac4d0]/70 ml-1">#d0bcff</span>
                 </div>
               </div>
 
@@ -2351,7 +2356,6 @@
             <i data-lucide="arrow-left" class="w-4 h-4"></i>
             <span>Volver a Catálogo</span>
           </button>
-          <button type="button" id="btnCancelModal" class="m3-btn-outline py-2 px-4 text-xs">Cancelar</button>
           <button type="submit" id="btnSubmitSub" class="m3-btn-filled py-2 px-5 text-xs font-semibold flex items-center gap-1.5">
             <i data-lucide="check" class="w-4 h-4"></i>
             <span id="btnSubmitText">Guardar Suscripción</span>

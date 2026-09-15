@@ -3892,35 +3892,43 @@ function switchTab(tab) {
     t?.classList.remove('active');
   });
 
+  let targetView = null;
   if (tab === 'dashboard') {
-    viewDash?.classList.remove('hidden');
+    targetView = viewDash;
     tabDash?.classList.add('active');
     railDash?.classList.add('active');
     bottomDash?.classList.add('active');
   } else if (tab === 'calendar') {
-    viewCal?.classList.remove('hidden');
+    targetView = viewCal;
     tabCal?.classList.add('active');
     railCal?.classList.add('active');
     bottomCal?.classList.add('active');
     renderCalendar();
   } else if (tab === 'payments') {
-    viewPay?.classList.remove('hidden');
+    targetView = viewPay;
     tabPay?.classList.add('active');
     railPay?.classList.add('active');
     bottomPay?.classList.add('active');
     loadPayments();
   } else if (tab === 'friends') {
-    viewFriends?.classList.remove('hidden');
+    targetView = viewFriends;
     tabFriends?.classList.add('active');
     railFriends?.classList.add('active');
     headerFriends?.classList.add('active');
     loadFriends();
   } else if (tab === 'splitpay') {
-    viewSplit?.classList.remove('hidden');
+    targetView = viewSplit;
     tabSplit?.classList.add('active');
     railSplit?.classList.add('active');
     bottomSplit?.classList.add('active');
     loadFriends();
+  }
+
+  if (targetView) {
+    targetView.classList.remove('hidden');
+    targetView.classList.remove('view-fade-through');
+    void targetView.offsetWidth;
+    targetView.classList.add('view-fade-through');
   }
   initIcons();
 }
@@ -4194,10 +4202,16 @@ function renderSubscriptions() {
   if (state.viewMode === 'grid') {
     grid.classList.remove('hidden');
     tableContainer.classList.add('hidden');
+    grid.classList.remove('view-fade-through');
+    void grid.offsetWidth;
+    grid.classList.add('view-fade-through');
     grid.innerHTML = subs.map(sub => createCardHtml(sub)).join('');
   } else {
     grid.classList.add('hidden');
     tableContainer.classList.remove('hidden');
+    tableContainer.classList.remove('view-fade-through');
+    void tableContainer.offsetWidth;
+    tableContainer.classList.add('view-fade-through');
     tableBody.innerHTML = subs.map(sub => createTableRowHtml(sub)).join('');
   }
 
@@ -4485,59 +4499,63 @@ function createTableRowHtml(sub) {
   const convertedMonthly = isSubConvertedFresh ? sub.converted_monthly_cost : convertCurrency(sub.monthly_cost, subCurr, baseCurr);
   const convertedAnnual = isSubConvertedFresh ? sub.converted_annual_cost : convertCurrency(sub.annual_cost, subCurr, baseCurr);
 
-  const iconHtml = getServiceOfficialIcon(sub.name, sub.color, 'w-3.5 h-3.5', sub.icon);
+  const iconHtml = getServiceOfficialIcon(sub.name, sub.color, 'w-4 h-4', sub.icon);
   const safeColor = sanitizeColor(sub.color, '#d0bcff');
   const isInactive = sub.status === 'paused' || sub.status === 'canceled' || sub.status === 'cancelled';
-  const opacityClass = isInactive ? 'opacity-70 hover:opacity-100 transition-opacity' : '';
+  const opacityClass = isInactive ? 'opacity-60 hover:opacity-100 transition-opacity' : '';
 
   return `
-    <tr id="sub-row-${sub.id}" data-sub-id="${sub.id}" class="hover:bg-[#211f26] transition cursor-pointer ${opacityClass}" onclick="showSubscriptionSummary(${sub.id}, this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();showSubscriptionSummary(${sub.id}, this)}" tabindex="0" role="button" aria-label="Ver resumen de ${escapeHtml(sub.name)}" title="Ver resumen de ${escapeHtml(sub.name)}">
-      <td class="px-3 py-3">
-        <div class="flex items-center gap-2.5">
-          <div class="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 shadow-sm" style="background: linear-gradient(135deg, ${safeColor}22, ${safeColor}44); border: 1px solid ${safeColor}55">
+    <tr id="sub-row-${sub.id}" data-sub-id="${sub.id}" class="hover:bg-white/[0.03] transition-colors cursor-pointer ${opacityClass}" onclick="showSubscriptionSummary(${sub.id}, this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();showSubscriptionSummary(${sub.id}, this)}" tabindex="0" role="button" aria-label="Ver resumen de ${escapeHtml(sub.name)}" title="Ver resumen de ${escapeHtml(sub.name)}">
+      <td class="px-4 py-3.5">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 shadow-sm" style="background-color: ${safeColor}18; border: 1px solid ${safeColor}33; color: ${safeColor}">
             ${iconHtml}
           </div>
-          <div>
-            <div class="font-bold text-white flex items-center gap-1.5 font-google-sans">
+          <div class="min-w-0">
+            <div class="font-bold text-white flex items-center gap-1.5 font-google-sans text-xs sm:text-sm truncate">
               <span>${escapeHtml(sub.name)}</span>
-              ${sub.alias ? `<span class="text-[9px] font-medium px-1.5 py-0.2 rounded-full bg-[#381e72]/80 border border-[#d0bcff]/40 text-[#d0bcff] font-sans">${escapeHtml(sub.alias)}</span>` : ''}
-              ${sub.is_trial ? `<span class="m3-badge-error text-[9px]">TRIAL</span>` : ''}
-              ${sub.is_shared ? `<span class="m3-badge-success text-[9px]">SPLIT</span>` : ''}
+              ${sub.alias ? `<span class="text-[10px] font-medium px-1.5 py-0.2 rounded-md bg-[#2b2930] text-[#cac4d0] border border-white/5 font-sans">${escapeHtml(sub.alias)}</span>` : ''}
+              ${sub.is_trial ? `<span class="text-[9px] font-bold px-1.5 py-0.2 rounded-md bg-rose-500/15 text-rose-300 border border-rose-500/25">TRIAL</span>` : ''}
+              ${sub.is_shared ? `<span class="text-[9px] font-bold px-1.5 py-0.2 rounded-md bg-emerald-500/15 text-emerald-300 border border-emerald-500/25">SPLIT</span>` : ''}
             </div>
-            <div class="text-[11px] text-[#cac4d0]">${escapeHtml(sub.category || 'General')}</div>
+            <div class="text-[11px] text-[#cac4d0]/70 truncate mt-0.5">${escapeHtml(sub.category || 'General')}</div>
           </div>
         </div>
       </td>
-      <td class="px-3 py-3">
-        <span class="m3-badge-secondary">
-          ${escapeHtml(sub.category)}
-        </span>
-      </td>
-      <td class="px-3 py-3">
-        <div class="font-medium text-[#e6e0e9]">${formatDateFriendly(sub.next_billing_date)}</div>
-        <span class="${badgeClass}">${daysText}</span>
-      </td>
-      <td class="px-3 py-3 font-mono">
-        ${isDifferentCurrency ? `
-          <div class="font-bold text-white privacy-blur"><span class="currency-symbol">${baseSymbol}</span>${formatNumber(convertedPrice)} <span class="text-[11px] text-[#cac4d0] font-normal">/${cycleLabel.toLowerCase()}</span></div>
-          <div class="text-[11px] text-[#d0bcff] font-semibold privacy-blur">orig. <span class="currency-symbol">${subSymbol}</span>${formatNumber(sub.price)} ${subCurr}</div>
-        ` : `
-          <div class="font-bold text-white privacy-blur"><span class="currency-symbol">${baseSymbol}</span>${formatNumber(sub.price)}</div>
-          <div class="text-[11px] text-[#cac4d0]">${cycleLabel}</div>
-        `}
-      </td>
-      <td class="px-3 py-3 font-mono">
-        <div class="font-extrabold text-[#d0bcff] privacy-blur"><span class="currency-symbol">${baseSymbol}</span>${formatNumber(convertedAnnual)} / año</div>
-        <div class="text-[10px] text-[#cac4d0] privacy-blur">
-          (<span class="currency-symbol">${baseSymbol}</span>${formatNumber(convertedMonthly)} / mes${isDifferentCurrency ? ` &bull; orig. <span class="currency-symbol">${subSymbol}</span>${formatNumber(sub.annual_cost)}` : ''})
+      <td class="px-4 py-3.5 whitespace-nowrap">
+        <div class="flex flex-col gap-0.5">
+          <span class="m3-badge-secondary w-fit text-[10px] py-0.5 px-2">
+            ${escapeHtml(sub.category || 'General')}
+          </span>
+          <span class="text-[10px] text-[#cac4d0]/70 capitalize">${cycleLabel}</span>
         </div>
       </td>
-      <td class="px-3 py-3" onclick="event.stopPropagation()">
+      <td class="px-4 py-3.5 whitespace-nowrap">
+        <div class="font-medium text-[#e6e0e9] text-xs">${formatDateFriendly(sub.next_billing_date)}</div>
+        <div class="mt-0.5"><span class="${badgeClass} text-[10px] py-0.2 px-2">${daysText}</span></div>
+      </td>
+      <td class="px-4 py-3.5 font-mono text-right whitespace-nowrap">
+        ${isDifferentCurrency ? `
+          <div class="font-bold text-white text-xs sm:text-sm privacy-blur"><span class="currency-symbol">${baseSymbol}</span>${formatNumber(convertedPrice)}</div>
+          <div class="text-[10px] text-[#cac4d0]/70 privacy-blur">${subSymbol}${formatNumber(sub.price)} ${subCurr}</div>
+        ` : `
+          <div class="font-bold text-white text-xs sm:text-sm privacy-blur"><span class="currency-symbol">${baseSymbol}</span>${formatNumber(sub.price)}</div>
+          <div class="text-[10px] text-[#cac4d0]/60">${subCurr}</div>
+        `}
+      </td>
+      <td class="px-4 py-3.5 font-mono text-right whitespace-nowrap">
+        <div class="font-bold text-[#d0bcff] text-xs sm:text-sm privacy-blur"><span class="currency-symbol">${baseSymbol}</span>${formatNumber(convertedAnnual)}</div>
+        <div class="text-[10px] text-[#cac4d0]/60 privacy-blur">≈ <span class="currency-symbol">${baseSymbol}</span>${formatNumber(convertedMonthly)}/mes</div>
+      </td>
+      <td class="px-4 py-3.5 text-center whitespace-nowrap" onclick="event.stopPropagation()">
         ${getStatusDotHtml(sub.id, sub.status)}
       </td>
-      <td class="px-3 py-3 text-right space-x-1" onclick="event.stopPropagation()">
-        <button onclick="markAsPaidAndAdvance(${sub.id})" title="Marcar como pagado" class="p-1.5 hover:bg-[#2b2930] rounded-full text-[#cac4d0] hover:text-[#a8d5b5] transition cursor-pointer"><i data-lucide="receipt" class="w-4 h-4"></i></button>
-        <button onclick="showSubscriptionSummary(${sub.id}, this.closest('tr'))" title="Ver resumen" class="p-1.5 hover:bg-[#2b2930] rounded-full text-[#cac4d0] hover:text-white transition cursor-pointer"><i data-lucide="eye" class="w-4 h-4"></i></button>
+      <td class="px-4 py-3.5 text-right whitespace-nowrap" onclick="event.stopPropagation()">
+        <div class="flex items-center justify-end gap-1">
+          <button onclick="markAsPaidAndAdvance(${sub.id})" title="Marcar como pagado" aria-label="Marcar como pagado ${escapeHtml(sub.name)}" class="p-1.5 hover:bg-[#2b2930] rounded-full text-[#cac4d0] hover:text-[#a8d5b5] transition cursor-pointer"><i data-lucide="receipt" class="w-4 h-4"></i></button>
+          <button onclick="editSubscription(${sub.id})" title="Editar suscripción" aria-label="Editar suscripción ${escapeHtml(sub.name)}" class="p-1.5 hover:bg-[#2b2930] rounded-full text-[#cac4d0] hover:text-[#d0bcff] transition cursor-pointer"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
+          <button onclick="showSubscriptionSummary(${sub.id}, this.closest('tr'))" title="Ver resumen completo" aria-label="Ver resumen completo de ${escapeHtml(sub.name)}" class="p-1.5 hover:bg-[#2b2930] rounded-full text-[#cac4d0] hover:text-white transition cursor-pointer"><i data-lucide="eye" class="w-4 h-4"></i></button>
+        </div>
       </td>
     </tr>
   `;
@@ -4777,6 +4795,12 @@ function changeCalendarMonth(delta) {
   }
   state.calendar.currentMonth = newMonth;
   state.calendar.currentYear = newYear;
+  const grid = document.getElementById('calendarGrid');
+  if (grid) {
+    grid.classList.remove('view-fade-through');
+    void grid.offsetWidth;
+    grid.classList.add('view-fade-through');
+  }
   renderCalendar();
 }
 
@@ -4786,6 +4810,12 @@ function resetCalendarToToday() {
   state.calendar.currentMonth = now.getMonth();
   const pad = n => String(n).padStart(2, '0');
   state.calendar.selectedDateStr = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+  const grid = document.getElementById('calendarGrid');
+  if (grid) {
+    grid.classList.remove('view-fade-through');
+    void grid.offsetWidth;
+    grid.classList.add('view-fade-through');
+  }
   renderCalendar();
 }
 
@@ -4953,7 +4983,7 @@ function renderCalendar() {
   for (let i = firstDayOfWeek - 1; i >= 0; i--) {
     const prevDayNum = daysInPrevMonth - i;
     html += `
-      <div class="calendar-day-cell rounded-xl p-1.5 sm:p-2 bg-slate-900/30 border border-slate-800/40 text-slate-600 opacity-50 flex flex-col justify-between">
+      <div class="calendar-day-cell rounded-xl p-1.5 sm:p-2 bg-[#141218]/30 border border-white/[0.02] text-[#938f99]/40 opacity-40 flex flex-col justify-between">
         <span class="text-[11px] font-mono font-medium">${prevDayNum}</span>
       </div>
     `;
@@ -4968,22 +4998,22 @@ function renderCalendar() {
     const hasCuts = dayCuts.length > 0;
 
     let cellBorder = isSelected
-      ? 'is-selected border-[#d0bcff]'
-      : (isToday ? 'is-today border-[#f2c18d] bg-[#643f14]/20' : 'border-[#49454f]/40 bg-[#1d1b20] hover:border-[#49454f]');
+      ? 'is-selected border-[#d0bcff] bg-[#d0bcff]/[0.08]'
+      : (isToday ? 'is-today border-[#f2c18d]/60 bg-[#f2c18d]/[0.04]' : 'border-white/[0.06] bg-[#1d1b20] hover:border-white/[0.14] hover:bg-[#211f26]');
 
     let chipsHtml = '';
     if (hasCuts) {
-      // Mostrar hasta 3 chips y un contador si hay más
       const maxChips = 2;
       const visibleCuts = dayCuts.slice(0, maxChips);
       const remainingCount = dayCuts.length - maxChips;
 
       chipsHtml = visibleCuts.map(cut => {
-        const bgCol = cut.color || '#d0bcff';
+        const bgCol = sanitizeColor(cut.color, '#d0bcff');
         return `
-          <div class="calendar-badge-chip px-1.5 py-0.5 rounded-full text-[10px] font-semibold text-white truncate flex items-center gap-1 shadow-sm"
-               style="background-color: ${bgCol};"
+          <div class="calendar-badge-chip px-1.5 py-0.5 rounded-md text-[10px] font-medium truncate flex items-center gap-1.5 transition"
+               style="background-color: ${bgCol}18; border: 1px solid ${bgCol}33; color: #e6e0e9;"
                title="${escapeHtml(cut.name)}: ${curSymbol}${formatNumber(cut.converted_price_calculated)}">
+            <span class="w-1.5 h-1.5 rounded-full shrink-0" style="background-color: ${bgCol};"></span>
             <span class="truncate">${escapeHtml(cut.name)}</span>
           </div>
         `;
@@ -4991,7 +5021,7 @@ function renderCalendar() {
 
       if (remainingCount > 0) {
         chipsHtml += `
-          <div class="text-[9px] font-bold text-[#e8def8] bg-[#4a4458] px-1.5 py-0.2 rounded-full text-center">
+          <div class="text-[9px] font-medium text-[#cac4d0]/80 bg-white/[0.06] px-1.5 py-0.2 rounded-md text-center">
             +${remainingCount} más
           </div>
         `;
@@ -5003,11 +5033,11 @@ function renderCalendar() {
            class="calendar-day-cell rounded-2xl p-1.5 sm:p-2 border ${cellBorder} flex flex-col justify-between cursor-pointer transition relative group">
         
         <div class="flex items-center justify-between">
-          <span class="text-xs font-mono font-bold ${isToday ? 'text-[#f2c18d] font-extrabold ring-1 ring-[#f2c18d]/40 rounded px-1' : (isSelected ? 'text-[#d0bcff]' : 'text-[#cac4d0]')}">
+          <span class="text-xs font-mono font-bold ${isToday ? 'text-[#f2c18d] font-extrabold ring-1 ring-[#f2c18d]/30 rounded px-1' : (isSelected ? 'text-[#d0bcff]' : 'text-[#cac4d0]')}">
             ${day}
           </span>
           ${hasCuts ? `
-            <span class="w-2 h-2 rounded-full bg-[#d0bcff] shrink-0 ${isToday ? 'animate-ping' : ''}"></span>
+            <span class="w-1.5 h-1.5 rounded-full bg-[#d0bcff] shrink-0"></span>
           ` : ''}
         </div>
 
@@ -5016,7 +5046,7 @@ function renderCalendar() {
         </div>
 
         ${hasCuts ? `
-          <div class="mt-1 pt-0.5 border-t border-[#49454f]/30 text-[10px] font-mono text-[#a8d5b5] font-bold text-right hidden sm:block">
+          <div class="mt-1 pt-0.5 border-t border-white/[0.04] text-[10px] font-mono text-[#a8d5b5]/90 font-medium text-right hidden sm:block">
             ${curSymbol}${formatNumber(dayCuts.reduce((acc, c) => acc + c.converted_price_calculated, 0))}
           </div>
         ` : ''}
@@ -5029,7 +5059,7 @@ function renderCalendar() {
   const remainingCells = (7 - (totalCells % 7)) % 7;
   for (let j = 1; j <= remainingCells; j++) {
     html += `
-      <div class="calendar-day-cell rounded-xl p-1.5 sm:p-2 bg-slate-900/30 border border-slate-800/40 text-slate-600 opacity-50 flex flex-col justify-between">
+      <div class="calendar-day-cell rounded-xl p-1.5 sm:p-2 bg-[#141218]/30 border border-white/[0.02] text-[#938f99]/40 opacity-40 flex flex-col justify-between">
         <span class="text-[11px] font-mono font-medium">${j}</span>
       </div>
     `;
@@ -5056,7 +5086,7 @@ function renderCalendarDayDetails(cutsForSelectedDay) {
   if (!dateStr) {
     title.textContent = 'Selecciona una fecha en el calendario';
     badge.textContent = '-';
-    list.innerHTML = `<p class="text-slate-500 text-xs col-span-full">Haz clic en cualquier día de la cuadrícula para ver sus cortes detallados.</p>`;
+    list.innerHTML = `<p class="text-[#cac4d0]/70 text-xs col-span-full">Haz clic en cualquier día de la cuadrícula para ver sus cortes detallados.</p>`;
     return;
   }
 
@@ -5069,10 +5099,10 @@ function renderCalendarDayDetails(cutsForSelectedDay) {
 
   if (cutsForSelectedDay.length === 0) {
     badge.textContent = '0 cortes programados';
-    badge.className = 'text-xs px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-400 font-mono';
+    badge.className = 'text-xs px-2.5 py-0.5 rounded-full bg-white/[0.04] text-[#cac4d0]/70 font-mono';
     list.innerHTML = `
-      <div class="col-span-full py-8 text-center text-slate-500 text-xs">
-        <i data-lucide="calendar-check" class="w-8 h-8 mx-auto mb-2 text-slate-600"></i>
+      <div class="col-span-full py-8 text-center text-[#cac4d0]/70 text-xs">
+        <i data-lucide="calendar-check" class="w-8 h-8 mx-auto mb-2 text-[#cac4d0]/40"></i>
         <p>No tienes ningún cobro recurrente programado para este día.</p>
       </div>
     `;
@@ -5088,45 +5118,39 @@ function renderCalendarDayDetails(cutsForSelectedDay) {
     const isDiff = sub.currency && sub.currency !== baseCurr;
     const origSymbol = CURRENCY_SYMBOLS[sub.currency] || '$';
     const cycleLabel = CYCLE_LABELS[sub.billing_cycle] || sub.billing_cycle;
+    const safeColor = sanitizeColor(sub.color, '#d0bcff');
 
     return `
-      <div class="m3-card p-4 flex flex-col justify-between space-y-3 relative overflow-hidden group">
-        <div class="absolute top-0 left-0 right-0 h-1" style="background-color: ${sanitizeColor(sub.color, '#4F46E5')}"></div>
-
+      <div class="m3-card p-3.5 sm:p-4 flex flex-col justify-between space-y-3 group border border-white/[0.06]">
         <div class="flex items-start justify-between gap-2">
-          <div class="flex items-center gap-2.5">
-            <div class="w-9 h-9 rounded-xl flex items-center justify-center text-white font-bold text-sm shadow shrink-0" style="background: linear-gradient(135deg, ${sanitizeColor(sub.color, '#4F46E5')}22, ${sanitizeColor(sub.color, '#4F46E5')}44); border: 1px solid ${sanitizeColor(sub.color, '#4F46E5')}55">
-              ${getServiceOfficialIcon(sub.name, sanitizeColor(sub.color, '#4F46E5'), 'w-4 h-4', sub.icon)}
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-8 h-8 rounded-xl flex items-center justify-center text-xs font-bold shrink-0 shadow-sm" style="background-color: ${safeColor}18; border: 1px solid ${safeColor}33; color: ${safeColor}">
+              ${getServiceOfficialIcon(sub.name, safeColor, 'w-4 h-4', sub.icon)}
             </div>
-            <div>
-              <h4 class="text-sm font-bold text-white leading-tight flex items-center gap-1.5">
+            <div class="min-w-0">
+              <h4 class="text-xs sm:text-sm font-bold text-white leading-tight flex items-center gap-1.5 truncate">
                 <span>${escapeHtml(sub.name)}</span>
-                ${sub.alias ? `<span class="text-[9px] font-medium px-1.5 py-0.2 rounded-full bg-[#381e72]/80 border border-[#d0bcff]/40 text-[#d0bcff] font-sans">${escapeHtml(sub.alias)}</span>` : ''}
-                ${sub.is_trial ? `<span class="text-[9px] font-bold px-1.5 rounded bg-rose-500/20 text-rose-300">TRIAL</span>` : ''}
-                ${sub.is_shared ? `<span class="text-[9px] font-bold px-1.5 rounded bg-emerald-500/20 text-emerald-300">SPLIT</span>` : ''}
+                ${sub.alias ? `<span class="text-[9px] font-medium px-1.5 py-0.2 rounded-md bg-[#2b2930] text-[#cac4d0] border border-white/5 font-sans">${escapeHtml(sub.alias)}</span>` : ''}
+                ${sub.is_trial ? `<span class="text-[9px] font-bold px-1.5 rounded bg-rose-500/15 text-rose-300 border border-rose-500/25">TRIAL</span>` : ''}
+                ${sub.is_shared ? `<span class="text-[9px] font-bold px-1.5 rounded bg-emerald-500/15 text-emerald-300 border border-emerald-500/25">SPLIT</span>` : ''}
               </h4>
-              <span class="text-[11px] text-slate-400">${escapeHtml(sub.category || 'Servicios')} &bull; ${cycleLabel}</span>
+              <span class="text-[11px] text-[#cac4d0]/70 truncate block mt-0.5">${escapeHtml(sub.category || 'Servicios')} &bull; ${cycleLabel}</span>
             </div>
           </div>
         </div>
 
-        <div class="bg-[#141218] rounded-2xl p-3 flex items-center justify-between border border-[#49454f]/30">
-          <div>
-            <span class="text-[10px] text-[#cac4d0] uppercase tracking-wider block font-medium">Cobro del Día</span>
+        <div class="flex items-baseline justify-between py-2 px-3 rounded-xl bg-[#141218]/50 border border-white/[0.04]">
+          <span class="text-[10px] uppercase tracking-wider text-[#cac4d0]/70 font-medium">Cobro</span>
+          <div class="text-right">
             <span class="text-sm font-bold text-white font-mono">${curSymbol}${formatNumber(sub.converted_price_calculated)}</span>
+            ${isDiff ? `<span class="text-[10px] text-[#cac4d0]/60 font-mono ml-1">(${origSymbol}${formatNumber(sub.price)})</span>` : ''}
           </div>
-          ${isDiff ? `
-            <div class="text-right">
-              <span class="text-[10px] text-[#cac4d0] uppercase tracking-wider block font-medium">Original</span>
-              <span class="text-xs font-semibold text-[#d0bcff] font-mono">${origSymbol}${formatNumber(sub.price)} ${sub.currency}</span>
-            </div>
-          ` : ''}
         </div>
 
-        <div class="flex items-center justify-between pt-1 text-xs">
-          <span class="text-[11px] text-[#cac4d0] flex items-center gap-1">
-            <i data-lucide="credit-card" class="w-3 h-3 text-[#cac4d0]"></i>
-            ${escapeHtml(sub.payment_method || 'Tarjeta')}
+        <div class="flex items-center justify-between pt-0.5 text-xs">
+          <span class="text-[11px] text-[#cac4d0]/70 flex items-center gap-1">
+            <i data-lucide="${getPaymentMethodIcon(sub.payment_method)}" class="w-3.5 h-3.5 text-[#cac4d0]/60"></i>
+            <span>${escapeHtml(sub.payment_method || 'Tarjeta')}</span>
           </span>
           <div class="flex items-center gap-1.5">
             <button onclick="markAsPaidAndAdvance(${sub.id})" title="Marcar como pagado y avanzar fecha" class="m3-btn-tonal text-xs py-1 px-3 flex items-center gap-1">
@@ -5298,7 +5322,7 @@ function populateSharedFriendsCheckboxes(selectedIds = []) {
           <input type="checkbox" class="friend-checkbox sr-only" value="${f.id}" ${isChecked ? 'checked' : ''}>
           
           <!-- Avatar con inicial y color -->
-          <span class="w-6 h-6 rounded-full shrink-0 flex items-center justify-center text-[10px] font-bold text-white shadow-inner" style="background-color: ${sanitizeColor(f.avatar_color, '#10B981')}">
+          <span class="w-6 h-6 rounded-full shrink-0 flex items-center justify-center text-[10px] font-bold text-white shadow-inner" style="background-color: ${sanitizeColor(f.avatar_color, '#a8d5b5')}">
             ${escapeHtml(f.name.charAt(0).toUpperCase())}
           </span>
           
@@ -5572,12 +5596,16 @@ function showDetailsForm(titleText = 'Detalles de Suscripción', isEdit = false,
   tplStep?.classList.add('hidden');
   form?.classList.remove('hidden');
 
+  const btnBackForm = document.getElementById('btnBackToPresetsForm');
+
   if (isEdit) {
     btnBack?.classList.add('hidden');
+    btnBackForm?.classList.add('hidden');
     if (modalTitle) modalTitle.innerHTML = `<i data-lucide="edit-3" class="w-5 h-5 text-[#d0bcff]"></i> Editar Suscripción`;
     if (modalSubtitle) modalSubtitle.textContent = 'Modifica los valores y fechas de tu suscripción';
   } else {
     btnBack?.classList.remove('hidden');
+    btnBackForm?.classList.remove('hidden');
     if (serviceIconHtml) {
       if (modalTitle) modalTitle.innerHTML = `${serviceIconHtml} ${escapeHtml(titleText)}`;
     } else {
@@ -5774,13 +5802,13 @@ function renderPresetCatalog(filterCategory = 'all', searchQuery = '') {
 
   // Tarjeta de Personalizada siempre accesible como primera o destacada opción
   const customCardHtml = `
-    <div class="m3-preset-card border-dashed border-[#49454f]/60 hover:border-[#d0bcff] flex items-center gap-3 group" onclick="openCustomSubscription()" title="Crear suscripción no listada">
-      <div class="w-10 h-10 rounded-xl bg-[#211f26] border border-[#49454f]/40 flex items-center justify-center text-[#d0bcff] group-hover:bg-[#d0bcff] group-hover:text-[#381e72] transition shrink-0">
-        <i data-lucide="plus" class="w-5 h-5"></i>
+    <div class="m3-preset-card border border-white/[0.08] hover:border-[#d0bcff]/60 flex items-center gap-3 group transition" onclick="openCustomSubscription()" title="Crear suscripción no listada">
+      <div class="w-9 h-9 rounded-xl bg-white/[0.04] border border-white/[0.08] flex items-center justify-center text-[#d0bcff] group-hover:bg-[#d0bcff] group-hover:text-[#381e72] transition shrink-0">
+        <i data-lucide="plus" class="w-4 h-4"></i>
       </div>
       <div class="min-w-0">
         <div class="text-xs font-bold text-white group-hover:text-[#d0bcff] transition truncate">Personalizada</div>
-        <div class="text-[11px] text-[#cac4d0] truncate">Crea una desde cero</div>
+        <div class="text-[11px] text-[#cac4d0]/70 truncate">Crea una desde cero</div>
       </div>
     </div>
   `;
@@ -5806,20 +5834,21 @@ function renderPresetCatalog(filterCategory = 'all', searchQuery = '') {
     const converted = isDifferent ? convertCurrency(price, servCurrency, baseCurr) : null;
     const cycleText = plan.cycle === 'annual' ? '/año' : (plan.cycle === 'weekly' ? '/sem' : '/mes');
     const officialIcon = getServiceOfficialIcon(service.name, service.color);
+    const safeColor = sanitizeColor(service.color, '#d0bcff');
 
     return `
-      <div class="m3-preset-card group" onclick="selectPresetService(${sIndex})" title="Añadir ${escapeHtml(service.name)} (${plan.name})">
-        <div class="m3-brand-icon-box" style="background: linear-gradient(135deg, ${service.color}22, ${service.color}44); border: 1px solid ${service.color}55">
+      <div class="m3-preset-card group border border-white/[0.06] hover:border-[#d0bcff]/40" onclick="selectPresetService(${sIndex})" title="Añadir ${escapeHtml(service.name)} (${plan.name})">
+        <div class="m3-brand-icon-box" style="background-color: ${safeColor}18; border: 1px solid ${safeColor}33; color: ${safeColor}">
           ${officialIcon}
         </div>
         <div class="min-w-0 flex-1">
           <div class="flex items-center justify-between gap-1">
             <span class="text-xs font-bold text-white group-hover:text-[#d0bcff] transition truncate">${escapeHtml(service.name)}</span>
-            ${service.trialDays && service.trialDays > 0 ? `<span class="text-[9px] px-1.5 py-0.2 rounded-full bg-rose-500/20 text-rose-300 font-bold border border-rose-500/30">Free Trial</span>` : ''}
+            ${service.trialDays && service.trialDays > 0 ? `<span class="text-[9px] px-1.5 py-0.2 rounded-md bg-[#f2b8b5]/15 text-[#f2b8b5] font-semibold border border-[#f2b8b5]/25">Prueba</span>` : ''}
           </div>
-          <div class="text-[11px] text-[#cac4d0] truncate mt-0.5 flex items-center gap-1 font-mono">
-            <span class="text-[#d0bcff] font-semibold">${servSymbol}${formatNumber(price)}</span>
-            ${isDifferent ? `<span class="text-[10px] text-[#938f99]">(≈${baseSymbol}${formatNumber(converted)})</span>` : ''}
+          <div class="text-[11px] text-[#cac4d0]/70 truncate mt-0.5 flex items-center gap-1 font-mono">
+            <span class="text-[#d0bcff] font-medium">${servSymbol}${formatNumber(price)}</span>
+            ${isDifferent ? `<span class="text-[10px] text-[#cac4d0]/50">(≈${baseSymbol}${formatNumber(converted)})</span>` : ''}
             <span class="text-[10px] opacity-70">${cycleText}</span>
           </div>
         </div>
@@ -6604,63 +6633,57 @@ function formatDateFriendly(dateStr) {
 function getCutOffBadgeInfo(days) {
   if (days === null || days === undefined) return { text: 'Pendiente', badgeClass: 'm3-badge-secondary' };
   if (days < 0) return { text: `Vencido hace ${Math.abs(days)}d`, badgeClass: 'm3-badge-error' };
-  if (days === 0) return { text: '¡Hoy!', badgeClass: 'm3-badge-error animate-pulse' };
+  if (days === 0) return { text: 'Hoy', badgeClass: 'm3-badge-error' };
   if (days === 1) return { text: 'Mañana', badgeClass: 'm3-badge-warning' };
   if (days <= 7) return { text: `En ${days} días`, badgeClass: 'm3-badge-warning' };
   return { text: `En ${days} días`, badgeClass: 'm3-badge-secondary' };
 }
 
 function getStatusBubbleHtml(status) {
-  let dotColor = 'bg-emerald-400';
-  let ringColor = 'ring-emerald-400/30';
-  let badgeBg = 'bg-emerald-500/10 border-emerald-500/30';
+  let dotColor = 'bg-[#a8d5b5]';
+  let badgeBg = 'bg-[#a8d5b5]/10 border-white/[0.06]';
   let title = 'Estado: Activa (Modificable desde Ajustes de la tarjeta)';
 
   if (status === 'paused') {
-    dotColor = 'bg-amber-400';
-    ringColor = 'ring-amber-400/30';
-    badgeBg = 'bg-amber-500/10 border-amber-500/30';
+    dotColor = 'bg-[#f2c18d]';
+    badgeBg = 'bg-[#f2c18d]/10 border-white/[0.06]';
     title = 'Estado: Pausada (Modificable desde Ajustes de la tarjeta)';
   } else if (status === 'canceled' || status === 'cancelled') {
-    dotColor = 'bg-slate-400';
-    ringColor = 'ring-slate-400/30';
-    badgeBg = 'bg-slate-800 border-slate-700';
+    dotColor = 'bg-[#a5a0ab]';
+    badgeBg = 'bg-white/[0.03] border-white/[0.06]';
     title = 'Estado: Cancelada (Modificable desde Ajustes de la tarjeta)';
   }
 
   return `
-    <div class="inline-flex items-center justify-center p-1.5 rounded-full border ${badgeBg} shadow-sm shrink-0" title="${title}" aria-label="${title}">
-      <span class="w-2.5 h-2.5 rounded-full ${dotColor} ring-4 ${ringColor}"></span>
+    <div class="inline-flex items-center justify-center p-1.5 rounded-full border ${badgeBg} shrink-0" title="${title}" aria-label="${title}">
+      <span class="w-2 h-2 rounded-full ${dotColor}"></span>
     </div>
   `;
 }
 
 function getStatusDotHtml(subId, status) {
-  let dotColor = 'bg-emerald-400';
-  let ringColor = 'ring-emerald-400/30';
-  let badgeBg = 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300';
+  let dotColor = 'bg-[#a8d5b5]';
+  let badgeBg = 'bg-[#a8d5b5]/10 border-white/[0.06] text-[#a8d5b5]';
   let title = 'Activa (clic para pausar o cancelar)';
   let label = 'Activa';
 
   if (status === 'paused') {
-    dotColor = 'bg-amber-400';
-    ringColor = 'ring-amber-400/30';
-    badgeBg = 'bg-amber-500/10 border-amber-500/30 text-amber-300';
+    dotColor = 'bg-[#f2c18d]';
+    badgeBg = 'bg-[#f2c18d]/10 border-white/[0.06] text-[#f2c18d]';
     title = 'Pausada (clic para cancelar o activar)';
     label = 'Pausada';
   } else if (status === 'canceled' || status === 'cancelled') {
-    dotColor = 'bg-slate-400';
-    ringColor = 'ring-slate-400/30';
-    badgeBg = 'bg-slate-800 border-slate-700 text-slate-400';
+    dotColor = 'bg-[#a5a0ab]';
+    badgeBg = 'bg-white/[0.03] border-white/[0.06] text-[#cac4d0]/70';
     title = 'Cancelada (clic para reactivar)';
     label = 'Cancelada';
   }
 
   return `
     <button type="button" onclick="event.stopPropagation(); toggleSubscriptionStatus(${subId}, '${status}')"
-            class="group inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[10px] font-semibold transition cursor-pointer ${badgeBg} hover:scale-105 active:scale-95"
+            class="group inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full border text-[10px] font-medium transition-colors cursor-pointer ${badgeBg} hover:bg-white/[0.06]"
             title="${title}">
-      <span class="w-2 h-2 rounded-full ${dotColor} ring-4 ${ringColor}"></span>
+      <span class="w-1.5 h-1.5 rounded-full ${dotColor} shrink-0"></span>
       <span class="capitalize">${label}</span>
     </button>
   `;
@@ -6710,10 +6733,10 @@ function openWithContainerTransform(modalOrId, sourceElem = null, options = {}) 
 
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-        modal.style.transition = 'opacity 300ms cubic-bezier(0.2, 0, 0, 1)';
+        modal.style.transition = 'opacity 280ms cubic-bezier(0.16, 1, 0.3, 1)';
         modal.style.opacity = '1';
 
-        dialog.style.transition = 'transform 320ms cubic-bezier(0.2, 0, 0, 1), border-radius 320ms cubic-bezier(0.2, 0, 0, 1), opacity 240ms cubic-bezier(0.2, 0, 0, 1)';
+        dialog.style.transition = 'transform 300ms cubic-bezier(0.16, 1, 0.3, 1), border-radius 300ms cubic-bezier(0.16, 1, 0.3, 1), opacity 220ms cubic-bezier(0.16, 1, 0.3, 1)';
         dialog.style.transform = 'translate3d(0, 0, 0) scale(1, 1)';
         dialog.style.borderRadius = '';
         dialog.style.opacity = '1';
@@ -6722,9 +6745,20 @@ function openWithContainerTransform(modalOrId, sourceElem = null, options = {}) 
   } else {
     modal.classList.remove('hidden');
     modal._transformData = null;
-    modal.style.opacity = '1';
-    dialog.style.transform = '';
-    dialog.style.opacity = '1';
+    dialog.style.transformOrigin = 'center center';
+    dialog.style.transform = 'scale(0.96)';
+    dialog.style.opacity = '0';
+    modal.style.transition = 'none';
+    modal.style.opacity = '0';
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        modal.style.transition = 'opacity 220ms cubic-bezier(0.16, 1, 0.3, 1)';
+        modal.style.opacity = '1';
+        dialog.style.transition = 'transform 240ms cubic-bezier(0.16, 1, 0.3, 1), opacity 200ms ease';
+        dialog.style.transform = 'scale(1)';
+        dialog.style.opacity = '1';
+      });
+    });
   }
 }
 
@@ -6739,12 +6773,12 @@ function closeWithContainerTransform(modalOrId, callback = null) {
 
   if (dialog && modal._transformData) {
     const { deltaX, deltaY, scaleX, scaleY } = modal._transformData;
-    dialog.style.transition = 'transform 260ms cubic-bezier(0.3, 0, 0.8, 0.15), border-radius 260ms cubic-bezier(0.3, 0, 0.8, 0.15), opacity 200ms ease';
+    dialog.style.transition = 'transform 240ms cubic-bezier(0.3, 0, 0.8, 0.15), border-radius 240ms cubic-bezier(0.3, 0, 0.8, 0.15), opacity 180ms ease';
     dialog.style.transform = `translate3d(${deltaX}px, ${deltaY}px, 0) scale(${scaleX}, ${scaleY})`;
     dialog.style.borderRadius = '24px';
     dialog.style.opacity = '0';
 
-    modal.style.transition = 'opacity 240ms ease';
+    modal.style.transition = 'opacity 220ms ease';
     modal.style.opacity = '0';
 
     modal._closeTimeout = setTimeout(() => {
@@ -6759,7 +6793,24 @@ function closeWithContainerTransform(modalOrId, callback = null) {
       modal._transformData = null;
       modal._closeTimeout = null;
       if (typeof callback === 'function') callback();
-    }, 260);
+    }, 240);
+  } else if (dialog) {
+    modal.style.transition = 'opacity 180ms ease';
+    dialog.style.transition = 'transform 180ms cubic-bezier(0.16, 1, 0.3, 1), opacity 160ms ease';
+    modal.style.opacity = '0';
+    dialog.style.transform = 'scale(0.97)';
+    dialog.style.opacity = '0';
+    modal._closeTimeout = setTimeout(() => {
+      modal.classList.add('hidden');
+      modal.style.opacity = '';
+      modal.style.transition = '';
+      dialog.style.transform = '';
+      dialog.style.opacity = '';
+      dialog.style.transition = '';
+      dialog.style.transformOrigin = '';
+      modal._closeTimeout = null;
+      if (typeof callback === 'function') callback();
+    }, 190);
   } else {
     modal.classList.add('hidden');
     modal.style.opacity = '';
@@ -6817,7 +6868,7 @@ function showToast(message, type = 'info') {
       : 'bg-[#141218] border-[#d0bcff]/40 text-[#e6e0e9] shadow-[#4f378b]/20');
 
   iconElem.innerHTML = iconHtml;
-  toast.className = `fixed bottom-6 right-6 z-[200] flex items-center gap-3 px-4 py-3 rounded-full shadow-2xl text-xs sm:text-sm font-medium border transition-all duration-300 ease-out font-google-sans ${colorClasses}`;
+  toast.className = `fixed bottom-20 sm:bottom-6 right-4 sm:right-6 left-4 sm:left-auto max-w-sm sm:max-w-md z-[200] flex items-center justify-center sm:justify-start gap-3 px-4 py-3 rounded-full shadow-2xl text-xs sm:text-sm font-medium border transition-all duration-300 ease-out font-google-sans ${colorClasses}`;
   initIcons();
 
   toast.classList.remove('translate-y-20', 'opacity-0', 'pointer-events-none');

@@ -204,8 +204,12 @@ textarea:focus-visible {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.22s cubic-bezier(0.2, 0, 0, 1);
+  transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease, color 0.2s ease;
   color: inherit;
+}
+
+.m3-rail-item:active .m3-rail-pill {
+  transform: scale(0.92);
 }
 
 .m3-rail-item:hover .m3-rail-pill {
@@ -250,10 +254,18 @@ textarea:focus-visible {
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
 }
+.m3-fab-google i,
+.m3-fab-google svg {
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
 .m3-fab-google:hover {
   filter: brightness(1.08);
-  transform: scale(1.08);
+  transform: scale(1.06);
   box-shadow: 0 8px 24px 4px rgba(0, 0, 0, 0.55), 0 3px 10px rgba(0, 0, 0, 0.35);
+}
+.m3-fab-google:hover i,
+.m3-fab-google:hover svg {
+  transform: rotate(90deg);
 }
 .m3-fab-google:active {
   transform: scale(0.92);
@@ -273,7 +285,7 @@ textarea:focus-visible {
   -webkit-tap-highlight-color: transparent;
   user-select: none;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+  transition: color 0.18s ease;
 }
 
 .bottom-nav-item .bottom-nav-pill {
@@ -283,8 +295,12 @@ textarea:focus-visible {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+  transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease, color 0.2s ease;
   color: inherit;
+}
+
+.bottom-nav-item:active .bottom-nav-pill {
+  transform: scale(0.90);
 }
 
 .bottom-nav-item:hover .bottom-nav-pill {
@@ -561,6 +577,10 @@ textarea:focus-visible {
   color: var(--md-sys-color-on-surface);
   border-color: var(--md-sys-color-outline);
 }
+.m3-chip:active {
+  transform: scale(0.96);
+  transition-duration: 0.08s;
+}
 .m3-chip.active {
   background-color: var(--md-sys-color-secondary-container);
   color: var(--md-sys-color-on-secondary-container);
@@ -568,10 +588,10 @@ textarea:focus-visible {
   font-weight: 600;
 }
 
-/* Tarjeta Preset Item en el catálogo */
+/* Tarjeta Preset Item en el catálogo - Quieter */
 .m3-preset-card {
   background-color: var(--md-sys-color-surface-container);
-  border: 1px solid var(--md-sys-color-outline-variant);
+  border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: var(--md-shape-lg);
   padding: 12px;
   cursor: pointer;
@@ -582,27 +602,27 @@ textarea:focus-visible {
 }
 .m3-preset-card:hover {
   background-color: var(--md-sys-color-surface-container-high);
-  border-color: var(--md-sys-color-primary);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.45);
+  border-color: rgba(208, 188, 255, 0.35);
+  transform: translateY(-1px);
+  box-shadow: var(--md-elevation-1);
 }
 
 /* Contenedor de iconos oficiales */
 .m3-brand-icon-box {
-  width: 38px;
-  height: 38px;
+  width: 36px;
+  height: 36px;
   border-radius: var(--md-shape-md);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
   overflow: hidden;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  box-shadow: none;
   background-color: rgba(255, 255, 255, 0.04);
 }
 .m3-brand-icon-box svg {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
 }
 
 /* Inputs Google M3 - Quieter */
@@ -623,13 +643,13 @@ textarea:focus-visible {
   background-color: var(--md-sys-color-surface-container-high);
 }
 
-/* Celdas del calendario M3 */
+/* Celdas del calendario M3 - Quieter */
 .calendar-day-cell {
   min-height: 88px;
   transition: all 0.15s ease-in-out;
   border-radius: var(--md-shape-lg);
   background-color: var(--md-sys-color-surface-container-low);
-  border: 1px solid var(--md-sys-color-outline-variant);
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 @media (min-width: 640px) {
   .calendar-day-cell {
@@ -637,15 +657,23 @@ textarea:focus-visible {
   }
 }
 .calendar-day-cell:hover {
-  background-color: var(--md-sys-color-surface-container-high);
+  background-color: var(--md-sys-color-surface-container);
+  border-color: rgba(255, 255, 255, 0.12);
 }
 .calendar-day-cell.is-selected {
-  border-color: var(--md-sys-color-primary);
-  background-color: rgba(208, 188, 255, 0.12);
-  box-shadow: 0 0 0 1px var(--md-sys-color-primary);
+  border-color: var(--md-sys-color-primary) !important;
+  background-color: rgba(208, 188, 255, 0.08) !important;
+  box-shadow: none !important;
 }
 .calendar-day-cell.is-today {
-  border-color: #f59e0b;
+  border-color: var(--md-sys-color-warning) !important;
+  background-color: rgba(242, 193, 141, 0.04);
+}
+
+.calendar-badge-chip {
+  line-height: 1.2;
+  border-radius: var(--md-shape-xs);
+  transition: all 0.15s ease;
 }
 
 /* Animaciones suaves Google Material (Material Motion) */
@@ -691,12 +719,42 @@ textarea:focus-visible {
   }
 }
 
+@keyframes m3FadeThrough {
+  from {
+    opacity: 0;
+    transform: scale(0.992) translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
 .animate-scale-up {
-  animation: m3FadeScale 0.24s cubic-bezier(0.2, 0, 0, 1) forwards;
+  animation: m3FadeScale 0.24s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .animate-m3-slide {
-  animation: m3SlideUpFade 0.28s cubic-bezier(0.2, 0, 0, 1) forwards;
+  animation: m3SlideUpFade 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.view-fade-through {
+  animation: m3FadeThrough 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: opacity, transform;
+}
+
+/* Tarjetas KPI de Resumen Financiero con elevación táctil */
+.kpi-card {
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease, background-color 0.2s ease;
+}
+.kpi-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(208, 188, 255, 0.22);
+  box-shadow: var(--md-elevation-2);
+}
+.kpi-card:active {
+  transform: scale(0.99);
+  transition-duration: 0.1s;
 }
 
 .m3-glow-logo {
@@ -899,7 +957,8 @@ body.privacy-mode-active .privacy-blur {
   color: #fff;
 }
 .command-item.selected {
-  border-left: 3px solid var(--md-sys-color-primary);
+  background-color: rgba(208, 188, 255, 0.14);
+  outline: 1px solid rgba(208, 188, 255, 0.28);
 }
 
 /* ================= FASES 2 & 3: SOCIAL & SMART INSIGHTS ================= */
@@ -1328,18 +1387,18 @@ body.theme-light #notificationsDrawer .drawer-filter-chip.active {
 /* Tarjetas de Suscripción interactivas */
 .sub-card-interactive {
   cursor: pointer;
-  transition: transform 0.2s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.2s cubic-bezier(0.2, 0, 0, 1), border-color 0.2s ease, background-color 0.2s ease;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease, background-color 0.2s ease;
   display: flex;
   flex-direction: column;
   height: 100%;
   will-change: transform;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.25);
+  box-shadow: var(--md-elevation-1);
   border: 1px solid rgba(255, 255, 255, 0.06);
 }
 .sub-card-interactive:hover {
   transform: translateY(-2px);
   border-color: rgba(208, 188, 255, 0.28);
-  box-shadow: 0 6px 16px -2px rgba(0, 0, 0, 0.35);
+  box-shadow: var(--md-elevation-2);
   background-color: var(--md-sys-color-surface-container);
 }
 .sub-card-interactive:active {
@@ -1573,8 +1632,8 @@ body.compact-dashboard #kpiGrid {
 #chartsAccordionContent {
   display: grid;
   grid-template-rows: 1fr;
-  transition: grid-template-rows 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-              opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: grid-template-rows 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 0.22s cubic-bezier(0.16, 1, 0.3, 1);
   opacity: 1;
 }
 #chartsAccordionContent.collapsed {
@@ -1585,7 +1644,7 @@ body.compact-dashboard #kpiGrid {
   overflow: hidden;
 }
 #chartsAccordionBtn .accordion-chevron {
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
 }
 #chartsAccordionBtn.collapsed .accordion-chevron {
   transform: rotate(-90deg);
@@ -1606,8 +1665,10 @@ body.compact-dashboard #kpiGrid {
   /* Desactivar animaciones continuas de parpadeo y pulsos decorativos */
   .animate-pulse,
   .animate-ping,
-  .animate-bounce,
-  .animate-spin {
+  .animate-spin,
+  .view-fade-through,
+  .animate-scale-up,
+  .animate-m3-slide {
     animation: none !important;
   }
 
