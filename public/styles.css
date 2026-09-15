@@ -64,10 +64,10 @@
   --md-shape-2xl: 28px;
   --md-shape-full: 9999px;
 
-  /* Sombras elevadas tonales con offset natural sin halos planos */
-  --md-elevation-1: 0 1px 3px 0 rgba(0, 0, 0, 0.35), 0 1px 2px -1px rgba(0, 0, 0, 0.25);
-  --md-elevation-2: 0 4px 12px -2px rgba(0, 0, 0, 0.42), 0 2px 6px -1px rgba(0, 0, 0, 0.28);
-  --md-elevation-3: 0 10px 24px -4px rgba(0, 0, 0, 0.52), 0 4px 10px -2px rgba(0, 0, 0, 0.34);
+  /* Sombras elevadas tonales con offset natural y alphas serenos */
+  --md-elevation-1: 0 1px 3px 0 rgba(0, 0, 0, 0.22), 0 1px 2px -1px rgba(0, 0, 0, 0.16);
+  --md-elevation-2: 0 4px 12px -2px rgba(0, 0, 0, 0.28), 0 2px 6px -1px rgba(0, 0, 0, 0.18);
+  --md-elevation-3: 0 8px 20px -4px rgba(0, 0, 0, 0.38), 0 3px 8px -2px rgba(0, 0, 0, 0.22);
 }
 
 html, body {
@@ -471,14 +471,14 @@ textarea:focus-visible {
 .m3-card {
   padding: 1.25rem;
   background-color: var(--md-sys-color-surface-container-low);
-  border: 1px solid var(--md-sys-color-outline-variant);
+  border: 1px solid rgba(255, 255, 255, 0.07);
   border-radius: var(--md-shape-xl);
   box-shadow: var(--md-elevation-1);
   transition: all 0.22s cubic-bezier(0.2, 0, 0, 1);
 }
 .m3-card:hover {
   background-color: var(--md-sys-color-surface-container);
-  border-color: rgba(208, 188, 255, 0.35);
+  border-color: rgba(208, 188, 255, 0.25);
   box-shadow: var(--md-elevation-2);
   transform: translateY(-2px);
 }
@@ -527,18 +527,18 @@ textarea:focus-visible {
   box-shadow: var(--md-elevation-2);
 }
 
-/* Barra de búsqueda estilo Google Material Search Pill */
+/* Barra de búsqueda estilo Google Material Search Pill - Quieter */
 .m3-search-bar {
-  background-color: var(--md-sys-color-surface-container-high);
-  border: 1px solid transparent;
+  background-color: var(--md-sys-color-surface-container);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: var(--md-shape-full);
   color: var(--md-sys-color-on-surface);
   transition: all 0.2s ease;
 }
 .m3-search-bar:focus-within {
-  border-color: var(--md-sys-color-primary);
-  background-color: var(--md-sys-color-surface-container-highest);
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+  border-color: rgba(208, 188, 255, 0.5);
+  background-color: var(--md-sys-color-surface-container-high);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
 }
 
 /* Chips Google M3 */
@@ -589,38 +589,38 @@ textarea:focus-visible {
 
 /* Contenedor de iconos oficiales */
 .m3-brand-icon-box {
-  width: 40px;
-  height: 40px;
+  width: 38px;
+  height: 38px;
   border-radius: var(--md-shape-md);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
   overflow: hidden;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
-  background-color: rgba(255, 255, 255, 0.05);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  background-color: rgba(255, 255, 255, 0.04);
 }
 .m3-brand-icon-box svg {
-  width: 22px;
-  height: 22px;
+  width: 20px;
+  height: 20px;
 }
 
-/* Inputs Google M3 */
+/* Inputs Google M3 - Quieter */
 .m3-text-field {
   width: 100%;
-  background-color: var(--md-sys-color-surface-container-low);
-  border: 1px solid var(--md-sys-color-outline-variant);
+  background-color: var(--md-sys-color-surface-container);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: var(--md-shape-md);
-  padding: 11px 16px;
+  padding: 9px 14px;
   color: var(--md-sys-color-on-surface);
-  font-size: 0.875rem;
-  transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+  font-size: 0.8125rem;
+  transition: all 0.18s cubic-bezier(0.2, 0, 0, 1);
 }
 .m3-text-field:focus {
   outline: none;
-  border-color: var(--md-sys-color-primary);
-  box-shadow: 0 0 0 2px rgba(208, 188, 255, 0.25);
-  background-color: var(--md-sys-color-surface-container);
+  border-color: rgba(208, 188, 255, 0.45);
+  box-shadow: 0 0 0 2px rgba(208, 188, 255, 0.15);
+  background-color: var(--md-sys-color-surface-container-high);
 }
 
 /* Celdas del calendario M3 */
@@ -846,30 +846,30 @@ body.privacy-mode-active .privacy-blur {
   opacity: 0.75;
 }
 
-/* ================= FASE 1: SELECTOR DE PLANES EN FORMULARIO ================= */
+/* ================= FASE 1: SELECTOR DE PLANES EN FORMULARIO - Quieter ================= */
 .m3-plan-chip {
   display: inline-flex;
   flex-direction: column;
   align-items: flex-start;
-  padding: 8px 14px;
+  padding: 7px 12px;
   border-radius: var(--md-shape-md);
   background-color: var(--md-sys-color-surface-container);
-  border: 1px solid var(--md-sys-color-outline-variant);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   color: var(--md-sys-color-on-surface);
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+  transition: all 0.18s cubic-bezier(0.2, 0, 0, 1);
   user-select: none;
 }
 .m3-plan-chip:hover {
   background-color: var(--md-sys-color-surface-container-high);
-  border-color: var(--md-sys-color-primary);
+  border-color: rgba(208, 188, 255, 0.3);
   transform: translateY(-1px);
 }
 .m3-plan-chip.active {
-  background-color: var(--md-sys-color-primary-container);
-  color: var(--md-sys-color-on-primary-container);
-  border-color: var(--md-sys-color-primary);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  background-color: rgba(208, 188, 255, 0.12);
+  color: #ffffff;
+  border-color: rgba(208, 188, 255, 0.45);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
 }
 
 /* ================= FASE 1: COMMAND PALETTE (CTRL+K) ================= */
@@ -1328,20 +1328,22 @@ body.theme-light #notificationsDrawer .drawer-filter-chip.active {
 /* Tarjetas de Suscripción interactivas */
 .sub-card-interactive {
   cursor: pointer;
-  transition: transform 0.22s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.22s cubic-bezier(0.2, 0, 0, 1), border-color 0.2s ease;
+  transition: transform 0.2s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.2s cubic-bezier(0.2, 0, 0, 1), border-color 0.2s ease, background-color 0.2s ease;
   display: flex;
   flex-direction: column;
   height: 100%;
   will-change: transform;
-  box-shadow: var(--md-elevation-1);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.06);
 }
 .sub-card-interactive:hover {
   transform: translateY(-2px);
-  border-color: rgba(208, 188, 255, 0.35);
-  box-shadow: var(--md-elevation-2);
+  border-color: rgba(208, 188, 255, 0.28);
+  box-shadow: 0 6px 16px -2px rgba(0, 0, 0, 0.35);
+  background-color: var(--md-sys-color-surface-container);
 }
 .sub-card-interactive:active {
-  transform: scale(0.98);
+  transform: scale(0.99);
   transition: transform 0.1s ease;
 }
 body.theme-light .sub-card-interactive:hover {
@@ -1362,26 +1364,26 @@ body.theme-light .sub-card-interactive:hover {
   transition: transform 0.1s ease;
 }
 
-/* Botón Píldora "Marcar Pagado" en Tarjetas M3 */
+/* Botón Píldora "Marcar Pagado" en Tarjetas M3 - Aspecto sobrio */
 .m3-btn-paid-pill {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  padding: 5px 12px;
+  gap: 4px;
+  padding: 4px 10px;
   font-size: 0.6875rem;
-  font-weight: 600;
+  font-weight: 500;
   border-radius: var(--md-shape-full);
-  background-color: rgba(168, 213, 181, 0.12);
+  background-color: rgba(168, 213, 181, 0.08);
   color: #a8d5b5;
-  border: 1px solid rgba(168, 213, 181, 0.32);
+  border: 1px solid rgba(168, 213, 181, 0.2);
   cursor: pointer;
   transition: all 0.18s cubic-bezier(0.2, 0, 0, 1);
   user-select: none;
 }
 .m3-btn-paid-pill:hover {
-  background-color: rgba(168, 213, 181, 0.24);
+  background-color: rgba(168, 213, 181, 0.2);
   color: #ffffff;
-  border-color: #a8d5b5;
+  border-color: rgba(168, 213, 181, 0.5);
   transform: translateY(-1px);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
@@ -1614,5 +1616,36 @@ body.compact-dashboard #kpiGrid {
     transition: none !important;
   }
 }
+
+/* ================= Nomenclatura de Moneda Refinada (Subtle Currency Symbol) ================= */
+.currency-symbol {
+  font-size: 0.68em;
+  font-weight: 500;
+  opacity: 0.72;
+  margin-right: 0.08em;
+  vertical-align: 0.06em;
+  display: inline-block;
+  letter-spacing: -0.02em;
+}
+
+/* ================= Formulario Nueva Suscripción - Quieter ================= */
+#btnToggleAdvancedOptions {
+  background: transparent !important;
+  border: 1px solid rgba(255, 255, 255, 0.07) !important;
+  border-radius: var(--md-shape-md) !important;
+  padding: 8px 12px !important;
+  transition: all 0.2s ease !important;
+  outline: none !important;
+}
+#btnToggleAdvancedOptions:hover {
+  background: rgba(255, 255, 255, 0.03) !important;
+  border-color: rgba(208, 188, 255, 0.25) !important;
+}
+#btnToggleAdvancedOptions:focus-visible {
+  outline: 2px solid var(--md-sys-color-primary) !important;
+  outline-offset: 2px !important;
+}
+
+
 
 

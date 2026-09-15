@@ -2500,7 +2500,7 @@ function renderFriendsList() {
   const pendingSent = (state.splitPayRequests?.sent || []).filter(r => r.status === 'pending');
 
   if (totalElem) {
-    totalElem.textContent = `${state.currency}${formatNumber(grandTotalOwed)}`;
+    totalElem.innerHTML = `<span class="currency-symbol">${state.currency}</span>${formatNumber(grandTotalOwed)}`;
   }
 
   if (friends.length === 0) {
@@ -3931,8 +3931,8 @@ function renderKPIs() {
   const s = state.stats;
   const cur = state.currency;
 
-  document.getElementById('kpiMonthlyCost').textContent = `${cur}${formatNumber(s.total_monthly_cost)}`;
-  document.getElementById('kpiAnnualCost').textContent = `${cur}${formatNumber(s.total_annual_cost)}`;
+  document.getElementById('kpiMonthlyCost').innerHTML = `<span class="currency-symbol">${cur}</span>${formatNumber(s.total_monthly_cost)}`;
+  document.getElementById('kpiAnnualCost').innerHTML = `<span class="currency-symbol">${cur}</span>${formatNumber(s.total_annual_cost)}`;
 
   const upcomingCount = s.upcoming_7_days ? s.upcoming_7_days.length : 0;
   document.getElementById('kpiUpcomingCount').textContent = upcomingCount;
@@ -3942,10 +3942,10 @@ function renderKPIs() {
       const conv = x.converted_price !== undefined ? x.converted_price : convertCurrency(x.price, x.currency, state.baseCurrencyCode);
       return acc + conv;
     }, 0);
-    kpiUpcomingSub.textContent = upcomingCount === 0 ? 'Sin cobros en 7 días' : `Cobros por ${cur}${formatNumber(upcomingSum)}`;
+    kpiUpcomingSub.innerHTML = upcomingCount === 0 ? 'Sin cobros en 7 días' : `Cobros por <span class="currency-symbol">${cur}</span>${formatNumber(upcomingSum)}`;
   }
 
-  document.getElementById('kpiSharedSavings').textContent = `${cur}${formatNumber(s.total_shared_savings)}`;
+  document.getElementById('kpiSharedSavings').innerHTML = `<span class="currency-symbol">${cur}</span>${formatNumber(s.total_shared_savings)}`;
 
   const savingsTip = document.getElementById('smartAnnualSavingsTip');
   if (savingsTip && s.potential_annual_savings > 0) {
@@ -4365,24 +4365,25 @@ function createCardHtml(sub) {
   const opacityClass = isInactive ? 'opacity-70 hover:opacity-100 transition-opacity' : '';
 
   return `
-    <div id="sub-card-${sub.id}" data-sub-id="${sub.id}" class="m3-card sub-card-interactive p-5 relative overflow-hidden flex flex-col justify-between h-full m3-elevation-1 ${opacityClass}" onclick="showSubscriptionSummary(${sub.id}, this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();showSubscriptionSummary(${sub.id}, this)}" tabindex="0" role="button" aria-label="Ver resumen de ${escapeHtml(sub.name)}" title="Ver resumen de ${escapeHtml(sub.name)}">
-      <div class="absolute top-0 left-0 right-0 h-1.5" style="background-color: ${safeColor}"></div>
+    <div id="sub-card-${sub.id}" data-sub-id="${sub.id}" class="m3-card sub-card-interactive p-4 sm:p-5 relative flex flex-col justify-between h-full ${opacityClass}" onclick="showSubscriptionSummary(${sub.id}, this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();showSubscriptionSummary(${sub.id}, this)}" tabindex="0" role="button" aria-label="Ver resumen de ${escapeHtml(sub.name)}" title="Ver resumen de ${escapeHtml(sub.name)}">
+      <!-- Acento de marca sutil integrado (línea tenue con gradiente suave) -->
+      <div class="absolute top-0 left-6 right-6 h-[2px] rounded-full opacity-60" style="background: linear-gradient(90deg, transparent, ${safeColor}, transparent)"></div>
 
       <!-- Cuerpo principal de la tarjeta -->
-      <div class="flex-1 flex flex-col space-y-3">
-        <!-- Cabecera: Icono + Nombre + Burbuja Interactiva de Estado -->
-        <div class="flex items-start justify-between gap-2.5">
+      <div class="flex-1 flex flex-col space-y-3.5">
+        <!-- Cabecera: Icono + Nombre + Indicador de Estado -->
+        <div class="flex items-center justify-between gap-3">
           <div class="flex items-center gap-3 min-w-0">
-            <div class="m3-brand-icon-box" style="background: linear-gradient(135deg, ${safeColor}22, ${safeColor}44); border: 1px solid ${safeColor}55">
+            <div class="m3-brand-icon-box" style="background-color: ${safeColor}18; border: 1px solid ${safeColor}30">
               ${iconHtml}
             </div>
             <div class="min-w-0">
-              <h4 class="text-sm font-bold text-white tracking-tight flex items-center gap-1.5 font-google-sans truncate">
+              <h4 class="text-[0.9375rem] font-semibold text-white tracking-tight flex items-center gap-1.5 font-google-sans truncate">
                 <span class="truncate">${escapeHtml(sub.name)}</span>
-                ${sub.alias ? `<span class="text-[10px] font-medium px-2 py-0.2 rounded-full bg-[#381e72]/80 border border-[#d0bcff]/40 text-[#d0bcff] font-sans truncate" title="Alias: ${escapeHtml(sub.alias)}">${escapeHtml(sub.alias)}</span>` : ''}
+                ${sub.alias ? `<span class="text-[10px] font-medium px-2 py-0.2 rounded-full bg-[#381e72]/60 text-[#d0bcff] font-sans truncate" title="Alias: ${escapeHtml(sub.alias)}">${escapeHtml(sub.alias)}</span>` : ''}
               </h4>
-              <div class="flex flex-wrap items-center gap-1.5 mt-1">
-                <span class="m3-badge-secondary text-[10px]">
+              <div class="flex flex-wrap items-center gap-1.5 mt-0.5">
+                <span class="text-[11px] text-[#cac4d0]/80 font-medium">
                   ${escapeHtml(sub.category)}
                 </span>
                 ${trialBadge}
@@ -4390,78 +4391,80 @@ function createCardHtml(sub) {
             </div>
           </div>
 
-          <!-- Burbuja de Estado: Solo burbuja con color, no texto, no clickeable -->
-          <div class="shrink-0 pt-0.5">
+          <!-- Indicador de Estado sobrio -->
+          <div class="shrink-0">
             ${getStatusBubbleHtml(sub.status)}
           </div>
         </div>
 
-        <!-- Bloque Unificado: Fecha de corte a la izquierda, Cobro a la derecha -->
-        <div class="bg-[#1d1b20] border border-[#49454f]/35 rounded-2xl p-3.5 space-y-2.5">
-          <div class="flex items-start justify-between gap-3">
-            <!-- Lado Izquierdo: Fecha de Corte y días restantes -->
-            <div class="min-w-0 flex-1 space-y-1">
-              <span class="text-[10px] uppercase tracking-wider font-semibold text-[#cac4d0] flex items-center gap-1">
-                <i data-lucide="calendar" class="w-3 h-3 text-[#d0bcff]"></i> Fecha de Corte
-              </span>
-              <div class="flex items-center gap-1.5 mt-1 flex-wrap">
-                <span class="text-xs sm:text-sm font-bold text-[#e6e0e9] font-google-sans leading-tight">
-                  ${formatDateFriendly(sub.next_billing_date)}
+        <!-- Bloque Principal Descomprimido (Sin caja anidada) -->
+        <div class="pt-2 pb-1 space-y-2.5">
+          <div class="flex items-baseline justify-between gap-3">
+            <!-- Cobro principal con jerarquía equilibrada y nomenclatura de moneda estilizada -->
+            <div class="min-w-0 flex-1">
+              <div class="flex items-baseline gap-1.5 flex-wrap">
+                <span class="text-2xl font-bold text-white font-mono tracking-tight privacy-blur leading-none">
+                  <span class="currency-symbol">${baseSymbol}</span>${formatNumber(displayPrice)}
                 </span>
-                <span class="${badgeClass} text-[10px]">${daysText}</span>
+                <span class="text-xs text-[#cac4d0]/70 font-medium">
+                  / ${cycleSuffix}
+                </span>
+                ${isSharedSub ? `<span class="text-[10px] text-[#a8d5b5] font-medium ml-1">(tu cuota)</span>` : ''}
               </div>
-              ${paymentMethodBadge ? `
-                <div class="pt-1">
-                  ${paymentMethodBadge}
-                </div>
-              ` : ''}
-            </div>
 
-            <!-- Lado Derecho: Cobro correspondiente -->
-            <div class="text-right shrink-0">
-              <span class="text-[10px] uppercase font-bold tracking-wider ${isSharedSub ? 'text-[#a8d5b5]' : 'text-[#cac4d0]'} block">
-                ${isSharedSub ? `<i data-lucide="users" class="w-3 h-3 inline mr-0.5 text-[#a8d5b5]"></i>Tu Cuota` : `Cobro ${cycleLabel}`}
-              </span>
-              <div class="text-xl font-extrabold text-white font-mono tracking-tight privacy-blur leading-tight mt-1">
-                ${baseSymbol}${formatNumber(displayPrice)}
-              </div>
               ${(showDailyCost && dailyEquiv) ? `
-                <div class="text-[10px] text-[#938f99] font-mono privacy-blur font-normal mt-0.5" title="Equivalente aproximado diario">
-                  ~${baseSymbol}${dailyEquiv}/día
+                <div class="text-[10px] text-[#938f99] font-mono privacy-blur mt-1" title="Equivalente aproximado diario">
+                  ~<span class="currency-symbol">${baseSymbol}</span>${dailyEquiv}/día
                 </div>
               ` : ''}
               ${(showOriginalCurrency && isDifferentCurrency) ? `
                 <div class="text-[10px] text-[#938f99] font-mono privacy-blur mt-0.5" title="Moneda original">
-                  orig. ${subSymbol}${formatNumber(originalDisplayPrice)} ${subCurr}
+                  orig. <span class="currency-symbol">${subSymbol}</span>${formatNumber(originalDisplayPrice)} ${subCurr}
                 </div>
               ` : ''}
+            </div>
+
+            <!-- Fecha de corte limpia -->
+            <div class="text-right shrink-0">
+              <div class="text-xs font-semibold text-[#e6e0e9] font-google-sans">
+                ${formatDateFriendly(sub.next_billing_date)}
+              </div>
+              <div class="mt-0.5">
+                <span class="${badgeClass} text-[10px]">${daysText}</span>
+              </div>
             </div>
           </div>
 
           ${(showTimeline && timeline) ? `
-            <div class="w-full bg-[#2b2930] h-1.5 rounded-full overflow-hidden mt-1" title="Progreso del período (${timeline.percent}%)">
+            <div class="w-full bg-[#2b2930]/80 h-1 rounded-full overflow-hidden mt-2" title="Progreso del período (${timeline.percent}%)">
               <div class="h-full rounded-full transition-all duration-500 ${timeline.colorClass}" style="width: ${timeline.percent}%"></div>
             </div>
           ` : ''}
 
-          ${isSharedSub ? `
-            <div class="flex items-center justify-between text-[11px] text-[#cac4d0] pt-1.5 border-t border-[#49454f]/25">
-              <span class="truncate">Total servicio: <span class="font-mono font-semibold text-[#e6e0e9] privacy-blur">${baseSymbol}${formatNumber(convertedPrice)}</span></span>
-              <span class="text-[10px] text-[#d0bcff] font-semibold shrink-0 ml-2">/${sharedPeopleCount} personas</span>
+          ${(paymentMethodBadge || isSharedSub) ? `
+            <div class="flex items-center justify-between gap-2 pt-1 text-[11px] text-[#cac4d0]/80">
+              <div>
+                ${paymentMethodBadge}
+              </div>
+              ${isSharedSub ? `
+                <div class="text-[10px] text-[#cac4d0]/70">
+                  Total: <span class="font-mono text-[#e6e0e9] font-medium"><span class="currency-symbol">${baseSymbol}</span>${formatNumber(convertedPrice)}</span> (/${sharedPeopleCount})
+                </div>
+              ` : ''}
             </div>
           ` : ''}
         </div>
       </div>
 
-      <!-- Footer de la Tarjeta: Siempre anclado al fondo, botón en la misma posición fija -->
-      <div class="mt-auto pt-3 border-t border-[#49454f]/20 flex items-center justify-between gap-2 min-h-[38px]">
+      <!-- Footer de la Tarjeta: Sereno y ligero -->
+      <div class="mt-auto pt-3 border-t border-[#49454f]/25 flex items-center justify-between gap-2 min-h-[36px]">
         <div class="min-w-0 flex-1">
           ${sharedFriendsHtml ? sharedFriendsHtml : (sub.notes ? `<span class="truncate max-w-[150px] italic text-[11px] text-[#938f99] block" title="${escapeHtml(sub.notes)}">"${escapeHtml(sub.notes)}"</span>` : `<span class="text-[10px] text-[#938f99] uppercase tracking-wider font-medium">${escapeHtml(sub.category)}</span>`)}
         </div>
 
         <button onclick="event.stopPropagation(); markAsPaidAndAdvance(${sub.id}, this)" class="m3-btn-paid-pill shrink-0 ml-auto" title="Marcar período como pagado y avanzar a la siguiente fecha">
-          <i data-lucide="receipt" class="w-3.5 h-3.5 text-[#a8d5b5]"></i>
-          <span>Marcar Pagado</span>
+          <i data-lucide="check" class="w-3 h-3 text-[#a8d5b5]"></i>
+          <span>Pagado</span>
         </button>
       </div>
     </div>
@@ -4516,17 +4519,17 @@ function createTableRowHtml(sub) {
       </td>
       <td class="px-3 py-3 font-mono">
         ${isDifferentCurrency ? `
-          <div class="font-bold text-white privacy-blur">${baseSymbol}${formatNumber(convertedPrice)} <span class="text-[11px] text-[#cac4d0] font-normal">/${cycleLabel.toLowerCase()}</span></div>
-          <div class="text-[11px] text-[#d0bcff] font-semibold privacy-blur">orig. ${subSymbol}${formatNumber(sub.price)} ${subCurr}</div>
+          <div class="font-bold text-white privacy-blur"><span class="currency-symbol">${baseSymbol}</span>${formatNumber(convertedPrice)} <span class="text-[11px] text-[#cac4d0] font-normal">/${cycleLabel.toLowerCase()}</span></div>
+          <div class="text-[11px] text-[#d0bcff] font-semibold privacy-blur">orig. <span class="currency-symbol">${subSymbol}</span>${formatNumber(sub.price)} ${subCurr}</div>
         ` : `
-          <div class="font-bold text-white privacy-blur">${baseSymbol}${formatNumber(sub.price)}</div>
+          <div class="font-bold text-white privacy-blur"><span class="currency-symbol">${baseSymbol}</span>${formatNumber(sub.price)}</div>
           <div class="text-[11px] text-[#cac4d0]">${cycleLabel}</div>
         `}
       </td>
       <td class="px-3 py-3 font-mono">
-        <div class="font-extrabold text-[#d0bcff] privacy-blur">${baseSymbol}${formatNumber(convertedAnnual)} / año</div>
+        <div class="font-extrabold text-[#d0bcff] privacy-blur"><span class="currency-symbol">${baseSymbol}</span>${formatNumber(convertedAnnual)} / año</div>
         <div class="text-[10px] text-[#cac4d0] privacy-blur">
-          (${baseSymbol}${formatNumber(convertedMonthly)} / mes${isDifferentCurrency ? ` &bull; orig. ${subSymbol}${formatNumber(sub.annual_cost)}` : ''})
+          (<span class="currency-symbol">${baseSymbol}</span>${formatNumber(convertedMonthly)} / mes${isDifferentCurrency ? ` &bull; orig. <span class="currency-symbol">${subSymbol}</span>${formatNumber(sub.annual_cost)}` : ''})
         </div>
       </td>
       <td class="px-3 py-3" onclick="event.stopPropagation()">
@@ -5392,14 +5395,14 @@ function renderPlanSelector(serviceName, currentPrice = null, currentCycle = nul
   // Si el servicio cuenta con prueba gratis, agregarla como opción directa en planes disponibles
   if (service.trialDays && service.trialDays > 0) {
     chipsHtml += `
-      <button type="button" class="m3-plan-chip border-rose-500/40 text-rose-200 hover:border-rose-400" 
+      <button type="button" class="m3-plan-chip border-rose-500/30 text-rose-200/90 hover:border-rose-400" 
               data-is-trial="true" data-trial-days="${service.trialDays}" data-price="0.00" data-cycle="monthly" 
               onclick="handleSelectPlanChip(this)">
-        <span class="text-xs font-bold leading-tight flex items-center gap-1">
-          <i data-lucide="timer" class="w-3.5 h-3.5 text-rose-400"></i>
+        <span class="text-xs font-semibold leading-tight flex items-center gap-1">
+          <i data-lucide="timer" class="w-3.5 h-3.5 text-rose-400/80"></i>
           Prueba Gratis (${service.trialDays} días)
         </span>
-        <span class="text-[11px] opacity-90 font-mono mt-0.5 font-medium text-rose-300">$0.00 luego ${servSymbol}${formatNumber(service.plans[0].priceUsd)}</span>
+        <span class="text-[11px] opacity-80 font-mono mt-0.5 font-normal text-rose-300/80"><span class="currency-symbol">$</span>0.00 luego <span class="currency-symbol">${servSymbol}</span>${formatNumber(service.plans[0].priceUsd)}</span>
       </button>
     `;
   }
@@ -5416,8 +5419,8 @@ function renderPlanSelector(serviceName, currentPrice = null, currentCycle = nul
 
     return `
       <button type="button" class="m3-plan-chip ${isActive ? 'active' : ''}" data-is-trial="false" data-plan-index="${idx}" data-price="${priceStr}" data-cycle="${plan.cycle || 'monthly'}" onclick="handleSelectPlanChip(this)">
-        <span class="text-xs font-bold leading-tight">${escapeHtml(plan.name)}</span>
-        <span class="text-[11px] opacity-80 font-mono mt-0.5 font-medium">${servSymbol}${priceStr} ${cycleLabel}</span>
+        <span class="text-xs font-semibold leading-tight">${escapeHtml(plan.name)}</span>
+        <span class="text-[11px] opacity-75 font-mono mt-0.5 font-normal"><span class="currency-symbol">${servSymbol}</span>${priceStr} ${cycleLabel}</span>
       </button>
     `;
   }).join('');
@@ -5945,60 +5948,20 @@ function updateModalLiveCalculation() {
   const calcA = document.getElementById('formCalcAnnual');
 
   if (subCurr === baseCurr) {
-    if (calcM) calcM.textContent = `${baseSymbol}${formatNumber(monthly)} / mes`;
-    if (calcA) calcA.textContent = `${baseSymbol}${formatNumber(annual)} / año`;
+    if (calcM) calcM.innerHTML = `<span class="currency-symbol">${baseSymbol}</span>${formatNumber(monthly)} <span class="text-xs text-[#cac4d0]/70 font-normal">/ mes</span>`;
+    if (calcA) calcA.innerHTML = `<span class="currency-symbol">${baseSymbol}</span>${formatNumber(annual)} <span class="text-xs text-[#cac4d0]/70 font-normal">/ año</span>`;
   } else {
     const monthlyConv = convertCurrency(monthly, subCurr, baseCurr);
     const annualConv = convertCurrency(annual, subCurr, baseCurr);
-    if (calcM) calcM.innerHTML = `${subSymbol}${formatNumber(monthly)} <span class="text-[#d0bcff] font-bold text-[11px] font-mono">(≈ ${baseSymbol}${formatNumber(monthlyConv)} ${baseCurr})</span> / mes`;
-    if (calcA) calcA.innerHTML = `${subSymbol}${formatNumber(annual)} <span class="text-[#d0bcff] font-bold text-[11px] font-mono">(≈ ${baseSymbol}${formatNumber(annualConv)} ${baseCurr})</span> / año`;
+    if (calcM) calcM.innerHTML = `<span class="currency-symbol">${subSymbol}</span>${formatNumber(monthly)} <span class="text-[#cac4d0]/60 text-[10px] font-mono">(≈ <span class="currency-symbol">${baseSymbol}</span>${formatNumber(monthlyConv)})</span> <span class="text-xs text-[#cac4d0]/70 font-normal">/ mes</span>`;
+    if (calcA) calcA.innerHTML = `<span class="currency-symbol">${subSymbol}</span>${formatNumber(annual)} <span class="text-[#cac4d0]/60 text-[10px] font-mono">(≈ <span class="currency-symbol">${baseSymbol}</span>${formatNumber(annualConv)})</span> <span class="text-xs text-[#cac4d0]/70 font-normal">/ año</span>`;
   }
 
-  // Impacto en Presupuesto Mensual en vivo
+  // Consumo y alertas de presupuesto eliminados de la creación de suscripciones por solicitud
   const impactContainer = document.getElementById('modalBudgetImpactContainer');
-  const impactText = document.getElementById('modalBudgetImpactText');
-  const impactBadge = document.getElementById('modalBudgetImpactBadge');
-
-  if (impactContainer && state.stats && state.stats.monthly_budget) {
-    const budget = state.stats.monthly_budget || 150;
-    const curSpent = state.stats.total_monthly_cost || 0;
-    const monthlyInBase = subCurr === baseCurr ? monthly : convertCurrency(monthly, subCurr, baseCurr);
-    
-    // Si estamos editando, restar el costo mensual previo de esta suscripción
-    let prevMonthlyInBase = 0;
-    if (state.editingId) {
-      const existing = (state.subscriptions || []).find(s => s.id === state.editingId);
-      if (existing) {
-        const exCurr = existing.currency || 'USD';
-        prevMonthlyInBase = exCurr === baseCurr ? (existing.monthly_cost || 0) : convertCurrency(existing.monthly_cost || 0, exCurr, baseCurr);
-      }
-    }
-    
-    const newSpent = Math.max(0, curSpent - prevMonthlyInBase + monthlyInBase);
-    const newPct = Math.round((newSpent / budget) * 100);
-    const subPct = budget > 0 ? ((monthlyInBase / budget) * 100).toFixed(1) : 0;
-    const isExceeded = newSpent > budget;
-    const isClose = newPct >= 85 && !isExceeded;
-
-    impactContainer.classList.remove('hidden');
-    if (impactText) {
-      impactText.innerHTML = `Consumo: <strong class="text-white font-mono">${baseSymbol}${formatNumber(newSpent)}</strong> de <strong class="font-mono">${baseSymbol}${formatNumber(budget)}</strong> (${newPct}%)`;
-    }
-
-    if (impactBadge) {
-      if (isExceeded) {
-        impactBadge.className = 'font-bold font-mono px-2.5 py-0.5 rounded-full text-[10px] bg-rose-500/20 text-rose-300 border border-rose-500/40 animate-pulse w-fit';
-        impactBadge.textContent = `¡Excederá tu meta (+${subPct}%)!`;
-      } else if (isClose) {
-        impactBadge.className = 'font-bold font-mono px-2.5 py-0.5 rounded-full text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/40 w-fit';
-        impactBadge.textContent = `Cerca del límite (+${subPct}%)`;
-      } else {
-        impactBadge.className = 'font-bold font-mono px-2.5 py-0.5 rounded-full text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 w-fit';
-        impactBadge.textContent = `+${subPct}% de tu meta`;
-      }
-    }
-  } else if (impactContainer) {
+  if (impactContainer) {
     impactContainer.classList.add('hidden');
+    impactContainer.style.display = 'none';
   }
 }
 
@@ -8067,15 +8030,19 @@ async function showSubscriptionSummary(subId, sourceElem = null) {
   const convertedMonthly = isSubConvertedFresh ? sub.converted_monthly_cost : convertCurrency(sub.monthly_cost, subCurr, baseCurr);
   const convertedAnnual = isSubConvertedFresh ? sub.converted_annual_cost : convertCurrency(sub.annual_cost, subCurr, baseCurr);
 
-  // Barra superior de color de la marca
+  // Barra superior de color de la marca más delicada (línea sutil)
   const safeColor = sanitizeColor(sub.color, '#d0bcff');
-  if (headerBar) headerBar.style.backgroundColor = safeColor;
+  if (headerBar) {
+    headerBar.style.height = '2px';
+    headerBar.style.background = `linear-gradient(90deg, transparent, ${safeColor}, transparent)`;
+  }
 
-  // Icono del servicio
+  // Icono del servicio sereno
   if (iconBox) {
     iconBox.innerHTML = getServiceOfficialIcon(sub.name, sub.color, 'w-6 h-6', sub.icon);
-    iconBox.style.background = `linear-gradient(135deg, ${safeColor}25, ${safeColor}45)`;
-    iconBox.style.border = `1px solid ${safeColor}60`;
+    iconBox.style.backgroundColor = `${safeColor}18`;
+    iconBox.style.border = `1px solid ${safeColor}35`;
+    iconBox.style.boxShadow = '0 1px 3px rgba(0,0,0,0.2)';
   }
 
   // Nombre y Burbuja Interactiva de Estado en la cabecera
@@ -8102,14 +8069,14 @@ async function showSubscriptionSummary(subId, sourceElem = null) {
     const myShareMonthly = sub.my_share_price || sub.monthly_cost;
     const myShareTotal = sub.billing_cycle === 'annual' ? (myShareMonthly * 12) : myShareMonthly;
     if (myShareEl) {
-      myShareEl.textContent = `${baseSymbol}${formatNumber(myShareTotal)}`;
+      myShareEl.innerHTML = `<span class="currency-symbol">${baseSymbol}</span>${formatNumber(myShareTotal)}`;
     }
     if (cycleLabelEl) {
       cycleLabelEl.textContent = sub.billing_cycle === 'annual' ? 'por año (tu cuota)' : 'por mes (tu cuota)';
     }
   } else {
     if (myShareEl) {
-      myShareEl.textContent = `${baseSymbol}${formatNumber(convertedPrice)}`;
+      myShareEl.innerHTML = `<span class="currency-symbol">${baseSymbol}</span>${formatNumber(convertedPrice)}`;
     }
     if (cycleLabelEl) {
       cycleLabelEl.textContent = `por ${cycleLabel.toLowerCase()}`;
@@ -8118,18 +8085,18 @@ async function showSubscriptionSummary(subId, sourceElem = null) {
 
   // Costo del Plan Total
   if (priceEl) {
-    priceEl.textContent = `${baseSymbol}${formatNumber(convertedPrice)} / ${cycleLabel.toLowerCase()}`;
+    priceEl.innerHTML = `<span class="currency-symbol">${baseSymbol}</span>${formatNumber(convertedPrice)} / ${cycleLabel.toLowerCase()}`;
   }
   if (origPriceEl) {
     if (isDifferentCurrency) {
-      origPriceEl.textContent = `Orig. ${subSymbol}${formatNumber(sub.price)} ${subCurr}`;
+      origPriceEl.innerHTML = `Orig. <span class="currency-symbol">${subSymbol}</span>${formatNumber(sub.price)} ${subCurr}`;
       origPriceEl.classList.remove('hidden');
     } else {
       origPriceEl.classList.add('hidden');
     }
   }
   if (annualCostEl) {
-    annualCostEl.textContent = `Impacto anual: ${baseSymbol}${formatNumber(convertedAnnual)}/año`;
+    annualCostEl.innerHTML = `Impacto anual: <span class="currency-symbol">${baseSymbol}</span>${formatNumber(convertedAnnual)}/año`;
   }
 
   // Próximo cobro
