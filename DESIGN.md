@@ -25,9 +25,29 @@ colors:
   outline: "#a5a0ab"
   outline-variant: "#49454f"
   success: "#a8d5b5"
+  success-container: "#2b5037"
+  on-success-container: "#c4ebd0"
   warning: "#f2c18d"
   error: "#f2b8b5"
+  avatar-emerald: "#38d39f"
+  avatar-sky: "#38bdf8"
+  avatar-amber: "#f59e0b"
+  avatar-rose: "#f43f5e"
+  avatar-purple: "#a855f7"
+  avatar-slate: "#64748b"
+  scrim: "rgba(0, 0, 0, 0.75)"
+  glass-border: "rgba(255, 255, 255, 0.08)"
 typography:
+  display-large:
+    fontFamily: "'Google Sans', 'Google Sans Text', 'Roboto Flex', sans-serif"
+    fontSize: "3.75rem"
+    fontWeight: 800
+    lineHeight: 1.1
+  headline-large:
+    fontFamily: "'Google Sans', 'Google Sans Text', 'Roboto Flex', sans-serif"
+    fontSize: "1.75rem"
+    fontWeight: 700
+    lineHeight: 1.15
   display:
     fontFamily: "'Google Sans', 'Google Sans Text', 'Roboto Flex', sans-serif"
     fontSize: "2rem"
@@ -58,6 +78,21 @@ typography:
     fontWeight: 500
     lineHeight: 1.4
     letterSpacing: "0.01em"
+  caption:
+    fontFamily: "'Google Sans Text', 'Google Sans', 'Roboto Flex', Roboto, -apple-system, sans-serif"
+    fontSize: "11px"
+    fontWeight: 500
+    lineHeight: 1.3
+  badge:
+    fontFamily: "'Google Sans Text', 'Google Sans', 'Roboto Flex', Roboto, -apple-system, sans-serif"
+    fontSize: "10px"
+    fontWeight: 700
+    lineHeight: 1
+  badge-small:
+    fontFamily: "'Google Sans Text', 'Google Sans', 'Roboto Flex', Roboto, -apple-system, sans-serif"
+    fontSize: "9px"
+    fontWeight: 700
+    lineHeight: 1
 rounded:
   xs: "4px"
   sm: "8px"
